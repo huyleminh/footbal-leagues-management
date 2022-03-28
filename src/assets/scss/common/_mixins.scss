@@ -1,0 +1,42 @@
+// Box
+@mixin box($width, $height: $width) {
+	width: $width;
+	height: $height;
+}
+
+// Circle
+@mixin circle($radius) {
+	width: $radius;
+	height: $radius;
+	border-radius: 50%;
+}
+
+// Flex Box
+@mixin flex-column {
+	display: flex;
+	flex-direction: column;
+}
+
+@mixin flex-center {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+@mixin flex-center-column {
+	@include flex-center;
+	flex-direction: column;
+}
+
+// Visibility
+@mixin fade($type, $visibilityDuration, $opacityDuration) {
+	@if $type == "hide" {
+		visibility: hidden;
+		opacity: 0;
+		transition: visibility $visibilityDuration, opacity $opacityDuration;
+	} @else if $type == "show" {
+		visibility: visible;
+		opacity: 1;
+		transition: visibility $visibilityDuration, opacity $opacityDuration;
+	}
+}
