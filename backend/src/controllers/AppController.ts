@@ -1,7 +1,7 @@
 import * as express from "express";
 
 export default abstract class AppController {
-    protected _router;
+    protected _router: express.Router;
     constructor() {
         this._router = express.Router();
         this.init();
