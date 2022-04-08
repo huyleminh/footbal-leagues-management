@@ -28,6 +28,17 @@ export const AppComponents: Components = {
 			},
 		},
 	},
+	MuiOutlinedInput: {
+		styleOverrides: {
+			root: {
+				fontSize: "0.875rem",
+				"&.Mui-error": {
+					color: "#FF4842",
+					backgroundColor: "#fddad9a6",
+				},
+			},
+		},
+	},
 	MuiButton: {
 		styleOverrides: {
 			root: {

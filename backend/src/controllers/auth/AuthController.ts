@@ -20,6 +20,8 @@ export default class AuthController extends AppController {
 			[AuthMiddlewares.validateRefreshTokenData],
 			this.postRefreshTokenAsync,
 		);
+
+		this._router.get("/verify-token", this.getVerifyTokenAsync);
 	}
 
 	async postLoginAsync(req: IAppRequest, res: IAppResponse) {
@@ -87,6 +89,7 @@ export default class AuthController extends AppController {
 						refreshToken,
 						idToken,
 						expireIn: 5 * 60 * 1000, // 5 mins
+						expireAt: moment().add(5, "minutes").toISOString(),
 					},
 					user: {
 						fullname: user.fullname,
@@ -146,7 +149,9 @@ export default class AuthController extends AppController {
 				.data({
 					accessToken,
 					refreshToken: newRefreshToken.refreshToken,
+					idToken,
 					expireIn: 5 * 60 * 1000,
+					expireAt: moment().add(5, "minutes").toISOString(),
 				})
 				.send();
 		} catch (error) {
@@ -163,5 +168,13 @@ export default class AuthController extends AppController {
 				.data("Không thể làm mới phiên đăng nhập, vui lòng đăng nhập lại")
 				.send();
 		}
+	}
+
+	async getVerifyTokenAsync(req: IAppRequest, res: IAppResponse) {
+		const { tokenPayload } = res.locals;
+		new AppResponse(res, 200, "OK", {
+			scope: tokenPayload.scope,
+			role: tokenPayload.role,
+		}).send();
 	}
 }
