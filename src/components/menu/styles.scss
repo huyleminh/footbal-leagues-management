@@ -1,0 +1,28 @@
+.navigation-item {
+	display: flex;
+	padding: 15px;
+	color: white;
+	transition: all 0.2s ease-out;
+	overflow: hidden;
+	user-select: none; /* supported by Chrome and Opera */
+	-webkit-user-select: none; /* Safari */
+	-khtml-user-select: none; /* Konqueror HTML */
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+.navigation-item.navigation-sub-menu {
+	background-color: #6e00ff;
+	padding-left: 30px;
+}
+
+.navigation-item.navigation-sub-menu.hidden {
+	padding: 0px;
+	height: 0px;
+}
+
+.navigation-item:hover,
+.navigation-item.active {
+	background-color: #4d00b2;
+	cursor: pointer;
+}

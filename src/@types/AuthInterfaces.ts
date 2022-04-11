@@ -13,5 +13,6 @@ export interface ILoginResponse {
 	};
 	user: {
 		fullname: string;
+		role: number;
 	};
 }

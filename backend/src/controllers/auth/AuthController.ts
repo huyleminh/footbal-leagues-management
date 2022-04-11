@@ -93,6 +93,7 @@ export default class AuthController extends AppController {
 					},
 					user: {
 						fullname: user.fullname,
+						role: user.role
 					},
 				})
 				.send();
