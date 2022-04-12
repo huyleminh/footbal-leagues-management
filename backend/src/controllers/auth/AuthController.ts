@@ -1,8 +1,8 @@
 import * as moment from "moment";
 import { IAppRequest, IAppResponse } from "../../@types/AppBase";
 import AuthMiddlewares from "../../middlewares/AuthMiddlewares";
-import UserModel from "../../models/schemas/UserSchema";
-import UserTokenModel from "../../models/schemas/UserTokenSchema";
+import UserModel from "../../models/UserModel";
+import UserTokenModel from "../../models/UserTokenModel";
 import AppResponse from "../../shared/AppResponse";
 import BcryptUtil from "../../utils/BcryptUtil";
 import { Logger } from "../../utils/Logger";

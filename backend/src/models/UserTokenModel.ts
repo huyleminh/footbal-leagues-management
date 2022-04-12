@@ -1,8 +1,9 @@
 import { Schema, model } from "mongoose";
-import { IUserTokenModel } from "../interfaces/IUserTokenModel";
+import { IUserTokenModel } from "./interfaces/IUserTokenModel";
+import UserModel from "./UserModel";
 
 const UserTokenSchema = new Schema<IUserTokenModel>({
-	userId: { type: Schema.Types.ObjectId, required: true },
+	userId: { type: Schema.Types.ObjectId, required: true, ref: UserModel },
 	initVector: { type: String, required: true },
 	refreshToken: { type: String, required: true },
 	expireDate: { type: Date, required: true },
