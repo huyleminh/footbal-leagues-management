@@ -1,5 +1,5 @@
 import { Button, Stack, Typography } from "@mui/material";
-import { Box } from "@mui/system";
+import { Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import Illustration403 from "../../../assets/images/illustration_maintenance.svg"
 

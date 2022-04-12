@@ -47,6 +47,7 @@ function MenuItem(props: MenuItemType) {
                             className={`navigation-sub-menu ${!isOpen ? "hidden" : ""}`}
                             key={index}
                             label={menu.label}
+                            role={menu.role}
                             path={menu.path || "#"}
                             subMenu={menu.subMenu || undefined}
                             icon={menu.icon || undefined}

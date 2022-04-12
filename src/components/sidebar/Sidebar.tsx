@@ -1,10 +1,12 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { SidebarType } from "../../@types/ComponentInterfaces";
+import NavigationList from "../../shared/NavigationList";
 import Menu from "../menu/Menu";
 import "./styles.scss";
 
 function Sidebar(props: SidebarType) {
-	const { navigationList, isOpen } = props;
+	const { role, isOpen } = props;
+	const navigationList = NavigationList.NAV_LIST
 
 	return (
 		<Box
@@ -40,7 +42,7 @@ function Sidebar(props: SidebarType) {
 				</Box>
 
 				{/* Sidebar navigation */}
-				<Menu menuList={navigationList} />
+				<Menu menuList={navigationList} role={role}/>
 			</Stack>
 		</Box>
 	);

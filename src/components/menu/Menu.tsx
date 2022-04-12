@@ -3,7 +3,7 @@ import { MenuType } from "../../@types/ComponentInterfaces";
 import MenuItem from "./MenuItem";
 
 function Menu(props: MenuType) {
-	const { menuList } = props;
+	const { menuList, role } = props;
 
 	return (
 		<Stack
@@ -11,15 +11,21 @@ function Menu(props: MenuType) {
 				flexGrow: "1",
 			}}
 		>
-			{menuList.map((nav, index) => (
-				<MenuItem
-					key={index}
-					label={nav.label}
-					icon={nav.icon}
-					path={nav.path}
-					subMenu={nav.subMenu ? nav.subMenu : undefined}
-				/>
-			))}
+			{menuList.map((nav, index) => {
+				if (nav.role === "all" || nav.role === role) {
+					return (
+						<MenuItem
+							key={index}
+							label={nav.label}
+							icon={nav.icon}
+							role={nav.role}
+							path={nav.path}
+							subMenu={nav.subMenu ? nav.subMenu : undefined}
+						/>
+					)
+				}
+				return null
+			})}
 		</Stack>
 	);
 }

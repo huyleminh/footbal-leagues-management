@@ -5,26 +5,29 @@ import HttpService from "../../services/HttpService";
 import Loading from "../loading/Loading";
 import Swal from "sweetalert2";
 import AppConstants from "../../shared/AppConstants";
-
-type PrivateRouteType = {
-	children: JSX.Element;
-	role: "admin" | "manager";
-};
+import { PrivateRouteType } from "../../@types/ComponentInterfaces";
+import Dashboard from "../dashboard/Dashboard";
 
 function PrivateRoute(props: PrivateRouteType) {
 	const [isChecking, setIsChecking] = useState(true);
 	const [isValid, setIsValid] = useState(false);
+	const [type, setType] = useState<"admin" | "manager">("admin");
 
 	useEffect(() => {
 		const verify = async () => {
 			try {
 				const res = await HttpService.get<IAPIResponse<any | string>>("/verify-token");
 				const role =
-					props.role === "admin" ? AppConstants.ADMIN_ROLE : AppConstants.MANAGER_ROLE;
+					props.role === "all"
+						? "all"
+						: props.role === "admin"
+						? AppConstants.ADMIN_ROLE
+						: AppConstants.MANAGER_ROLE;
 
-				if (res.code === 200 && role === res.data.role) {
+				if (res.code === 200 && (role === res.data.role || role === "all")) {
 					setIsValid(true);
 					setIsChecking(false);
+					setType(res.data.role === AppConstants.ADMIN_ROLE ? "admin" : "manager");
 				} else {
 					Swal.fire({
 						title: "Truy cập không được cho phép",
@@ -46,7 +49,11 @@ function PrivateRoute(props: PrivateRouteType) {
 	return isChecking ? (
 		<Loading message="Đang kiểm tra quyền truy cập" />
 	) : isValid ? (
-		props.children
+		props.element ? (
+			props.element
+		) : (
+			<Dashboard type={type} />
+		)
 	) : (
 		<Navigate to="/login" />
 	);

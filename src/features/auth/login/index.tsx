@@ -19,7 +19,6 @@ import { useNavigate } from "react-router-dom";
 import { ILoginResponse, IUserLogin } from "../../../@types/AuthInterfaces";
 import IllustrationLogin from "../../../assets/images/illustration_login.svg";
 import AuthService from "../../../services/AuthService";
-import AppConstants from "../../../shared/AppConstants"
 
 function LoginPage() {
 	const navigate = useNavigate();
@@ -54,11 +53,7 @@ function LoginPage() {
 			if (res.code === 200) {
 				const data = res.data as ILoginResponse
 				AuthService.setLocalData(data);
-				if (data.user.role === AppConstants.ADMIN_ROLE) {
-					navigate("/admin")
-				} else {
-					navigate("/manager")
-				}
+				navigate("/")
 			} else if (res.code === 400) {
 				setAlert({ open: true, msg: res?.data as string });
 			}

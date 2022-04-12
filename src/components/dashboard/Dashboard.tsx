@@ -6,7 +6,11 @@ import { DashboardType } from "../../@types/ComponentInterfaces";
 import Sidebar from "../sidebar/Sidebar";
 
 function Dashboard(props: DashboardType) {
-	const { navigationList, userFullname, children } = props;
+	const { type, children } = props;
+	let user = null;
+	user = localStorage.getItem("user");
+	user = user ? JSON.parse(user) : null;
+
 	const navigate = useNavigate();
 	const [isOpen, setIsOpen] = useState(true);
 
@@ -32,7 +36,7 @@ function Dashboard(props: DashboardType) {
 				}}
 				spacing={2}
 			>
-				<Sidebar navigationList={navigationList} isOpen={isOpen} />
+				<Sidebar role={type} isOpen={isOpen} />
 				<Box
 					sx={{
 						display: "flex",
@@ -75,7 +79,7 @@ function Dashboard(props: DashboardType) {
 										display: "inline-flex",
 										alignItems: "center",
 									}}
-								>{`Xin chào, ${userFullname || "unknown"} !`}</Typography>
+								>{`Xin chào, ${user ? user.fullname : "unknown"} !`}</Typography>
 								<Tooltip title="Đăng xuất">
 									<Button
 										sx={{ borderRadius: "10px", padding: "0px 20px" }}
