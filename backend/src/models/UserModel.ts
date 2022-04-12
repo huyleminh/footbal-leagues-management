@@ -1,5 +1,5 @@
 import { model, Schema } from "mongoose";
-import { IUserModel } from "../interfaces/IUserModel";
+import { IUserModel } from "./interfaces/IUserModel";
 
 export enum USER_ROLE_ENUM {
 	ADMIN,
