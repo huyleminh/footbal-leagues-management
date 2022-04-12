@@ -51,8 +51,9 @@ function LoginPage() {
 			setIsLoading(false);
 
 			if (res.code === 200) {
-				AuthService.setLocalData(res.data as ILoginResponse);
-				navigate("/");
+				const data = res.data as ILoginResponse
+				AuthService.setLocalData(data);
+				navigate("/")
 			} else if (res.code === 400) {
 				setAlert({ open: true, msg: res?.data as string });
 			}
