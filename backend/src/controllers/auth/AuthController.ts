@@ -21,6 +21,8 @@ export default class AuthController extends AppController {
 			this.postRefreshTokenAsync,
 		);
 
+		this._router.post("/auth/logout", this.postLogoutAsync);
+
 		this._router.get("/verify-token", this.getVerifyTokenAsync);
 	}
 
@@ -88,8 +90,8 @@ export default class AuthController extends AppController {
 						accessToken,
 						refreshToken,
 						idToken,
-						expireIn: 5 * 60 * 1000, // 5 mins
-						expireAt: moment().add(5, "minutes").toISOString(),
+						expireIn: 60 * 60 * 1000,
+						expireAt: moment().add(60, "minutes").toISOString(),
 					},
 					user: {
 						fullname: user.fullname,
@@ -150,8 +152,8 @@ export default class AuthController extends AppController {
 					accessToken,
 					refreshToken: newRefreshToken.refreshToken,
 					idToken,
-					expireIn: 5 * 60 * 1000,
-					expireAt: moment().add(5, "minutes").toISOString(),
+					expireIn: 60 * 60 * 1000,
+					expireAt: moment().add(60, "minutes").toISOString(),
 				})
 				.send();
 		} catch (error) {
@@ -168,6 +170,34 @@ export default class AuthController extends AppController {
 				.data("Không thể làm mới phiên đăng nhập, vui lòng đăng nhập lại")
 				.send();
 		}
+	}
+
+	async postLogoutAsync(req: IAppRequest, res: IAppResponse) {
+		const { authorization } = req.headers;
+		const { refreshToken } = req.body;
+		const apiRes = new AppResponse(res, 204, "No Content");
+		if (!authorization || !refreshToken) {
+			return apiRes.send();
+		}
+
+		const idToken = authorization.split(" ")[1];
+		if (!idToken) {
+			return apiRes.send();
+		}
+
+		try {
+			const payload = await TokenUtil.verifyToken(idToken, "id_token");
+			await UserTokenModel.findOneAndRemove({ userId: payload.sub });
+		} catch (error) {
+			Logger.error({
+				message: {
+					class: "AuthController",
+					method: "postLogoutAsync",
+					msg: error.message,
+				},
+			});
+		}
+		apiRes.send();
 	}
 
 	async getVerifyTokenAsync(req: IAppRequest, res: IAppResponse) {
