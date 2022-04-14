@@ -6,7 +6,7 @@ import { AppConfigs } from "../shared/AppConfigs";
 export function generateAccessToken(data: any): string {
 	return jwt.sign(data, AppConfigs.SECRET_ACCESS_TOKEN, {
 		algorithm: "HS256",
-		expiresIn: "5 mins",
+		expiresIn: "1 hours",
 	});
 }
 

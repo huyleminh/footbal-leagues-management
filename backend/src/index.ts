@@ -20,6 +20,7 @@ export default class Server {
 	}
 
 	initializeGlobalMiddlewares() {
+		this._app.use("/public", express.static("public"));
 		this._app.use(express.json());
 		this._app.use(express.urlencoded({ extended: true }));
 		this._app.use(helmet());

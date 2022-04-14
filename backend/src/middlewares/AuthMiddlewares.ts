@@ -1,6 +1,7 @@
 import { IAppNextFuction, IAppRequest, IAppResponse } from "../@types/AppBase";
-import TokenUtil from "../utils/TokenUtil";
+import { USER_ROLE_ENUM } from "../models/UserModel";
 import AppResponse from "../shared/AppResponse";
+import TokenUtil from "../utils/TokenUtil";
 
 export function validateLoginData(req: IAppRequest, res: IAppResponse, next: IAppNextFuction) {
 	const { body } = req;
@@ -50,7 +51,7 @@ export function validateRefreshTokenData(
 
 export function verifyUserToken(req: IAppRequest, res: IAppResponse, next: IAppNextFuction) {
 	const { path } = req;
-	if (path && path.match("/auth")) {
+	if (path && (path.match("/auth") || path.match("/public"))) {
 		next();
 		return;
 	}
@@ -79,4 +80,19 @@ export function verifyUserToken(req: IAppRequest, res: IAppResponse, next: IAppN
 		});
 }
 
-export default { validateLoginData, validateRefreshTokenData, verifyUserToken };
+export function verifyAdminRole(req: IAppRequest, res: IAppResponse, next: IAppNextFuction) {
+	const { tokenPayload } = res.locals;
+	if (tokenPayload.role === USER_ROLE_ENUM.ADMIN) {
+		res.locals.tokenPayload = tokenPayload;
+		return next();
+	}
+
+	return new AppResponse(
+		res,
+		403,
+		"Forbidden",
+		"Bạn không có quyền truy cập chức năng này",
+	).send();
+}
+
+export default { validateLoginData, validateRefreshTokenData, verifyUserToken, verifyAdminRole };
