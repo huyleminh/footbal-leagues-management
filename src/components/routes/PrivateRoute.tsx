@@ -17,6 +17,7 @@ function PrivateRoute(props: PrivateRouteType) {
 		const verify = async () => {
 			try {
 				const res = await HttpService.get<IAPIResponse<any | string>>("/verify-token");
+
 				const role =
 					props.role === "all"
 						? "all"
@@ -25,9 +26,9 @@ function PrivateRoute(props: PrivateRouteType) {
 						: AppConstants.MANAGER_ROLE;
 
 				if (res.code === 200 && (role === res.data.role || role === "all")) {
+					setType(res.data.role === AppConstants.ADMIN_ROLE ? "admin" : "manager");
 					setIsValid(true);
 					setIsChecking(false);
-					setType(res.data.role === AppConstants.ADMIN_ROLE ? "admin" : "manager");
 				} else {
 					Swal.fire({
 						title: "Truy cập không được cho phép",

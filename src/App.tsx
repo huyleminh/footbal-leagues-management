@@ -10,9 +10,9 @@ function App() {
 			<Route path="/login" element={<LoginPage />} />
 			<Route path="/403" element={<ForbiddenPage />} />
 			<Route
-				path="/"
+				path="/*"
 				element={
-					<PrivateRoute path="/" role="all" />
+					<PrivateRoute role="all" />
 				}
 			/>
 			<Route path="*" element={<PageNotFound />} />

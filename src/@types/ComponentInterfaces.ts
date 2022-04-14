@@ -21,11 +21,9 @@ export interface SidebarType {
 
 export interface DashboardType {
 	type: "admin" | "manager";
-	children?: any;
 }
 
 export interface PrivateRouteType {
 	role: "admin" | "manager" | "all";
-	path: string;
 	element?: JSX.Element;
 };

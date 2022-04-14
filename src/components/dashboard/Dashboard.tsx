@@ -1,12 +1,15 @@
 import { LogoutRounded, MenuRounded } from "@mui/icons-material";
 import { Box, Button, Stack, Tooltip, Typography } from "@mui/material";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import { DashboardType } from "../../@types/ComponentInterfaces";
+import ForbiddenPage from "../../features/errors/403";
+import PageNotFound from "../../features/errors/404";
+import PrivateRoute from "../routes/PrivateRoute";
 import Sidebar from "../sidebar/Sidebar";
 
 function Dashboard(props: DashboardType) {
-	const { type, children } = props;
+	const { type } = props;
 	let user = null;
 	user = localStorage.getItem("user");
 	user = user ? JSON.parse(user) : null;
@@ -98,7 +101,14 @@ function Dashboard(props: DashboardType) {
 							}}
 						>
 							{/* Content */}
-							{children || null}
+							<Routes>
+								<Route path="/test" element={
+									<PrivateRoute role="admin" element={<PageNotFound />}/>
+								} />
+								<Route path="/test2" element={
+									<PrivateRoute role="manager" element={<ForbiddenPage />}/>
+								} />
+							</Routes>
 						</Box>
 					</Stack>
 				</Box>
