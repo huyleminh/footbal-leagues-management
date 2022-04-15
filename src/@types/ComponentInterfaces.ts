@@ -27,3 +27,7 @@ export interface PrivateRouteType {
 	role: "admin" | "manager" | "all";
 	element?: JSX.Element;
 };
+
+export interface IBaseComponentProps {
+	userRole?: "admin" | "manager";
+}

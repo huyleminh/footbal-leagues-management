@@ -61,4 +61,21 @@ export const AppComponents: Components = {
 			},
 		},
 	},
+	MuiPaginationItem: {
+		styleOverrides: {
+			root: {
+				"&:hover": {
+					backgroundColor: "#c4a0f3",
+					color: "#fff",
+				},
+				"&.Mui-selected": {
+					backgroundColor: "#6E00FF",
+					color: "#fff",
+					"&:hover": {
+						backgroundColor: "#6E00FF",
+					},
+				},
+			},
+		},
+	},
 };

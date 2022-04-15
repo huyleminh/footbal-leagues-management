@@ -5,27 +5,36 @@ import MenuItem from "./MenuItem";
 function Menu(props: MenuType) {
 	const { menuList, role } = props;
 
+	const renderSubmenu = (submenu: any) => {
+		if (!submenu) return undefined;
+		return submenu.filter((item: any) => (item.role === "all" || item.role === role) && item);
+	};
+
+	const renderMenu = () => {
+		return menuList.map((nav, index) => {
+			if (nav.role === "all" || nav.role === role) {
+				return (
+					<MenuItem
+						key={index}
+						label={nav.label}
+						icon={nav.icon}
+						role={nav.role}
+						path={nav.path}
+						subMenu={renderSubmenu(nav.subMenu)}
+					/>
+				);
+			}
+			return null;
+		});
+	};
+
 	return (
 		<Stack
 			sx={{
 				flexGrow: "1",
 			}}
 		>
-			{menuList.map((nav, index) => {
-				if (nav.role === "all" || nav.role === role) {
-					return (
-						<MenuItem
-							key={index}
-							label={nav.label}
-							icon={nav.icon}
-							role={nav.role}
-							path={nav.path}
-							subMenu={nav.subMenu ? nav.subMenu : undefined}
-						/>
-					)
-				}
-				return null
-			})}
+			{renderMenu().map((item) => item)}
 		</Stack>
 	);
 }
