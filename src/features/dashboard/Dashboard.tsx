@@ -3,10 +3,13 @@ import { Box, Button, Stack, Tooltip, Typography } from "@mui/material";
 import { useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import { DashboardType } from "../../@types/ComponentInterfaces";
-import ForbiddenPage from "../../features/errors/403";
-import PageNotFound from "../../features/errors/404";
-import PrivateRoute from "../routes/PrivateRoute";
-import Sidebar from "../sidebar/Sidebar";
+import ForbiddenPage from "../errors/403";
+import PageNotFound from "../errors/404";
+import PrivateRoute from "../../components/routes/PrivateRoute";
+import Sidebar from "../../components/sidebar/Sidebar";
+import AuthService from "../../services/AuthService";
+import Home from "../home";
+import TournamentFeature from "../tournaments";
 
 function Dashboard(props: DashboardType) {
 	const { type } = props;
@@ -22,6 +25,7 @@ function Dashboard(props: DashboardType) {
 	};
 
 	const handleLogout = () => {
+		AuthService.postLogoutAsync();
 		navigate("/login");
 	};
 
@@ -45,7 +49,7 @@ function Dashboard(props: DashboardType) {
 						display: "flex",
 						flexDirection: "column",
 						flexGrow: "1",
-						padding: "0px 15px 15px 0px",
+						padding: "1rem 1rem 1rem 0",
 					}}
 				>
 					<Stack
@@ -61,21 +65,16 @@ function Dashboard(props: DashboardType) {
 								borderRadius: "10px",
 								display: "flex",
 								justifyContent: "space-between",
-								marginTop: "15px",
 							}}
 						>
 							{/* Header */}
 							<Button
-								sx={{ borderRadius: "10px", padding: "0px 20px" }}
+								sx={{ borderRadius: "10px", padding: "0px 1rem" }}
 								onClick={openMenu}
 							>
 								<MenuRounded />
 							</Button>
-							<Box
-								sx={{
-									display: "flex",
-								}}
-							>
+							<Stack direction="row" spacing={2}>
 								<Typography
 									variant="h6"
 									sx={{
@@ -85,29 +84,45 @@ function Dashboard(props: DashboardType) {
 								>{`Xin chào, ${user ? user.fullname : "unknown"} !`}</Typography>
 								<Tooltip title="Đăng xuất">
 									<Button
-										sx={{ borderRadius: "10px", padding: "0px 20px" }}
+										sx={{ borderRadius: "10px", padding: "0px 1rem" }}
 										onClick={handleLogout}
 									>
 										<LogoutRounded />
 									</Button>
 								</Tooltip>
-							</Box>
+							</Stack>
 						</Box>
 						<Box
 							sx={{
 								backgroundColor: "white",
 								flexGrow: "1",
 								borderRadius: "10px",
+								minHeight: `calc(100vh - 3rem - 60px)`,
+								padding: "1rem",
 							}}
 						>
 							{/* Content */}
 							<Routes>
-								<Route path="/test" element={
-									<PrivateRoute role="admin" element={<PageNotFound />}/>
-								} />
-								<Route path="/test2" element={
-									<PrivateRoute role="manager" element={<ForbiddenPage />}/>
-								} />
+								<Route
+									path="/test"
+									element={
+										<PrivateRoute role="admin" element={<PageNotFound />} />
+									}
+								/>
+								<Route
+									path="/test2"
+									element={
+										<PrivateRoute role="manager" element={<ForbiddenPage />} />
+									}
+								/>
+								<Route
+									path="/tournaments/*"
+									element={<PrivateRoute role="all" element={<TournamentFeature />} />}
+								/>
+								<Route
+									index
+									element={<PrivateRoute role="all" element={<Home />} />}
+								/>
 							</Routes>
 						</Box>
 					</Stack>

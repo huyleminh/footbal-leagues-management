@@ -35,4 +35,20 @@ export default class AuthService {
 			return null;
 		}
 	}
+
+	static async postLogoutAsync() {
+		let token = this.getToken();
+		if (token === null) {
+			token = {
+				idToken: "",
+				refreshToken: "",
+			};
+		}
+		this.removeLocalData();
+		return HttpService.post<IAPIResponse<any>>(
+			"/logout",
+			{ refreshToken: token.refreshToken },
+			{ headers: { Authorization: `Bearer ${token.idToken}` } },
+		);
+	}
 }

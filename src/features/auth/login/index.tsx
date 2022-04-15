@@ -37,7 +37,8 @@ function LoginPage() {
 		});
 	};
 
-	const handleSubmit = async () => {
+	const handleSubmit = async (e: React.SyntheticEvent) => {
+		e.preventDefault();
 		if (!userLogin.username || !userLogin.password) {
 			return;
 		}
@@ -164,68 +165,73 @@ function LoginPage() {
 									<Typography variant="subtitle2">
 										Vui lòng đăng nhập để sử dụng các chức năng của hệ thống.
 									</Typography>
-									<TextField
-										label="Tên đăng nhập"
-										variant="outlined"
-										name="username"
-										onChange={handleChangeField}
-										value={userLogin.username}
-										onBlur={handleValidateField}
-										error={userLoginError.username}
-										inputProps={{}}
-										helperText={
-											userLoginError.username &&
-											"Tên đăng nhập không được bỏ trống"
-										}
-										autoFocus
-									/>
-									<TextField
-										label="Mật khẩu"
-										type="password"
-										variant="outlined"
-										name="password"
-										onChange={handleChangeField}
-										value={userLogin.password}
-										onBlur={handleValidateField}
-										error={userLoginError.password}
-										inputProps={{
-											"data-rule": "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$",
-										}}
-										helperText={
-											userLoginError.password && (
-												<Tooltip
-													title={`Mật khẩu có ít nhất 8 ký tự, ít nhất 1 chữ cái và 1 chữ số`}
-													placement="bottom"
-												>
-													<Typography
-														variant="caption"
-														sx={{
-															color: "#FF4842",
-															fontSize: "0.8rem",
-															display: "flex",
-															alignItems: "center",
-														}}
-													>
-														<span style={{ marginRight: "5px" }}>
-															Mật khẩu không đúng định dạng
-														</span>
-														<HelpOutlineRoundedIcon fontSize="small" />
-													</Typography>
-												</Tooltip>
-											)
-										}
-									/>
-									<Button
-										variant="contained"
-										sx={{ minHeight: "55px" }}
-										onClick={handleSubmit}
-									>
-										{isLoading ? (
-											<CircularProgress sx={{ color: "#FFF" }} size={30} />
-										) : (
-											"Đăng nhập"
-										)}
-									</Button>
+									<form onSubmit={handleSubmit}>
+										<Stack spacing={3}>
+											<TextField
+												label="Tên đăng nhập"
+												type="text"
+												variant="outlined"
+												name="username"
+												onChange={handleChangeField}
+												value={userLogin.username}
+												onBlur={handleValidateField}
+												error={userLoginError.username}
+												inputProps={{}}
+												helperText={
+													userLoginError.username &&
+													"Tên đăng nhập không được bỏ trống"
+												}
+												autoFocus
+											/>
+											<TextField
+												label="Mật khẩu"
+												type="password"
+												variant="outlined"
+												name="password"
+												onChange={handleChangeField}
+												value={userLogin.password}
+												onBlur={handleValidateField}
+												error={userLoginError.password}
+												inputProps={{
+													"data-rule": `^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$`,
+												}}
+												helperText={
+													userLoginError.password && (
+														<Tooltip
+															title={`Mật khẩu có ít nhất 8 ký tự, ít nhất 1 chữ cái và 1 chữ số`}
+															placement="bottom"
+														>
+															<Typography
+																variant="caption"
+																sx={{
+																	color: "#FF4842",
+																	fontSize: "0.8rem",
+																	display: "flex",
+																	alignItems: "center",
+																}}
+															>
+																<span style={{ marginRight: "5px" }}>
+																	Mật khẩu không đúng định dạng
+																</span>
+																<HelpOutlineRoundedIcon fontSize="small" />
+															</Typography>
+														</Tooltip>
+													)
+												}
+											/>
+											<Button
+												variant="contained"
+												sx={{ minHeight: "55px" }}
+												type="submit"
+											>
+												{isLoading ? (
+													<CircularProgress sx={{ color: "#FFF" }} size={30} />
+												) : (
+													"Đăng nhập"
+												)}
+											</Button>
+										</Stack>
+									</form>
 									<Divider></Divider>
 									<Typography variant="subtitle1" sx={{ textAlign: "center" }}>
 										2022 - Hệ thống quản lý giải đấu bóng đá quốc gia

@@ -28,7 +28,7 @@ function Sidebar(props: SidebarType) {
 				<Box
 					sx={{
 						backgroundColor: "white",
-						margin: "15px 15px 0px 15px",
+						margin: "1rem 1rem 0px 1rem",
 						borderRadius: "10px",
 						height: "60px",
 						display: "flex",
