@@ -10,6 +10,7 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import AuthService from "../../services/AuthService";
 import Home from "../home";
 import TournamentFeature from "../tournaments";
+import ManagerFeature from "../admin";
 
 function Dashboard(props: DashboardType) {
 	const { type } = props;
@@ -104,20 +105,12 @@ function Dashboard(props: DashboardType) {
 							{/* Content */}
 							<Routes>
 								<Route
-									path="/test"
-									element={
-										<PrivateRoute role="admin" element={<PageNotFound />} />
-									}
-								/>
-								<Route
-									path="/test2"
-									element={
-										<PrivateRoute role="manager" element={<ForbiddenPage />} />
-									}
-								/>
-								<Route
 									path="/tournaments/*"
 									element={<PrivateRoute role="all" element={<TournamentFeature />} />}
+								/>
+								<Route
+									path="/managers/*"
+									element={<PrivateRoute role="all" element={<ManagerFeature />} />}
 								/>
 								<Route
 									index
