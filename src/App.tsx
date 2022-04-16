@@ -10,12 +10,7 @@ function App() {
 			<Route path="/login" element={<LoginPage />} />
 			<Route path="/403" element={<ForbiddenPage />} />
 			<Route path="/404" element={<PageNotFound />} />
-			<Route
-				path="/*"
-				element={
-					<PrivateRoute role="all" showChecking />
-				}
-			/>
+			<Route path="/*" element={<PrivateRoute role="all" showChecking />} />
 			<Route path="*" element={<Navigate to="/404" replace />} />
 		</Routes>
 	);

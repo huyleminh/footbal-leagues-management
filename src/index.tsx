@@ -1,4 +1,6 @@
 import { ThemeProvider } from "@mui/material";
+import { ToastContainer } from "material-react-toastify";
+import "material-react-toastify/dist/ReactToastify.css";
 import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter } from "react-router-dom";
@@ -12,6 +14,16 @@ ReactDOM.render(
 		<BrowserRouter>
 			<ThemeProvider theme={GlobalTheme}>
 				<App />
+				<ToastContainer
+					position="top-right"
+					autoClose={3000}
+					hideProgressBar
+					newestOnTop={true}
+					closeOnClick
+					pauseOnFocusLoss
+					draggable
+					pauseOnHover
+				/>
 			</ThemeProvider>
 		</BrowserRouter>
 	</React.StrictMode>,

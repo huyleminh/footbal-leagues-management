@@ -1,3 +1,7 @@
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
+import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import {
 	Box,
 	Button,
@@ -19,25 +23,22 @@ import {
 	Tooltip,
 	Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
-import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
+import { toast } from "material-react-toastify";
+import moment from "moment";
+import QueryString from "query-string";
+import React, { useEffect, useRef, useState } from "react";
+import { IAPIBaseMetadata, IAPIResponse } from "../../../@types/AppInterfaces";
 import { IBaseComponentProps } from "../../../@types/ComponentInterfaces";
-import CustomPagination from "../../../components/pagination";
-import ManagerDetail from "../ManagerDetail";
 import ActionMenu, {
 	IActionList,
 	IActionMenuItem,
 } from "../../../components/actionmenu/ActionMenu";
-import ResetManagerPassword from "../ResetManagerPassword";
-import CreateManager from "../CreateManager";
+import CustomPagination from "../../../components/pagination";
+import ToastMsg from "../../../components/toast/ToastMsg";
 import HttpService from "../../../services/HttpService";
-import QueryString from "query-string";
-import { IAPIBaseMetadata, IAPIResponse } from "../../../@types/AppInterfaces";
-import moment from "moment";
-import Swal from "sweetalert2";
+import CreateManager from "../CreateManager";
+import ManagerDetail from "../ManagerDetail";
+import ResetManagerPassword from "../ResetManagerPassword";
 
 export interface IManagerListProps extends IBaseComponentProps {}
 
@@ -60,7 +61,6 @@ interface IPagination extends IAPIBaseMetadata {
 
 function ManagerList(props: IManagerListProps) {
 	const [managerStatus, setManagerStatus] = useState("1");
-	const [searchType, setSearchType] = useState("0");
 	const [searchString, setSearchString] = useState("");
 	const [openDetailModal, setOpenDetailModal] = useState(false);
 	const [openResetPWModal, setOpenResetPWModal] = useState(false);
@@ -76,8 +76,13 @@ function ManagerList(props: IManagerListProps) {
 
 	const [data, setData] = useState<Array<IManagerTableRow>>([]);
 
+	const selectRef = useRef<HTMLElement | null>(null);
+
 	useEffect(() => {
 		const fetch = async () => {
+			const searchType = selectRef.current
+				? (selectRef.current.childNodes[1] as HTMLInputElement).value
+				: undefined;
 			setIsLoading(true);
 			try {
 				const param = {
@@ -87,12 +92,15 @@ function ManagerList(props: IManagerListProps) {
 					searchType: searchString === "" ? undefined : searchType,
 					query: searchString,
 				};
-				const res = await HttpService.get<IAPIResponse<Array<any>>>(
+
+				const res = await HttpService.get<IAPIResponse<Array<any> | string>>(
 					`/managers?${QueryString.stringify(param)}`,
 				);
+
 				if (res.code === 200) {
+					const data = res.data as any
 					setData(
-						res.data?.map((item) => {
+						data?.map((item: any) => {
 							return {
 								id: item._id,
 								name: item.fullname,
@@ -109,16 +117,18 @@ function ManagerList(props: IManagerListProps) {
 					);
 					const metadata = res.metadata as IPagination;
 					setTotalPage(Math.ceil(metadata.pagination.totalRecord / pagination.maxItem));
-				} else {
-					Swal.fire({
-						title: "Có lỗi xảy ra",
-						text: "Có lỗi xảy ra trong quá trình tải dữ liệu, vui lòng thử lại sau!",
-						icon: "error",
-						confirmButtonText: "Đồng ý",
+				} else if (res.code === 400) {
+					toast(<ToastMsg title={res?.data as string} message="asdadd" type="error" />, {
+						type: toast.TYPE.ERROR,
 					});
+				} else {
+					throw new Error("Unexpected http code.");
 				}
 			} catch (err) {
 				console.log(err);
+				toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
+					type: toast.TYPE.ERROR,
+				});
 			}
 			setIsLoading(false);
 		};
@@ -150,9 +160,9 @@ function ManagerList(props: IManagerListProps) {
 		const target = e.target as typeof e.target & {
 			searchString: {
 				value: string;
-			}
+			};
 		};
-		const string = target.searchString.value.trim()
+		const string = target.searchString.value.trim();
 		if (string === "") return;
 		setSearchString(string);
 		setPagination({
@@ -225,10 +235,7 @@ function ManagerList(props: IManagerListProps) {
 				<form onSubmit={handleSearch}>
 					<Stack spacing={2} direction="row">
 						<FormControl sx={{ m: 0 }} size="small">
-							<Select
-								value={searchType}
-								onChange={(e) => setSearchType(e.target.value)}
-							>
+							<Select defaultValue={0} ref={selectRef}>
 								<MenuItem value={0}>Tên quản lý</MenuItem>
 								<MenuItem value={1}>Email</MenuItem>
 							</Select>
@@ -239,7 +246,6 @@ function ManagerList(props: IManagerListProps) {
 							placeholder="Nhập từ khóa"
 							size="small"
 							name="searchString"
-							// onChange={(e) => setSearchString(e.target.value.trim())}
 						></TextField>
 
 						<Button
