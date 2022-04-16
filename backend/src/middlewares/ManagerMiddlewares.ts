@@ -1,14 +1,15 @@
 import { IAppNextFuction, IAppRequest, IAppResponse } from "../@types/AppBase";
-import { USER_STATUS } from "../models/UserModel";
+import { USER_SEARCH_TYPE_ENUM, USER_STATUS } from "../models/UserModel";
 import AppResponse from "../shared/AppResponse";
 import { MAX_ITEM_PER_PAGE } from "../shared/CommonConsts";
 
 export function verifyGetParams(req: IAppRequest, res: IAppResponse, next: IAppNextFuction) {
-	const { limit, page, status } = req.query;
+	const { limit, page, status, searchType, query } = req.query;
 
 	let limitItems = parseInt(limit as string);
 	let currentPage = parseInt(page as string);
 	let userStatus = parseInt(status as string);
+	let searchTypeNum = parseInt(searchType as string);
 
 	if (isNaN(limitItems)) {
 		limitItems = MAX_ITEM_PER_PAGE;
@@ -21,10 +22,16 @@ export function verifyGetParams(req: IAppRequest, res: IAppResponse, next: IAppN
 	if (isNaN(userStatus)) {
 		userStatus = undefined;
 	}
+
+	if (isNaN(searchTypeNum) || USER_SEARCH_TYPE_ENUM[searchTypeNum] === undefined) {
+		searchTypeNum = undefined;
+	}
 	res.locals.payload = {
 		limitItems,
 		currentPage,
 		userStatus,
+		searchTypeNum,
+		query,
 	};
 	next();
 }

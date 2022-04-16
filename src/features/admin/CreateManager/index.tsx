@@ -15,6 +15,9 @@ import {
 	TextField,
 } from "@mui/material";
 import React, { useState } from "react";
+import Swal from "sweetalert2";
+import HttpService from "../../../services/HttpService";
+import { IAPIResponse } from "../../../@types/AppInterfaces";
 
 export interface CreateManagerProps extends IBaseComponentProps {
 	open: boolean;
@@ -22,13 +25,13 @@ export interface CreateManagerProps extends IBaseComponentProps {
 }
 
 interface CreateNewManagerForm {
-	managerName?: string;
 	password?: string;
 	confirmedPassword?: string;
 	name?: string;
 	username?: string;
 	email?: string;
 	address?: string;
+	status?: string;
 }
 
 function CreateManager(props: CreateManagerProps) {
@@ -39,10 +42,12 @@ function CreateManager(props: CreateManagerProps) {
 		password: false,
 		email: false,
 	});
-	const [data, setData] = useState<CreateNewManagerForm>({});
+	const [data, setData] = useState<CreateNewManagerForm>({
+		status: "1"
+	});
 
-	const handleOnClose = () => {
-		onClose(false);
+	const handleOnClose = (reload: boolean) => {
+		onClose(reload);
 	};
 
 	const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,10 +73,85 @@ function CreateManager(props: CreateManagerProps) {
 
 	const handleSubmit = async (e: React.SyntheticEvent) => {
 		e.preventDefault();
+		if (!data.name || !data.username || !data.email || !data.password || !data.confirmedPassword || !data.status) {
+			Swal.fire({
+				title: "Thiếu thông tin",
+				text: "Vui lòng điền đầy đủ thông tin trước khi tạo!",
+				icon: "warning",
+				confirmButtonText: "Đồng ý",
+				customClass: {
+					container: "swal2-elevated-container"
+				}
+			});
+			return;
+		}
+
+		if (matchedPasswordError || invalid.username || invalid.password || invalid.email) {
+			Swal.fire({
+				title: "Sai thông tin",
+				text: "Vui lòng kiểm tra lại thông tin trước khi tạo!",
+				icon: "warning",
+				confirmButtonText: "Đồng ý",
+				customClass: {
+					container: "swal2-elevated-container"
+				}
+			});
+			return;
+		}
+
+		try {
+			const res = await HttpService.post<IAPIResponse<any>>("/managers", {
+				fullname: data.name,
+				username: data.username,
+				password: data.password,
+				email: data.email,
+				status: data.status,
+				address: data.address
+			})
+			if (res.code === 201) {
+				Swal.fire({
+					title: "Tạo thành công",
+					text: "Tạo quản lý mới thành công!",
+					icon: "success",
+					confirmButtonText: "Đồng ý",
+					customClass: {
+						container: "swal2-elevated-container"
+					}
+				}).then((value) => {
+					if (value.isConfirmed || value.isDismissed) {
+						handleOnClose(true)
+					}
+				});
+			} else {
+				if (res.code === 400) {
+					Swal.fire({
+						title: "Không tạo được",
+						text: `${res.data}`,
+						icon: "warning",
+						confirmButtonText: "Đồng ý",
+						customClass: {
+							container: "swal2-elevated-container"
+						}
+					});
+				} else {
+					Swal.fire({
+						title: "Có lỗi xảy ra",
+						text: "Có lỗi xảy ra trong quá trình tạo, vui lòng thử lại sau!",
+						icon: "error",
+						confirmButtonText: "Đồng ý",
+						customClass: {
+							container: "swal2-elevated-container"
+						}
+					});
+				}
+			}
+		} catch (error) {
+			console.log(error)
+		}
 	};
 
 	return (
-		<Dialog onClose={handleOnClose} open={open}>
+		<Dialog onClose={() => handleOnClose(false)} open={open}>
 			<DialogTitle>Tạo quản lý mới</DialogTitle>
 			<form onSubmit={handleSubmit}>
 				<DialogContent>
@@ -85,6 +165,7 @@ function CreateManager(props: CreateManagerProps) {
 							<TextField
 								label="Tên"
 								variant="outlined"
+								name="name"
 								onChange={handleOnChange}
 								required
 							/>
@@ -140,6 +221,7 @@ function CreateManager(props: CreateManagerProps) {
 							<TextField
 								label="Địa chỉ (không bắt buộc)"
 								variant="outlined"
+								name="address"
 								onChange={handleOnChange}
 							/>
 							<FormControl>
@@ -149,21 +231,25 @@ function CreateManager(props: CreateManagerProps) {
 									aria-labelledby="status-radio-button"
 									name="status"
 									onChange={handleOnChange}
-									defaultValue={0}
+									defaultValue={1}
 								>
 									<FormControlLabel
-										value={0}
+										value={1}
 										control={<Radio />}
 										label="Hoạt động"
 									/>
-									<FormControlLabel value={1} control={<Radio />} label="Khóa" />
+									<FormControlLabel
+										value={0}
+										control={<Radio />}
+										label="Khóa"
+									/>
 								</RadioGroup>
 							</FormControl>
 						</Stack>
 					</Box>
 				</DialogContent>
 				<DialogActions>
-					<Button color="primary" variant="outlined" onClick={handleOnClose}>
+					<Button color="primary" variant="outlined" onClick={() => handleOnClose(false)}>
 						Đóng
 					</Button>
 					<Button

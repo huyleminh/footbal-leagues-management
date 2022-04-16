@@ -8,3 +8,7 @@ export interface IAPIResponse<T> {
 	data?: T;
 	metadata: IAPIBaseMetadata;
 }
+
+export interface IAuthContext {
+	role: string;
+}

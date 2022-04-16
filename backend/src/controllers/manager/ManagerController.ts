@@ -1,8 +1,13 @@
 import { IAPIPaginationMetadata, IAppRequest, IAppResponse } from "../../@types/AppBase";
+import escapeStringRegexp from "../../libs/escape-string-regexp";
 import AuthMiddlewares from "../../middlewares/AuthMiddlewares";
 import ManagerMiddlewares from "../../middlewares/ManagerMiddlewares";
 import TournamentModel from "../../models/TournamentModel";
-import UserModel, { USER_ROLE_ENUM, USER_STATUS } from "../../models/UserModel";
+import UserModel, {
+	USER_ROLE_ENUM,
+	USER_SEARCH_TYPE_ENUM,
+	USER_STATUS
+} from "../../models/UserModel";
 import UserTokenModel from "../../models/UserTokenModel";
 import EmailService from "../../services/EmailService";
 import AppResponse from "../../shared/AppResponse";
@@ -49,16 +54,21 @@ export default class ManagerController extends AppController {
 
 	async getLocalManagerListAsync(req: IAppRequest, res: IAppResponse) {
 		const {
-			payload: { limitItems, currentPage, userStatus },
+			payload: { limitItems, currentPage, userStatus, searchTypeNum, query },
 		} = res.locals;
 		const apiRes = new AppResponse(res);
 
-		const filter = {
+		const filter: Record<string, any> = {
 			role: USER_ROLE_ENUM.LOCAL_MANAGER,
 			status: userStatus,
 		};
 		if (userStatus === undefined) {
 			delete filter.status;
+		}
+		if (searchTypeNum === USER_SEARCH_TYPE_ENUM.FULLNAME) {
+			filter["fullname"] = { $regex: escapeStringRegexp(query) };
+		} else if (searchTypeNum === USER_SEARCH_TYPE_ENUM.EMAIL) {
+			filter["email"] = { $regex: escapeStringRegexp(query) };
 		}
 
 		try {

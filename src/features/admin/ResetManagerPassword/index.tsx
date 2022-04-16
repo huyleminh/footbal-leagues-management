@@ -10,26 +10,27 @@ import {
 	TextField,
 } from "@mui/material";
 import React, { useState } from "react";
+import Swal from "sweetalert2";
+import HttpService from "../../../services/HttpService";
+import { IAPIResponse } from "../../../@types/AppInterfaces";
 
-export interface ResetManagerPasswordProps extends IBaseComponentProps {
+export interface IResetManagerPasswordProps extends IBaseComponentProps {
 	open: boolean;
 	managerId?: string;
+	managerName?: string;
 	onClose: (value: boolean) => void;
 }
 
-interface ResetPasswordForm {
-	managerName?: string;
+interface IResetPasswordForm {
 	password?: string;
 	confirmedPassword?: string;
 }
 
-function ResetManagerPassword(props: ResetManagerPasswordProps) {
-	const { open, onClose, managerId } = props;
+function ResetManagerPassword(props: IResetManagerPasswordProps) {
+	const { open, onClose, managerId, managerName } = props;
 	const [matchedPasswordError, setMatchedPasswordError] = useState(false);
 	const [invalidPassword, setInvalidPassword] = useState(false);
-	const [data, setData] = useState<ResetPasswordForm>({
-		managerName: "Huy Le", // get manager name by id in order to confirm
-	});
+	const [data, setData] = useState<IResetPasswordForm>({});
 
 	const handleOnClose = () => {
 		onClose(false);
@@ -38,7 +39,7 @@ function ResetManagerPassword(props: ResetManagerPasswordProps) {
 	const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const rule = e.target.dataset["rule"] || "";
 		const temp = { ...data };
-		temp[e.target.name as keyof ResetPasswordForm] = e.target.value.trim();
+		temp[e.target.name as keyof IResetPasswordForm] = e.target.value.trim();
 		if (rule !== "") setInvalidPassword(!temp.password?.match(new RegExp(rule)));
 		setMatchedPasswordError(
 			!(
@@ -52,12 +53,82 @@ function ResetManagerPassword(props: ResetManagerPasswordProps) {
 
 	const handleSubmit = async (e: React.SyntheticEvent) => {
 		e.preventDefault();
+		if (!data.password || !data.confirmedPassword) {
+			Swal.fire({
+				title: "Thiếu thông tin",
+				text: "Vui lòng điền đầy đủ thông tin trước khi xác nhận!",
+				icon: "warning",
+				confirmButtonText: "Đồng ý",
+				customClass: {
+					container: "swal2-elevated-container"
+				}
+			});
+			return;
+		}
+
+		if (matchedPasswordError) {
+			Swal.fire({
+				title: "Sai thông tin",
+				text: "Vui lòng kiểm tra lại thông tin trước khi tạo!",
+				icon: "warning",
+				confirmButtonText: "Đồng ý",
+				customClass: {
+					container: "swal2-elevated-container"
+				}
+			});
+			return;
+		}
+
+		try {
+			const res = await HttpService.patch<IAPIResponse<any>>(`/managers/${managerId}/password`, {
+				password: data.password
+			})
+			if (res.code === 200) {
+				Swal.fire({
+					title: "Cấp lại mật khẩu thành công",
+					text: "Mật khẩu được cấp mới thành công!",
+					icon: "success",
+					confirmButtonText: "Đồng ý",
+					customClass: {
+						container: "swal2-elevated-container"
+					}
+				}).then((value) => {
+					if (value.isConfirmed || value.isDismissed) {
+						handleOnClose()
+					}
+				});
+			} else {
+				if (res.code === 400) {
+					Swal.fire({
+						title: "Không cấp lại mật khẩu được",
+						text: `${res.data}`,
+						icon: "warning",
+						confirmButtonText: "Đồng ý",
+						customClass: {
+							container: "swal2-elevated-container"
+						}
+					});
+				} else {
+					Swal.fire({
+						title: "Có lỗi xảy ra",
+						text: "Có lỗi xảy ra trong quá trình cấp lại mật khẩu, vui lòng thử lại sau!",
+						icon: "error",
+						confirmButtonText: "Đồng ý",
+						customClass: {
+							container: "swal2-elevated-container"
+						}
+					});
+				}
+			}
+		} catch (error) {
+			console.log(error)
+		}
 	};
 
 	return (
 		<Dialog onClose={handleOnClose} open={open}>
 			<DialogTitle>{`Cấp lại mật khẩu${
-				data.managerName ? ` cho ${data.managerName}` : ""
+				managerName ? ` cho ${managerName}` : ""
 			}`}</DialogTitle>
 			<form onSubmit={handleSubmit}>
 				<DialogContent>

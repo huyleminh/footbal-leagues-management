@@ -1,8 +1,8 @@
 import { Stack } from "@mui/material";
-import { MenuType } from "../../@types/ComponentInterfaces";
+import { IMenuType } from "../../@types/ComponentInterfaces";
 import MenuItem from "./MenuItem";
 
-function Menu(props: MenuType) {
+function Menu(props: IMenuType) {
 	const { menuList, role } = props;
 
 	const renderSubmenu = (submenu: any) => {

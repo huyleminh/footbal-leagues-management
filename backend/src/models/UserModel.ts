@@ -11,6 +11,11 @@ export enum USER_STATUS {
 	ACTIVE,
 }
 
+export enum USER_SEARCH_TYPE_ENUM {
+	FULLNAME,
+	EMAIL,
+}
+
 const UserSchema = new Schema<IUserModel>({
 	username: { type: String, unique: true, required: true },
 	password: { type: String, required: true },

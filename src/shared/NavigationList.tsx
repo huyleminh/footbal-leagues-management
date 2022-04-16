@@ -3,10 +3,10 @@ import HomeRounded from "@mui/icons-material/HomeRounded";
 import ListAltRoundedIcon from "@mui/icons-material/ListAltRounded";
 import PlaylistAddRoundedIcon from "@mui/icons-material/PlaylistAddRounded";
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
-import { MenuItemType } from "../@types/ComponentInterfaces";
+import { IMenuItemType } from "../@types/ComponentInterfaces";
 
 export default class NavigationList {
-	static get NAV_LIST(): Array<MenuItemType> {
+	static get NAV_LIST(): Array<IMenuItemType> {
 		return [
 			{
 				label: "Trang chủ",
