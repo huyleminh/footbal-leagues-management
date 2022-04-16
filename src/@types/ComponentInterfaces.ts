@@ -1,30 +1,31 @@
-export interface MenuItemType {
+export interface IMenuItemType {
 	key?: number;
 	className?: string;
 	icon?: JSX.Element;
 	path?: string;
 	role: "all" | "admin" | "manager";
 	label: string;
-	subMenu?: Array<MenuItemType>;
+	subMenu?: Array<IMenuItemType>;
 }
 
-export interface MenuType {
-	menuList: Array<MenuItemType>;
+export interface IMenuType {
+	menuList: Array<IMenuItemType>;
 	role: "admin" | "manager";
 	direction?: string;
 }
 
-export interface SidebarType {
+export interface ISidebarType {
 	role: "admin" | "manager";
 	isOpen: boolean;
 }
 
-export interface DashboardType {
+export interface IDashboardType {
 	type: "admin" | "manager";
 }
 
-export interface PrivateRouteType {
+export interface IPrivateRouteType {
 	role: "admin" | "manager" | "all";
+	showChecking?: boolean;
 	element?: JSX.Element;
 };
 

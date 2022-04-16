@@ -65,7 +65,7 @@ export default class HttpService {
 	public static async patch<T>(
 		path: string,
 		payload: any,
-		extraConfig: AxiosRequestConfig,
+		extraConfig?: AxiosRequestConfig,
 	): Promise<T> {
 		return this.handleAPIResponse(await axiosInstance.patch<T>(path, payload, extraConfig));
 	}

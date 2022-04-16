@@ -3,9 +3,9 @@ import { useMatch, useNavigate, useResolvedPath } from "react-router-dom";
 import { ExpandMoreRounded, ExpandLessRounded } from "@mui/icons-material"
 import { useState } from "react";
 import "./styles.scss"
-import { MenuItemType } from "../../@types/ComponentInterfaces";
+import { IMenuItemType } from "../../@types/ComponentInterfaces";
 
-function MenuItem(props: MenuItemType) {
+function MenuItem(props: IMenuItemType) {
     const navigate = useNavigate()
     const [isOpen, setIsOpen] = useState(false)
 

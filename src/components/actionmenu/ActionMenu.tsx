@@ -10,8 +10,13 @@ export interface IActionList {
 	icon: JSX.Element;
 }
 
-export interface IActionMenuProps extends IBaseComponentProps {
+export interface IActionMenuItem {
 	id: string;
+	name: string;
+}
+
+export interface IActionMenuProps extends IBaseComponentProps {
+	item: IActionMenuItem
 	actionList: Array<IActionList>;
 }
 
@@ -21,7 +26,7 @@ function ActionMenu(props: IActionMenuProps) {
 	const open = Boolean(anchorEl);
 
 	const handleItemClick = (item: IActionList) => {
-		if (item.action) item.action(props.id);
+		if (item.action) item.action(props.item);
 		setAnchorEl(null);
 	};
 

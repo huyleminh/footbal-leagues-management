@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { IAPIResponse } from "../../@types/AppInterfaces";
 import HttpService from "../../services/HttpService";
 import Loading from "../loading/Loading";
 import Swal from "sweetalert2";
 import AppConstants from "../../shared/AppConstants";
-import { PrivateRouteType } from "../../@types/ComponentInterfaces";
+import { IPrivateRouteType } from "../../@types/ComponentInterfaces";
 import Dashboard from "../../features/dashboard/Dashboard";
 
-function PrivateRoute(props: PrivateRouteType) {
+function PrivateRoute(props: IPrivateRouteType) {
 	const [isChecking, setIsChecking] = useState(true);
 	const [isValid, setIsValid] = useState(false);
 	const [type, setType] = useState<"admin" | "manager">("admin");
@@ -48,11 +48,12 @@ function PrivateRoute(props: PrivateRouteType) {
 	}, [props.role]);
 
 	return isChecking ? (
-		<Loading message="Đang kiểm tra quyền truy cập" />
+		props.showChecking ? (
+			<Loading message="Đang kiểm tra quyền truy cập" />
+		) : null
 	) : isValid ? (
 		props.element ? (
-			React.cloneElement(props.element, { userRole: type })
-			// props.element
+			props.element
 		) : (
 			<Dashboard type={type} />
 		)

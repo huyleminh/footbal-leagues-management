@@ -16,6 +16,10 @@ body {
 	-moz-osx-font-smoothing: grayscale;
 }
 
+.swal2-elevated-container {
+	z-index: 300000 !important;
+}
+
 // Scrollbar
 ::-webkit-scrollbar {
 	width: 10px;
