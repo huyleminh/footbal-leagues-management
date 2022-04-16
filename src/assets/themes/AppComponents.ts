@@ -78,4 +78,34 @@ export const AppComponents: Components = {
 			},
 		},
 	},
+	MuiFormLabel: {
+		styleOverrides: {
+			root: {
+				fontSize: "15px",
+				color: "#000",
+			},
+		},
+	},
+	MuiFormControlLabel: {
+		styleOverrides: {
+			root: {
+				"&>.MuiFormControlLabel-label": {
+					fontSize: "15px",
+					color: "#000",
+				},
+			},
+		},
+	},
+	MuiChip: {
+		styleOverrides: {
+			root: {
+				fontWeight: 600,
+				fontSize: "13px",
+				"&>.MuiChip-label": {
+					paddingLeft: "1rem",
+					paddingRight: "1rem",
+				}
+			}
+		}
+	}
 };
