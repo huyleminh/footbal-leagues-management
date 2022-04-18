@@ -31,4 +31,5 @@ export interface IPrivateRouteType {
 
 export interface IBaseComponentProps {
 	userRole?: "admin" | "manager";
+	key?: number | string;
 }

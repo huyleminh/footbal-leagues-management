@@ -1,6 +1,6 @@
 import { Box, Chip, Stack, Tab, Tabs, Typography } from "@mui/material";
 import React from "react";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { IBaseComponentProps } from "../../../@types/ComponentInterfaces";
 import PrivateRoute from "../../../components/routes/PrivateRoute";
 import TournamentMatchList from "./TournamentMatchList";
@@ -16,7 +16,10 @@ const tabListConfig = [
 ];
 
 function TournamentDetail(props: ITournamentDetailProps) {
-	const [value, setValue] = React.useState(0);
+	const location = useLocation();
+	const currentTab = tabListConfig.findIndex((item) => location.pathname.includes(item.value));
+
+	const [value, setValue] = React.useState(currentTab === -1 ? 0 : currentTab);
 	const navigate = useNavigate();
 
 	const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -24,7 +27,7 @@ function TournamentDetail(props: ITournamentDetailProps) {
 		navigate(`.${tabListConfig[newValue].value}`);
 	};
 	return (
-		<Stack spacing={3}>
+		<Stack sx={{ height: "100%" }} spacing={3}>
 			<Box>
 				<Stack direction="row" spacing={3}>
 					<Box sx={{ width: "150px", height: "150px" }}>
@@ -59,7 +62,7 @@ function TournamentDetail(props: ITournamentDetailProps) {
 				})}
 			</Tabs>
 
-			<Box>
+			<Box sx={{ flexGrow: "1" }}>
 				<Routes>
 					<Route
 						path="/ranking"
