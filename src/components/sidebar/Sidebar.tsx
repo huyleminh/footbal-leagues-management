@@ -12,7 +12,8 @@ function Sidebar(props: ISidebarType) {
 		<Box
 			className={`dashboard-sidebar ${!isOpen ? "hidden" : ""}`}
 			sx={{
-				width: "330px",
+				width: "260px",
+				minWidth: "260px",
 			}}
 		>
 			<Stack
@@ -36,7 +37,7 @@ function Sidebar(props: ISidebarType) {
 						justifyContent: "center",
 					}}
 				>
-					<Typography variant="h4" textAlign="center" sx={{ overflow: "hidden" }}>
+					<Typography variant="h5" textAlign="center" sx={{ overflow: "hidden" }}>
 						FBL Dashboard
 					</Typography>
 				</Box>

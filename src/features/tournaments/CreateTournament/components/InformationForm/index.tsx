@@ -26,7 +26,7 @@ function InformationForm(props: IInformationFormProps) {
 				image: null,
 			};
 		}
-		return data
+		return data;
 	});
 
 	const handleChangeField = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,7 +108,14 @@ function InformationForm(props: IInformationFormProps) {
 							Tải ảnh lên
 						</Button>
 					</label>
-					<Typography sx={{ fontWeight: "500", fontSize: "15px" }}>
+					<Typography
+						sx={{
+							fontWeight: "500",
+							fontSize: "14px",
+							overflow: "hidder",
+							textOverflow: "ellipsis",
+						}}
+					>
 						{info.image ? info.image.name : "Không có tệp nào được chọn"}
 					</Typography>
 				</Stack>

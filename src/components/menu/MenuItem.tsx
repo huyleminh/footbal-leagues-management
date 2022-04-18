@@ -34,7 +34,8 @@ function MenuItem(props: IMenuItemType) {
                 {icon ? icon : null}
                 <Typography variant="h6" sx={{
                     marginLeft: "10px",
-                    flexGrow: "1"
+                    flexGrow: "1",
+                    fontSize: "15px",
                 }}>{label}</Typography>
                 {subMenu ? (
                     isOpen ? <ExpandLessRounded /> : <ExpandMoreRounded />

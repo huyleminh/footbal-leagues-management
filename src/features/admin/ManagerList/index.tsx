@@ -5,12 +5,12 @@ import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import {
 	Box,
 	Button,
+	Card,
 	Chip,
 	FormControl,
 	InputLabel,
 	LinearProgress,
 	MenuItem,
-	Paper,
 	Select,
 	Stack,
 	Table,
@@ -118,7 +118,7 @@ function ManagerList(props: IManagerListProps) {
 					const metadata = res.metadata as IPagination;
 					setTotalPage(Math.ceil(metadata.pagination.totalRecord / pagination.maxItem));
 				} else if (res.code === 400) {
-					toast(<ToastMsg title={res?.data as string} message="asdadd" type="error" />, {
+					toast(<ToastMsg title={res?.data as string} type="error" />, {
 						type: toast.TYPE.ERROR,
 					});
 				} else {
@@ -267,7 +267,7 @@ function ManagerList(props: IManagerListProps) {
 				</Box>
 			) : null}
 
-			<TableContainer component={Paper}>
+			<TableContainer component={Card}>
 				<Table sx={{ minWidth: 650 }} aria-label="simple table">
 					<TableHead>
 						<TableRow>
@@ -292,6 +292,7 @@ function ManagerList(props: IManagerListProps) {
 								<TableRow
 									key={index}
 									sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+									hover
 								>
 									<TableCell component="th" scope="row" sx={{ width: "50px" }}>
 										{index + 1 + (pagination.page - 1) * pagination.maxItem}
