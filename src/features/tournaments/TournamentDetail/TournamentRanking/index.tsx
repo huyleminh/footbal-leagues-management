@@ -1,5 +1,5 @@
 import {
-	Box, Paper, Table,
+	Box, Card, Table,
 	TableBody,
 	TableCell,
 	TableContainer,
@@ -11,7 +11,7 @@ import { IBaseComponentProps } from "../../../../@types/ComponentInterfaces";
 
 function TournamentRanking(props: IBaseComponentProps) {
 	return (
-		<TableContainer component={Paper}>
+		<TableContainer component={Card}>
 			<Table sx={{ minWidth: 650 }} aria-label="simple table">
 				<TableHead>
 					<TableRow>
@@ -28,7 +28,7 @@ function TournamentRanking(props: IBaseComponentProps) {
 					</TableRow>
 				</TableHead>
 				<TableBody>
-					<TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+					<TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }} hover>
 						<TableCell component="th" scope="row" sx={{ width: "100px", minWidth: "100px" }}>
 							1
 						</TableCell>

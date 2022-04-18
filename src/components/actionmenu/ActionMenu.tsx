@@ -41,7 +41,7 @@ function ActionMenu(props: IActionMenuProps) {
 				variant="contained"
 				startIcon={<SettingsOutlinedIcon fontSize="large" />}
 				endIcon={<ArrowDropDownRoundedIcon fontSize="large" />}
-				size="large"
+				size="medium"
 				sx={{
 					"&>span": { margin: "0!important" },
 					padding: "0.5rem 1rem!important",

@@ -42,7 +42,7 @@ function CustomPagination(props: ICustomPaginationProps) {
 		<Stack direction="row" spacing={2} sx={{ ...sx, display: "flex", alignItems: "center" }}>
 			{props.allowChangeMax && (
 				<>
-					<Typography>Số lượng</Typography>
+					<Typography sx={{ fontSize: "15px" }}>Số lượng</Typography>
 					<FormControl size="small">
 						<Select
 							value={maxItem}

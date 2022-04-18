@@ -5,14 +5,13 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import {
 	Box,
 	Button,
+	Card,
 	FormControl,
 	InputLabel,
 	ListItemIcon,
 	ListItemText,
 	Menu,
-	MenuItem,
-	Paper,
-	Select,
+	MenuItem, Select,
 	Stack,
 	Table,
 	TableBody,
@@ -21,7 +20,7 @@ import {
 	TableHead,
 	TableRow,
 	TextField,
-	Typography,
+	Typography
 } from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -99,7 +98,7 @@ function TournamentList(props: ITournamentListProps) {
 				</Stack>
 			</Box>
 
-			<TableContainer component={Paper}>
+			<TableContainer component={Card}>
 				<Table sx={{ minWidth: 650 }} aria-label="simple table">
 					<TableHead>
 						<TableRow>
@@ -119,7 +118,7 @@ function TournamentList(props: ITournamentListProps) {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						<TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+						<TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }} hover>
 							<TableCell component="th" scope="row" sx={{ width: "50px" }}>
 								1
 							</TableCell>

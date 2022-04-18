@@ -104,8 +104,41 @@ export const AppComponents: Components = {
 				"&>.MuiChip-label": {
 					paddingLeft: "1rem",
 					paddingRight: "1rem",
-				}
-			}
-		}
-	}
+				},
+			},
+		},
+	},
+	MuiMenuItem: {
+		styleOverrides: {
+			root: {
+				fontSize: "15px",
+			},
+		},
+	},
+	MuiCard: {
+		styleOverrides: {
+			root: {
+				boxShadow: "rgb(58 53 65 / 10%) 0px 2px 10px 0px;",
+				borderRadius: "0.5rem",
+			},
+		},
+	},
+	MuiTableHead: {
+		styleOverrides: {
+			root: {
+				backgroundColor: "#fafafa",
+			},
+		},
+	},
+	MuiTableCell: {
+		styleOverrides: {
+			root: {
+				fontSize: "0.875rem",
+				padding: "0.75rem 1rem",
+			},
+		},
+	},
+	MuiTableRow: {
+		styleOverrides: {},
+	},
 };
