@@ -7,16 +7,16 @@ import React from "react";
 export interface IActionList {
 	title: string;
 	action?: Function;
-	icon: JSX.Element;
+	icon?: JSX.Element;
 }
 
 export interface IActionMenuItem {
 	id: string;
-	name: string;
+	[index: string]: any
 }
 
 export interface IActionMenuProps extends IBaseComponentProps {
-	item: IActionMenuItem
+	item: IActionMenuItem;
 	actionList: Array<IActionList>;
 }
 
@@ -63,7 +63,7 @@ function ActionMenu(props: IActionMenuProps) {
 							onClick={() => handleItemClick(item)}
 							sx={{ padding: "0.25rem 0.5rem" }}
 						>
-							<ListItemIcon>{item.icon}</ListItemIcon>
+							{item.icon && <ListItemIcon>{item.icon}</ListItemIcon>}
 							<ListItemText sx={{ "&>span": { fontSize: "15px" } }}>
 								{item.title}
 							</ListItemText>
