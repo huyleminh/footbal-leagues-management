@@ -17,10 +17,14 @@ const tabListConfig = [
 
 function TournamentDetail(props: ITournamentDetailProps) {
 	const location = useLocation();
-	const currentTab = tabListConfig.findIndex((item) => location.pathname.includes(item.value));
-
+	let currentTab = tabListConfig.findIndex((item) => location.pathname.includes(item.value));
+	currentTab = currentTab === -1 ? 0 : currentTab
 	const [value, setValue] = React.useState(currentTab === -1 ? 0 : currentTab);
+
 	const navigate = useNavigate();
+	if (currentTab !== value) {
+		setValue(currentTab);
+	}
 
 	const handleChange = (event: React.SyntheticEvent, newValue: number) => {
 		setValue(newValue);

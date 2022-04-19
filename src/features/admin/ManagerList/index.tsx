@@ -162,9 +162,7 @@ function ManagerList(props: IManagerListProps) {
 				value: string;
 			};
 		};
-		const string = target.searchString.value.trim();
-		if (string === "") return;
-		setSearchString(string);
+		setSearchString(target.searchString.value.trim());
 		setPagination({
 			...pagination,
 			page: 1,
