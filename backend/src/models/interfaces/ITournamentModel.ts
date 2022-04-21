@@ -17,4 +17,5 @@ export interface ITournamentModel {
 	};
 	createdAt: Date;
 	updatedAt: Date;
+	scheduledDate: Date;
 }

@@ -9,7 +9,7 @@ export default class ImgBBService {
 		return Buffer.from(imageBuffer).toString("base64");
 	}
 
-	static uploadImageNoExpireAsync(imagePath: any) {
+	static uploadImageNoExpireAsync(imagePath: string): Promise<string> {
 		return new Promise(async function (resolve, reject) {
 			try {
 				const url = `${AppConfigs.IMGBB_API_URL}?key=${AppConfigs.IMGBB_API_KEY}`;
@@ -26,7 +26,11 @@ export default class ImgBBService {
 						throw err;
 					}
 				});
-				resolve(res.data as any);
+				if (res.data.success) {
+					resolve(res.data.data.url);
+				} else {
+					reject("Upload error" + res.data);
+				}
 			} catch (error) {
 				reject(error);
 			}
