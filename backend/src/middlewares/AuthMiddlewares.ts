@@ -95,4 +95,25 @@ export function verifyAdminRole(req: IAppRequest, res: IAppResponse, next: IAppN
 	).send();
 }
 
-export default { validateLoginData, validateRefreshTokenData, verifyUserToken, verifyAdminRole };
+export function verifyManagerRole(req: IAppRequest, res: IAppResponse, next: IAppNextFuction) {
+	const { tokenPayload } = res.locals;
+	if (tokenPayload.role === USER_ROLE_ENUM.LOCAL_MANAGER) {
+		res.locals.tokenPayload = tokenPayload;
+		return next();
+	}
+
+	return new AppResponse(
+		res,
+		403,
+		"Forbidden",
+		"Bạn không có quyền truy cập chức năng này",
+	).send();
+}
+
+export default {
+	validateLoginData,
+	validateRefreshTokenData,
+	verifyUserToken,
+	verifyAdminRole,
+	verifyManagerRole,
+};

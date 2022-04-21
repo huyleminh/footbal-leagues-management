@@ -43,11 +43,13 @@ export default class AuthController extends AppController {
 			const accessToken = TokenUtil.generateAccessToken({
 				scope: "leagues:all",
 				role: user.role,
+				userId: user._id,
 			});
 			const { refreshToken, iv } = TokenUtil.generateRefreshToken(
 				JSON.stringify({
 					scope: "leagues:all",
 					role: user.role,
+					userId: user._id,
 				}),
 			);
 			const idToken = TokenUtil.generateIdToken(user._id.toString(), {
