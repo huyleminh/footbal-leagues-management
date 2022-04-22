@@ -1,8 +1,9 @@
 import { Box, Typography } from "@mui/material";
-import { IBaseComponentProps } from "../../../../../@types/ComponentInterfaces";
+import { IBaseComponentProps } from "../../../../../../@types/ComponentInterfaces";
 import "./styles.scss";
 
 export interface MatchListItemType {
+	id: string;
 	round: string;
 	homeTeam: {
 		name: string;
@@ -19,13 +20,14 @@ export interface MatchListItemType {
 
 export interface MatchListItemProps extends IBaseComponentProps {
 	data: MatchListItemType;
+	onClick: Function;
 }
 
 function MatchListItem(props: MatchListItemProps) {
-	const { data } = props;
+	const { data, onClick } = props;
 
 	const handleOnClick = () => {
-		console.log("Clicked");
+		onClick(data.id)
 	};
 
 	return (
