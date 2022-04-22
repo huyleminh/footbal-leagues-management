@@ -21,6 +21,7 @@ export default class TournamentController extends AppController {
 	}
 
 	init(): void {
+		this._router.get("/tournaments/:id", this.getTournamentByIdAsync);
 		this._router.get(
 			"/tournaments",
 			[TournamentMiddlewares.validateGetParams],
@@ -178,6 +179,54 @@ export default class TournamentController extends AppController {
 				},
 			});
 			apiRes.code(400).message("Bad Request").data("Không thể tạo mới giải đấu").send();
+		}
+	}
+
+	async getTournamentByIdAsync(req: IAppRequest, res: IAppResponse) {
+		const { id } = req.params;
+		const apiRes = new AppResponse(res);
+		try {
+			const tournament = await TournamentModel.findById(id)
+				.select(["-__v", "-config"])
+				.exec();
+			if (tournament === null) {
+				return apiRes
+					.code(400)
+					.message("Bad Request")
+					.data("Không tìm thấy giải đấu")
+					.send();
+			}
+
+			const manager = await UserModel.findById(tournament.createdBy)
+				.select(["fullname"])
+				.exec();
+
+			const ret = {
+				_id: tournament._id,
+				name: tournament.name,
+				logoUrl: tournament.logoUrl,
+				sponsorName: tournament.sponsorName,
+				totalTeam: tournament.totalTeam,
+				status: tournament.status,
+				scheduledDate: tournament.scheduledDate,
+				createdAt: tournament.createdAt,
+				updatedAt: tournament.updatedAt,
+				createdByName: manager !== null ? manager.fullname : "",
+			};
+			apiRes.data(ret).send();
+		} catch (error) {
+			Logger.error({
+				message: {
+					class: "TournamentController",
+					method: "getTournamentByIdAsync",
+					msg: error.message,
+				},
+			});
+			apiRes
+				.code(400)
+				.message("Bad Request")
+				.data("Không thể lấy thông tin chi tiết giải đấu")
+				.send();
 		}
 	}
 }
