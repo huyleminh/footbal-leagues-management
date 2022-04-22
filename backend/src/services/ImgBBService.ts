@@ -2,6 +2,7 @@ import axios from "axios";
 import * as FormData from "form-data";
 import * as fs from "fs";
 import { AppConfigs } from "../shared/AppConfigs";
+import { Logger } from "../utils/Logger";
 
 export default class ImgBBService {
 	static readImageBase64(path: string) {
@@ -17,9 +18,11 @@ export default class ImgBBService {
 				const formData = new FormData();
 				formData.append("image", image);
 
+				Logger.info("ImgBBService-uploadImageNoExpireAsync-Start");
 				const res = await axios.post(url, formData, {
 					headers: { ...formData.getHeaders() },
 				});
+				Logger.info("ImgBBService-uploadImageNoExpireAsync-Success");
 
 				fs.unlink(imagePath, (err) => {
 					if (err) {
