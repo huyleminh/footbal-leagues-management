@@ -9,5 +9,10 @@ export interface ITournamentParticipantModel {
 		totalLost: number;
 		totalTied: number;
 		totalPoint: number;
+		usedConfig: {
+			addedPlayer: number;
+			changedPlayer: number;
+			abroadPlayer: number;
+		};
 	}>;
 }

@@ -104,4 +104,28 @@ export function validateGetParams(req: IAppRequest, res: IAppResponse, next: IAp
 	next();
 }
 
-export default { validateCreateTeamData, validateGetParams };
+export function validateCreateStaffData(
+	req: IAppRequest,
+	res: IAppResponse,
+	next: IAppNextFuction,
+) {
+	const { body } = req;
+	const apiRes = new AppResponse(res, 400, "Bad Request");
+
+	if (!body.fullname || !body.fullname.toString().trim()) {
+		return apiRes.data("Thiếu tên thành viên").send();
+	}
+
+	if (!body.country || !body.country.toString().trim()) {
+		return apiRes.data("Thiếu quốc tịch của thành viên").send();
+	}
+
+	let role = parseInt(body.role);
+	if (TEAM_STAFF_ROLE_ENUM[role] === undefined) {
+		return apiRes.data("Vai trò không hợp lệ").send();
+	}
+	res.locals.payload = { fullname: body.fullname, country: body.country, role };
+	next();
+}
+
+export default { validateCreateTeamData, validateGetParams, validateCreateStaffData };

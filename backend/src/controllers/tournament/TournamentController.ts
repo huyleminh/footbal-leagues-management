@@ -21,6 +21,11 @@ export default class TournamentController extends AppController {
 	}
 
 	init(): void {
+		this._router.get(
+			"/tournaments/:id/config",
+			[AuthMiddlewares.verifyManagerRole],
+			this.getTournamentConfigByIdAsync,
+		);
 		this._router.get("/tournaments/:id", this.getTournamentByIdAsync);
 		this._router.get(
 			"/tournaments",
@@ -179,6 +184,31 @@ export default class TournamentController extends AppController {
 				},
 			});
 			apiRes.code(400).message("Bad Request").data("Không thể tạo mới giải đấu").send();
+		}
+	}
+
+	async getTournamentConfigByIdAsync(req: IAppRequest, res: IAppResponse) {
+		const { id } = req.params;
+		const apiRes = new AppResponse(res);
+		try {
+			const tournament = await TournamentModel.findById(id).exec();
+			if (tournament === null) {
+				throw new Error("tournament_config_notfound");
+			}
+			apiRes.data(tournament.config).send();
+		} catch (error) {
+			Logger.error({
+				message: {
+					class: "TournamentController",
+					method: "getTournamentConfigByIdAsync",
+					msg: error.message,
+				},
+			});
+			apiRes
+				.code(400)
+				.message("Bad Request")
+				.data("Không thể lấy cấu hình chi tiết giải đấu")
+				.send();
 		}
 	}
 
