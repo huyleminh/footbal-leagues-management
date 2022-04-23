@@ -18,6 +18,7 @@ import AuthContext from "../../../../../contexts/AuthContext";
 import ViewMatchDetail from "../MatchDetail/ViewMatchDetail";
 import MatchListItem, { MatchListItemType } from "./MatchListItem";
 import { useLocation } from "react-router-dom";
+import CreateMatch from "./CreateMatch";
 
 export interface IMatchListProps extends IBaseComponentProps {}
 
@@ -29,6 +30,7 @@ function MatchList(props: IMatchListProps) {
 	const [selectedRound, setSelectedRound] = useState("");
 	const context = useContext(AuthContext);
 	const [openDetailModal, setOpenDetailModal] = useState(false);
+	const [openCreateModal, setOpenCreateModal] = useState(false);
 	const [targetMatchId, setTargetMatchId] = useState("");
 
 	const [data, setData] = useState<Array<MatchListItemType>>([
@@ -86,6 +88,10 @@ function MatchList(props: IMatchListProps) {
 
 	return (
 		<>
+			<CreateMatch
+				open={openCreateModal}
+				onClose={setOpenCreateModal}
+			/>
 			<ViewMatchDetail
 				open={openDetailModal}
 				matchId={targetMatchId}
@@ -104,7 +110,7 @@ function MatchList(props: IMatchListProps) {
 									color="primary"
 									variant="contained"
 									size="small"
-									// onClick={() => setOpenCreateModal(true)}
+									onClick={() => setOpenCreateModal(true)}
 								>
 									<AddRoundedIcon />
 								</Button>

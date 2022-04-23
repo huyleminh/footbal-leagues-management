@@ -10,12 +10,18 @@ import {
 	Typography,
 	TextField,
 } from "@mui/material";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
 import StadiumRoundedIcon from "@mui/icons-material/StadiumRounded";
 import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import MatchEvent, { EVENT_TYPE, IMatchEventType } from "./MatchEvent";
 import MatchLineup from "./MatchLineup";
+import ChooseLineupDialog, { IModalData } from "./ChooseLineupDialog";
+import AuthContext from "../../../../../../contexts/AuthContext";
+import AddMatchEventDialog from "./AddMatchEventDialog";
+import moment from "moment";
 
 export interface ILineupType {
 	stripNumber: number;
@@ -50,12 +56,17 @@ export interface IMatchDetailType {
 	homeTeam: ITeamMatchDetailType;
 	awayTeam: ITeamMatchDetailType;
 	stadium: string;
-	date: string;
+	date: string | Date | null;
 }
 
 function ViewMatchDetail(props: any) {
 	const { open, onClose, matchId } = props;
+	const context = useContext(AuthContext);
+	const [datetime, setDatetime] = useState<Date | null>(new Date());
 	const [editMode, setEditMode] = useState(false);
+	const [openChooseLineup, setOpenChooseLineup] = useState(false);
+	const [openAddEvent, setOpenAddEvent] = useState(false);
+	const [modalData, setModalData] = useState<IModalData>({});
 	const [matchDetail, setMatchDetail] = useState<IMatchDetailType>({
 		id: matchId,
 		homeTeam: {
@@ -253,13 +264,39 @@ function ViewMatchDetail(props: any) {
 		setMatchDetail(temp);
 	};
 
+	const handleChangeTime = (newValue: Date | null) => {
+		setMatchDetail({ ...matchDetail, date: newValue });
+	};
+
 	const handleOpenEditModal = (reload: boolean) => {
 		// console.log("Edit match detail");
 		setEditMode(!editMode);
 	};
 
+	const handleOpenChooseLineup = (isHome: boolean) => {
+		setModalData({
+			matchId: matchDetail.id,
+			isHome: isHome,
+		});
+		setOpenChooseLineup(true);
+	};
+
+	const handleOpenAddEvent = (isHome: boolean) => {
+		setModalData({
+			matchId: matchDetail.id,
+			isHome: isHome,
+		});
+		setOpenAddEvent(true);
+	};
+
 	return (
 		<>
+			<ChooseLineupDialog
+				data={modalData}
+				open={openChooseLineup}
+				onClose={setOpenChooseLineup}
+			/>
+			<AddMatchEventDialog data={modalData} open={openAddEvent} onClose={setOpenAddEvent} />
 			<Dialog maxWidth={false} onClose={() => onClose(false)} open={open} scroll="paper">
 				<DialogTitle>
 					<Box
@@ -269,14 +306,22 @@ function ViewMatchDetail(props: any) {
 						}}
 					>
 						Chi tiết trận đấu
-						<Button
-							startIcon={<EditRoundedIcon fontSize="small" />}
-							color="primary"
-							variant="contained"
-							onClick={() => handleOpenEditModal(true)}
-						>
-							Sửa
-						</Button>
+						{context.role === "manager" ? (
+							<Button
+								startIcon={
+									editMode ? (
+										<SaveRoundedIcon fontSize="small" />
+									) : (
+										<EditRoundedIcon fontSize="small" />
+									)
+								}
+								color="primary"
+								variant="contained"
+								onClick={() => handleOpenEditModal(true)}
+							>
+								{editMode ? "Lưu" : "Sửa"}
+							</Button>
+						) : null}
 					</Box>
 				</DialogTitle>
 				<DialogContent>
@@ -329,12 +374,17 @@ function ViewMatchDetail(props: any) {
 									}}
 								>
 									{editMode ? (
-										<TextField
+										<DateTimePicker
 											label="Thời gian"
-											name="date"
-											variant="outlined"
 											value={matchDetail.date}
-											onChange={handleOnChange}
+											onChange={handleChangeTime}
+											renderInput={(params) => (
+												<TextField
+													label="Thời gian"
+													variant="outlined"
+													{...params}
+												/>
+											)}
 										/>
 									) : (
 										<>
@@ -344,7 +394,11 @@ function ViewMatchDetail(props: any) {
 												fontSize="medium"
 											/>
 											<Typography sx={{ color: "black" }} variant="subtitle2">
-												{matchDetail.date}
+												{matchDetail.date instanceof Date
+													? `${matchDetail.date.getDate()}/${
+															matchDetail.date.getMonth() + 1
+													  }/${matchDetail.date.getFullYear()} ${matchDetail.date.getHours()}:${matchDetail.date.getMinutes()}`
+													: matchDetail.date}
 											</Typography>
 										</>
 									)}
@@ -580,12 +634,17 @@ function ViewMatchDetail(props: any) {
 								</Box>
 							))}
 							<Divider></Divider>
-							<MatchLineup matchDetail={matchDetail} editMode={editMode} />
+							<MatchLineup
+								matchDetail={matchDetail}
+								editMode={editMode}
+								openModal={handleOpenChooseLineup}
+							/>
 							<Divider></Divider>
 							<MatchEvent
 								matchEvent={matchEvent}
 								setMatchEvent={setMatchEvent}
 								editMode={editMode}
+								openModal={handleOpenAddEvent}
 							/>
 						</Stack>
 					</Box>

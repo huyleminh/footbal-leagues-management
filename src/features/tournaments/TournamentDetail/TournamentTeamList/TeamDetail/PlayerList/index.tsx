@@ -43,17 +43,6 @@ function PlayerList(props: IPlayerList) {
 		setDialog({ ...dialog, open: false });
 	};
 
-	const openEdit = () => {
-		setDialog({ open: true, mode: "edit" });
-		setInitData({
-			playerName: "Phil Foden",
-			idNumber: "123456789657",
-			country: "Anh",
-			stripNumber: 47,
-			position: "Tiền đạo trái",
-		});
-	};
-
 	const openCreate = () => {
 		setDialog({ open: true, mode: "create" });
 	};
@@ -70,7 +59,6 @@ function PlayerList(props: IPlayerList) {
 	};
 
 	const actionList: IActionList[] = [
-		{ title: "Chỉnh sửa", action: openEdit, icon: <EditRoundedIcon fontSize="small" /> },
 		{ title: "Thay thế", action: openReplace, icon: <AutorenewRoundedIcon fontSize="small" /> },
 	];
 

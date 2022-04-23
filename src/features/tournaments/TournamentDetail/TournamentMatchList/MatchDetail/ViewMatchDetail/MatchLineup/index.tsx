@@ -17,10 +17,11 @@ import { IMatchDetailType } from "..";
 interface IMatchLineupProps extends IBaseComponentProps {
 	editMode: boolean;
 	matchDetail: IMatchDetailType;
+	openModal: Function;
 }
 
 function MatchLineup(props: IMatchLineupProps) {
-	const { editMode, matchDetail } = props;
+	const { editMode, matchDetail, openModal } = props;
 	return (
 		<Stack spacing={2}>
 			{editMode ? (
@@ -35,7 +36,7 @@ function MatchLineup(props: IMatchLineupProps) {
 							startIcon={<EditRoundedIcon fontSize="small" />}
 							color="primary"
 							variant="contained"
-							// onClick={() => handleOpenEditModal(true)}
+							onClick={() => openModal(true)}
 						>
 							Chọn
 						</Button>
@@ -60,7 +61,7 @@ function MatchLineup(props: IMatchLineupProps) {
 							startIcon={<EditRoundedIcon fontSize="small" />}
 							color="primary"
 							variant="contained"
-							// onClick={() => handleOpenEditModal(true)}
+							onClick={() => openModal(false)}
 						>
 							Chọn
 						</Button>
