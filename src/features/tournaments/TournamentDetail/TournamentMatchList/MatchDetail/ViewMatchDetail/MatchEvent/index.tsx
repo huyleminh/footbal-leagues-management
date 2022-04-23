@@ -33,10 +33,11 @@ interface IMatchEventProps extends IBaseComponentProps {
     editMode: boolean;
     matchEvent: Array<IMatchEventType>;
     setMatchEvent: Function;
+	openModal: Function;
 }
 
 function MatchEvent(props: IMatchEventProps) {
-	const { editMode, matchEvent, setMatchEvent } = props;
+	const { editMode, matchEvent, setMatchEvent, openModal } = props;
 
 	const handleDelete = (element: IMatchEventType) => {
 		setMatchEvent(matchEvent.filter((item) => item !== element));
@@ -56,7 +57,7 @@ function MatchEvent(props: IMatchEventProps) {
 							startIcon={<EditRoundedIcon fontSize="small" />}
 							color="primary"
 							variant="contained"
-							// onClick={() => handleOpenEditModal(true)}
+							onClick={() => openModal(true)}
 						>
 							Thêm
 						</Button>
@@ -81,7 +82,7 @@ function MatchEvent(props: IMatchEventProps) {
 							startIcon={<EditRoundedIcon fontSize="small" />}
 							color="primary"
 							variant="contained"
-							// onClick={() => handleOpenEditModal(true)}
+							onClick={() => openModal(false)}
 						>
 							Thêm
 						</Button>
