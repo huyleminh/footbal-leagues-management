@@ -14,6 +14,7 @@ import {
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { IBaseComponentProps } from "../../../../../../@types/ComponentInterfaces";
+import { readPlayersTemplateUploadAsync, readStaffsTemplateUploadAsync } from "../../../../../../utils/ExcelUtil";
 
 export interface ICreateTeamDialog extends IBaseComponentProps {
 	open: boolean;
@@ -40,12 +41,16 @@ function CreateTeamDialog(props: ICreateTeamDialog) {
 
 	const handleChangePlayerExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const target = e.target;
-		setPlayerExcel(target.files && target.files[0]);
+		if (target.files)
+			readPlayersTemplateUploadAsync(target.files[0]).then(console.log)
+		// setPlayerExcel(target.files && target.files[0]);
 	};
 
 	const handleChangeStaffExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const target = e.target;
-		setStaffExcel(target.files && target.files[0]);
+		if (target.files)
+			readStaffsTemplateUploadAsync(target.files[0]).then(console.log)
+		// setStaffExcel(target.files && target.files[0]);
 	};
 
 	return (
