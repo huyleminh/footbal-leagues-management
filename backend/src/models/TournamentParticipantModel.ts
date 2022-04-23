@@ -14,6 +14,13 @@ const TournamentParticipantSchema = new Schema<ITournamentParticipantModel>({
 				totalLost: { type: Number, default: 0 },
 				totalTied: { type: Number, default: 0 },
 				totalPoint: { type: Number, default: 0 },
+				usedConfig: {
+					type: {
+						addedPlayer: { type: Number, default: 0 },
+						changedPlayer: { type: Number, default: 0 },
+						abroadPlayer: { type: Number, require: true },
+					},
+				},
 			},
 		],
 		minlength: 0,
