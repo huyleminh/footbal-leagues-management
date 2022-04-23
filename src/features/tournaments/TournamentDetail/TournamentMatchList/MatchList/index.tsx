@@ -17,12 +17,15 @@ import { IBaseComponentProps } from "../../../../../@types/ComponentInterfaces";
 import AuthContext from "../../../../../contexts/AuthContext";
 import ViewMatchDetail from "../MatchDetail/ViewMatchDetail";
 import MatchListItem, { MatchListItemType } from "./MatchListItem";
+import { useLocation } from "react-router-dom";
 
 export interface IMatchListProps extends IBaseComponentProps {}
 
 function MatchList(props: IMatchListProps) {
+	const location = useLocation()
 	const [totalRound, setTotalRound] = useState(30);
-	const [searchString, setSearchString] = useState("");
+	const queryString = new URLSearchParams(location.search);
+	const [teamKey, setTeamKey] = useState(queryString.get("teamKey") || "");
 	const [selectedRound, setSelectedRound] = useState("");
 	const context = useContext(AuthContext);
 	const [openDetailModal, setOpenDetailModal] = useState(false);
@@ -134,7 +137,9 @@ function MatchList(props: IMatchListProps) {
 								variant="outlined"
 								placeholder="Nhập tên đội bóng"
 								size="small"
-								name="searchString"
+								name="teamKey"
+								value={teamKey}
+								onChange={(e) => setTeamKey(e.target.value)}
 							></TextField>
 
 							<Button
