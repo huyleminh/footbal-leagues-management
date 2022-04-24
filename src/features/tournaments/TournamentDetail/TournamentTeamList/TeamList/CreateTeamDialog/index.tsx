@@ -13,25 +13,46 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 import { IBaseComponentProps } from "../../../../../../@types/ComponentInterfaces";
-import { readPlayersTemplateUploadAsync, readStaffsTemplateUploadAsync } from "../../../../../../utils/ExcelUtil";
+import { IPlayerExcelModel, IStaffExcelModel } from "../../../../../../@types/models/ExcelModels";
+import {
+	readPlayersTemplateUploadAsync,
+	readStaffsTemplateUploadAsync,
+} from "../../../../../../utils/ExcelUtil";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export interface ICreateTeamDialog extends IBaseComponentProps {
 	open: boolean;
 	onCancel: () => void;
 	onSubmit: (data: ICreateTeamDialogData) => void;
+	loading: boolean;
 }
 
-export interface ICreateTeamDialogData {}
+export interface ICreateTeamDialogData {
+	name: string;
+	logo: File;
+	playerList: Array<IPlayerExcelModel>;
+	staffList: Array<IStaffExcelModel>;
+}
 
 function CreateTeamDialog(props: ICreateTeamDialog) {
-	const { open, onCancel, onSubmit } = props;
+	const { open, onCancel, onSubmit, loading } = props;
 	const [logoImage, setLogoImage] = useState<File | null>(null);
-	const [playerExcel, setPlayerExcel] = useState<File | null>(null);
-	const [staffExcel, setStaffExcel] = useState<File | null>(null);
+	const [playerExcel, setPlayerExcel] = useState<any | null>(null);
+	const [staffExcel, setStaffExcel] = useState<any | null>(null);
+	const [name, setName] = useState("");
 
 	const handleSubmit = () => {
-		onSubmit({});
+		if (!name || !name.trim() || !logoImage || !playerExcel || !staffExcel) {
+			return;
+		}
+		onSubmit({
+			name: name.trim(),
+			logo: logoImage,
+			playerList: playerExcel.data,
+			staffList: staffExcel.data,
+		});
 	};
 
 	const handleChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,18 +60,62 @@ function CreateTeamDialog(props: ICreateTeamDialog) {
 		setLogoImage(target.files && target.files[0]);
 	};
 
-	const handleChangePlayerExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleChangePlayerExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const target = e.target;
-		if (target.files)
-			readPlayersTemplateUploadAsync(target.files[0]).then(console.log)
-		// setPlayerExcel(target.files && target.files[0]);
+		if (!target.files) return;
+		try {
+			const imported = await readPlayersTemplateUploadAsync(target.files[0]);
+			if (imported.totalError > 0) {
+				Swal.fire({
+					title: "Nhập cầu thủ",
+					text: `Dữ liệu đã nhập có ${imported.totalError} dòng bị lỗi, vui lòng nhập lại`,
+					confirmButtonText: "Đồng ý",
+					icon: "warning",
+				});
+			} else {
+				setPlayerExcel({
+					name: target.files[0].name,
+					data: imported.data,
+				});
+			}
+		} catch (error) {
+			console.log(error);
+			Swal.fire({
+				title: "Nhập cầu thủ",
+				text: `File không đúng định dạng hoặc đã có lỗi xảy ra`,
+				confirmButtonText: "Đồng ý",
+				icon: "error",
+			});
+		}
 	};
 
-	const handleChangeStaffExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleChangeStaffExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const target = e.target;
-		if (target.files)
-			readStaffsTemplateUploadAsync(target.files[0]).then(console.log)
-		// setStaffExcel(target.files && target.files[0]);
+		if (!target.files) return;
+		try {
+			const imported = await readStaffsTemplateUploadAsync(target.files[0]);
+			if (imported.totalError > 0) {
+				Swal.fire({
+					title: "Nhập nhân sựu",
+					text: `Dữ liệu đã nhập có ${imported.totalError} dòng bị lỗi, vui lòng nhập lại`,
+					confirmButtonText: "Đồng ý",
+					icon: "warning",
+				});
+			} else {
+				setStaffExcel({
+					name: target.files[0].name,
+					data: imported.data,
+				});
+			}
+		} catch (error) {
+			console.log(error);
+			Swal.fire({
+				title: "Nhập nhân sựu",
+				text: `File không đúng định dạng hoặc đã có lỗi xảy ra`,
+				confirmButtonText: "Đồng ý",
+				icon: "error",
+			});
+		}
 	};
 
 	return (
@@ -83,8 +148,10 @@ function CreateTeamDialog(props: ICreateTeamDialog) {
 							type="text"
 							size="small"
 							sx={{ flexGrow: 1 }}
-							name="maxAdditionalPlayer"
+							name="name"
 							required
+							value={name}
+							onChange={(e) => setName(e.target.value)}
 						/>
 					</Stack>
 
@@ -249,10 +316,15 @@ function CreateTeamDialog(props: ICreateTeamDialog) {
 			</DialogContent>
 
 			<DialogActions>
-				<Button variant="outlined" onClick={() => onCancel()}>
+				<Button disabled={loading} variant="outlined" onClick={() => onCancel()}>
 					Hủy
 				</Button>
-				<Button variant="contained" onClick={handleSubmit}>
+				<Button
+					disabled={loading}
+					variant="contained"
+					onClick={handleSubmit}
+					startIcon={loading ? <CircularProgress color="inherit" size={15} /> : <></>}
+				>
 					Lưu
 				</Button>
 			</DialogActions>

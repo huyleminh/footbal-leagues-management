@@ -1,19 +1,23 @@
-import { Grid, Stack, Card, Tooltip, Typography } from "@mui/material";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import { Box, Card, Grid, Stack, Tooltip, Typography } from "@mui/material";
+import { toast } from "material-react-toastify";
 import React, { useContext, useState } from "react";
+import { Link, useMatch } from "react-router-dom";
 import { IBaseComponentProps } from "../../../../../@types/ComponentInterfaces";
 import CustomPagination from "../../../../../components/pagination";
+import ToastMsg from "../../../../../components/toast/ToastMsg";
 import AuthContext from "../../../../../contexts/AuthContext";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import "./styles.scss";
-import { Box } from "@mui/material";
-import { Link } from "react-router-dom";
+import TeamService from "../../../../../services/TeamService";
 import CreateTeamDialog, { ICreateTeamDialogData } from "./CreateTeamDialog";
+import "./styles.scss";
 
 export interface ITeamListProps extends IBaseComponentProps {}
 
 function TeamList(props: ITeamListProps) {
 	const authContext = useContext(AuthContext);
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
+	const [isSubmiting, setIsSubmiting] = useState(false);
+	const match = useMatch("/tournaments/:id/teams");
 
 	const teamList = Array.from(Array(5)).map((_, index) => {
 		return {
@@ -24,10 +28,42 @@ function TeamList(props: ITeamListProps) {
 		};
 	});
 
-	const handleSubmitCreate = (data: ICreateTeamDialogData) => {
-		console.log(data);
-		setIsCreateOpen(false)
-	}
+	const handleSubmitCreate = async (data: ICreateTeamDialogData) => {
+		if (!match || !match.params.id) {
+			return;
+		}
+		const formData = new FormData();
+		formData.append("name", data.name);
+		// formData.append("tournamentId", match.params.id);
+		formData.append("tournamentId", "6260414ebc4ce114bdc9953c");
+		formData.append("playerList", JSON.stringify(data.playerList));
+		formData.append("staffList", JSON.stringify(data.staffList));
+		formData.append("logo", data.logo);
+
+		setIsSubmiting(true);
+		try {
+			const res = await TeamService.postCreateTeamAsync(formData);
+			setIsSubmiting(false);
+			if (res.code === 201) {
+				toast(<ToastMsg title="Tạo mới thành công" type="success" />, {
+					type: toast.TYPE.SUCCESS,
+				});
+				setTimeout(() => {
+					window.location.reload();
+				}, 1500);
+			} else if (res.code === 400) {
+				toast(<ToastMsg title={`${res.data as string}`} type="error" />, {
+					type: toast.TYPE.ERROR,
+				});
+			} else throw new Error("unexpected_code");
+		} catch (error) {
+			setIsSubmiting(false);
+			console.log(error);
+			toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
+				type: toast.TYPE.ERROR,
+			});
+		}
+	};
 
 	return (
 		<Stack spacing={2} className="teams">
@@ -35,6 +71,7 @@ function TeamList(props: ITeamListProps) {
 				open={isCreateOpen}
 				onCancel={() => setIsCreateOpen(false)}
 				onSubmit={handleSubmitCreate}
+				loading={isSubmiting}
 			/>
 			<Grid container spacing={2}>
 				{authContext.role === "manager" && (
