@@ -1,7 +1,11 @@
-import { Box, Button, Stack, Step, StepLabel, Stepper } from "@mui/material";
+import { Box, Button, CircularProgress, Stack, Step, StepLabel, Stepper } from "@mui/material";
+import { toast } from "material-react-toastify";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { IAPIResponse } from "../../../@types/AppInterfaces";
+import ToastMsg from "../../../components/toast/ToastMsg";
+import HttpService from "../../../services/HttpService";
 import ConfigForm from "./components/ConfigForm";
 import InformationForm from "./components/InformationForm";
 
@@ -28,6 +32,8 @@ function CreateTournament(props: ICreateTournamentProps) {
 		},
 	});
 
+	const [isLoading, setIsLoading] = useState(false);
+
 	const handleNextStep = (data: any) => {
 		if (activeStep === 0) {
 			setFormData({ ...formData, info: data });
@@ -36,11 +42,51 @@ function CreateTournament(props: ICreateTournamentProps) {
 			setFormData({ ...formData, config: data });
 		}
 		if (activeStep === 2) {
-			// setFormData({ ...formData, info: data });
-			// submit
 			return;
 		}
 		setActiveStep(activeStep + 1);
+	};
+
+	const handleSubmit = async () => {
+		if (!formData.info.image) {
+			return;
+		}
+		const data = new FormData();
+		data.append("name", formData.info.name);
+		data.append("sponsorName", formData.info.sponsorName);
+		data.append("config", JSON.stringify(formData.config));
+		data.append("scheduledDate", new Date(new Date().getTime() + 86400000).toISOString());
+		data.append("logo", formData.info.image);
+
+		setIsLoading(true);
+		try {
+			const res = await HttpService.post<IAPIResponse<any | string>>(
+				"/tournaments",
+				data,
+				{
+					headers: {
+						"Content-Type": "multipart/form-data",
+					},
+				},
+			);
+			if (res.code === 201) {
+				toast(<ToastMsg title="Tạo mới thành công" type="success" />, {
+					type: toast.TYPE.SUCCESS,
+				});
+				navigate("/tournaments");
+			} else if (res.code === 400) {
+				toast(<ToastMsg title={res.data as string} type="error" />, {
+					type: toast.TYPE.ERROR,
+				});
+			} else throw new Error("unexpected_code");
+			setIsLoading(false);
+		} catch (error) {
+			console.log(error);
+			setIsLoading(false);
+			toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
+				type: toast.TYPE.ERROR,
+			});
+		}
 	};
 
 	const handlePrevStep = () => {
@@ -104,7 +150,19 @@ function CreateTournament(props: ICreateTournamentProps) {
 							>
 								Quay lại
 							</Button>
-							<Button variant="contained">Xác nhận</Button>
+							<Button
+								variant="contained"
+								onClick={handleSubmit}
+								startIcon={
+									isLoading ? (
+										<CircularProgress color="inherit" size={15} />
+									) : (
+										<></>
+									)
+								}
+							>
+								Xác nhận
+							</Button>
 						</Stack>
 					</>
 				)}

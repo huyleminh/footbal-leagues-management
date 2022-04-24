@@ -12,3 +12,13 @@ export interface IAPIResponse<T> {
 export interface IAuthContext {
 	role: string;
 }
+
+export interface IAPIPagination {
+	page: number;
+	pageSize: number;
+	totalRecord: number;
+}
+
+export interface IAPIPagingMetadata extends IAPIBaseMetadata {
+	pagination: IAPIPagination;
+}
