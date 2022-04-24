@@ -14,14 +14,18 @@ import {
 	Typography,
 } from "@mui/material";
 import React from "react";
+import { IPlayerListDetail } from "..";
 import { IBaseComponentProps } from "../../../../../../@types/ComponentInterfaces";
 import ActionMenu, { IActionList } from "../../../../../../components/actionmenu/ActionMenu";
 import AuthContext from "../../../../../../contexts/AuthContext";
 import PlayerFormDialog from "../PlayerFormDialog";
 
-export interface IPlayerList extends IBaseComponentProps {}
+export interface IPlayerList extends IBaseComponentProps {
+	data?: Array<IPlayerListDetail>;
+}
 
 function PlayerList(props: IPlayerList) {
+	const { data } = props;
 	const authContext = React.useContext(AuthContext);
 	const [dialog, setDialog] = React.useState<{
 		open: boolean;
@@ -77,8 +81,8 @@ function PlayerList(props: IPlayerList) {
 				)}
 			</Stack>
 
-			<TableContainer component={Card}>
-				<Table sx={{ minWidth: 650 }} aria-label="simple table">
+			<TableContainer sx={{ maxHeight: "45vh", overflow: "auto" }} component={Card}>
+				<Table sx={{ minWidth: 650 }} stickyHeader aria-label="sticky table">
 					<TableHead>
 						<TableRow>
 							<TableCell align="left" sx={{ width: "50px", minWidth: "50px" }}>
@@ -97,25 +101,31 @@ function PlayerList(props: IPlayerList) {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						<TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }} hover>
-							<TableCell
-								component="th"
-								scope="row"
-								sx={{ width: "50px", minWidth: "50px" }}
+						{data?.map((item, index) => (
+							<TableRow
+								key={index}
+								sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+								hover
 							>
-								1
-							</TableCell>
-							<TableCell align="left">Phil Foden</TableCell>
-							<TableCell align="left">0123456789</TableCell>
-							<TableCell align="left">Anh</TableCell>
-							<TableCell align="left">47</TableCell>
-							<TableCell align="left">Tiền đạo trái</TableCell>
-							{authContext.role === "manager" && (
-								<TableCell align="left" sx={{ width: "120px" }}>
-									<ActionMenu actionList={actionList} item={{ id: "123" }} />
+								<TableCell
+									component="th"
+									scope="row"
+									sx={{ width: "50px", minWidth: "50px" }}
+								>
+									{index + 1}
 								</TableCell>
-							)}
-						</TableRow>
+								<TableCell align="left">{item.playerName}</TableCell>
+								<TableCell align="left">{item.idNumber}</TableCell>
+								<TableCell align="left">{item.stripNumber}</TableCell>
+								<TableCell align="left">{item.position}</TableCell>
+								<TableCell align="left">{item.country}</TableCell>
+								{authContext.role === "manager" && (
+									<TableCell align="left" sx={{ width: "120px" }}>
+										<ActionMenu actionList={actionList} item={{ id: "123" }} />
+									</TableCell>
+								)}
+							</TableRow>
+						))}
 					</TableBody>
 				</Table>
 			</TableContainer>

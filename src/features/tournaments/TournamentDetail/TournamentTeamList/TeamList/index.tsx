@@ -1,32 +1,74 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import { Box, Card, Grid, Stack, Tooltip, Typography } from "@mui/material";
+import { Box, Card, Grid, LinearProgress, Stack, Tooltip, Typography } from "@mui/material";
 import { toast } from "material-react-toastify";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useMatch } from "react-router-dom";
+import { IAPIResponse } from "../../../../../@types/AppInterfaces";
 import { IBaseComponentProps } from "../../../../../@types/ComponentInterfaces";
 import CustomPagination from "../../../../../components/pagination";
 import ToastMsg from "../../../../../components/toast/ToastMsg";
 import AuthContext from "../../../../../contexts/AuthContext";
+import HttpService from "../../../../../services/HttpService";
 import TeamService from "../../../../../services/TeamService";
+import QueryString from "query-string";
 import CreateTeamDialog, { ICreateTeamDialogData } from "./CreateTeamDialog";
 import "./styles.scss";
+import { IPagination } from "../../../../admin/ManagerList";
 
 export interface ITeamListProps extends IBaseComponentProps {}
+
+export interface ITeamListData {
+	_id?: string;
+	name?: string;
+	logo?: string;
+	coachName?: string;
+	totalMember?: number;
+}
 
 function TeamList(props: ITeamListProps) {
 	const authContext = useContext(AuthContext);
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
 	const [isSubmiting, setIsSubmiting] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
+	const [totalPage, setTotalPage] = useState(1);
+	const [pagination, setPagination] = useState({
+		page: 1,
+		maxItem: 5,
+	});
 	const match = useMatch("/tournaments/:id/teams");
 
-	const teamList = Array.from(Array(5)).map((_, index) => {
-		return {
-			_id: index,
-			name: "Manchester city",
-			logo: "https://givetour.s3.amazonaws.com/UploadFiles/Competitors/170397.png",
-			coachName: "Pep guardiola",
+	const [teamList, setTeamList] = useState<Array<ITeamListData>>([]);
+
+	useEffect(() => {
+		const fetch = async () => {
+			setIsLoading(true);
+			const param = {
+				page: pagination.page,
+				limit: pagination.maxItem,
+			};
+			try {
+				const res = await HttpService.get<IAPIResponse<Array<ITeamListData> | string>>(
+					`/teams?${QueryString.stringify(param)}`,
+				);
+				if (res.code === 200) {
+					setTeamList(res.data as Array<ITeamListData>);
+					const metadata = res.metadata as IPagination;
+					setTotalPage(Math.ceil(metadata.pagination.totalRecord / pagination.maxItem));
+				} else {
+					toast(<ToastMsg title={res?.data as string} type="error" />, {
+						type: toast.TYPE.ERROR,
+					});
+				}
+			} catch (e) {
+				console.log(e);
+				toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
+					type: toast.TYPE.ERROR,
+				});
+			}
+			setIsLoading(false);
 		};
-	});
+		fetch();
+	}, [pagination]);
 
 	const handleSubmitCreate = async (data: ICreateTeamDialogData) => {
 		if (!match || !match.params.id) {
@@ -34,8 +76,7 @@ function TeamList(props: ITeamListProps) {
 		}
 		const formData = new FormData();
 		formData.append("name", data.name);
-		// formData.append("tournamentId", match.params.id);
-		formData.append("tournamentId", "6260414ebc4ce114bdc9953c");
+		formData.append("tournamentId", match.params.id);
 		formData.append("playerList", JSON.stringify(data.playerList));
 		formData.append("staffList", JSON.stringify(data.staffList));
 		formData.append("logo", data.logo);
@@ -73,93 +114,116 @@ function TeamList(props: ITeamListProps) {
 				onSubmit={handleSubmitCreate}
 				loading={isSubmiting}
 			/>
-			<Grid container spacing={2}>
-				{authContext.role === "manager" && (
-					<Grid
-						item
-						xl={2}
-						lg={3}
-						md={4}
-						xs={6}
-						sx={{ display: "flex", justifyContent: "center" }}
-					>
-						<Tooltip title="Thêm đội bóng" placement="right">
-							<Card className="team-card-add" onClick={() => setIsCreateOpen(true)}>
-								<AddRoundedIcon sx={{ fontSize: "4rem" }} />
-							</Card>
-						</Tooltip>
-					</Grid>
-				)}
-				{teamList.map((team, index) => {
-					return (
+			{isLoading ? (
+				<Box sx={{ width: "100%" }}>
+					<LinearProgress />
+				</Box>
+			) : (
+				<Grid container spacing={2}>
+					{authContext.role === "manager" && pagination.page === 1 && (
 						<Grid
 							item
 							xl={2}
 							lg={3}
 							md={4}
 							xs={6}
-							key={index}
 							sx={{ display: "flex", justifyContent: "center" }}
 						>
-							<Card className="team-card">
-								<Box
-									sx={{ width: "100%", height: "100px" }}
-									className="team-card-image"
+							<Tooltip title="Thêm đội bóng" placement="right">
+								<Card
+									className="team-card-add"
+									onClick={() => setIsCreateOpen(true)}
 								>
-									<img
-										src={`${team.logo}`}
-										alt="logoTeam"
-										style={{ width: "100%", height: "100%" }}
-									/>
-								</Box>
-								<Stack spacing={1} className="team-card-content">
-									<Typography
-										variant="h6"
-										sx={{ textTransform: "uppercase", color: "#fff" }}
-									>
-										{team.name}
-									</Typography>
-
-									<Typography
-										sx={{
-											textTransform: "uppercase",
-											color: "#fff",
-											fontSize: "0.875rem",
-										}}
-									>
-										{team.coachName}
-									</Typography>
-
-									<Typography
-										sx={{
-											color: "#fff",
-											fontSize: "0.5rem",
-											textAlign: "right",
-										}}
-									>
-										<Link
-											to={`./${team._id}`}
-											className="team-card-content-link"
-										>
-											Chi tiết
-										</Link>
-									</Typography>
-								</Stack>
-							</Card>
+									<AddRoundedIcon sx={{ fontSize: "4rem" }} />
+								</Card>
+							</Tooltip>
 						</Grid>
-					);
-				})}
-			</Grid>
+					)}
+					{teamList.map((team, index) => {
+						return (
+							<Grid
+								item
+								xl={2}
+								lg={3}
+								md={4}
+								xs={6}
+								key={index}
+								sx={{ display: "flex", justifyContent: "center" }}
+							>
+								<Card className="team-card">
+									<Box
+										sx={{ width: "100%", height: "100px" }}
+										className="team-card-image"
+									>
+										<img
+											src={`${team.logo}`}
+											alt="logoTeam"
+											style={{
+												width: "100%",
+												height: "100%",
+												objectFit: "contain",
+											}}
+										/>
+									</Box>
+									<Stack spacing={1} className="team-card-content">
+										<Stack spacing={1}>
+											<Typography
+												variant="h6"
+												sx={{ textTransform: "uppercase", color: "#fff" }}
+											>
+												{team.name}
+											</Typography>
+											<Typography
+												sx={{
+													textTransform: "uppercase",
+													color: "#fff",
+													fontSize: "0.875rem",
+												}}
+											>
+												{team.coachName}
+											</Typography>
+										</Stack>
+										<Typography
+											sx={{
+												color: "#fff",
+												fontSize: "0.5rem",
+												textAlign: "right",
+											}}
+										>
+											<Link
+												to={`./${team._id}`}
+												className="team-card-content-link"
+											>
+												Chi tiết
+											</Link>
+										</Typography>
+									</Stack>
+								</Card>
+							</Grid>
+						);
+					})}
+				</Grid>
+			)}
 
 			<Stack direction="row-reverse" sx={{ width: "100%" }}>
 				<CustomPagination
-					page={1}
-					totalPage={10}
-					onChange={() => {}}
+					page={pagination.page}
+					totalPage={totalPage}
+					onChange={(value) =>
+						setPagination({
+							...pagination,
+							page: value,
+						})
+					}
 					allowChangeMax
-					maxItemList={[5, 10, 15, 20]}
-					maxItem={5}
-					onChangeMaxItem={() => {}}
+					maxItem={pagination.maxItem}
+					maxItemList={[5, 10, 15, 20, 25]}
+					onChangeMaxItem={(value) =>
+						setPagination({
+							page: 1,
+							maxItem: value,
+						})
+					}
 				/>
 			</Stack>
 		</Stack>

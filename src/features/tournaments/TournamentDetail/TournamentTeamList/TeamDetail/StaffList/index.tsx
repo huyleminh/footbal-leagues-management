@@ -13,21 +13,32 @@ import {
 	TableRow,
 	Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import Swal from "sweetalert2";
+import { ITeamStaff } from "..";
 import { IBaseComponentProps } from "../../../../../../@types/ComponentInterfaces";
 import ActionMenu, { IActionList } from "../../../../../../components/actionmenu/ActionMenu";
 import AuthContext from "../../../../../../contexts/AuthContext";
 import StaffFormDialog, { IStaffFormDialogData } from "../StaffFormDialog";
 
-export interface IStaffList extends IBaseComponentProps {}
+export interface IStaffList extends IBaseComponentProps {
+	data?: Array<ITeamStaff>;
+}
+
+enum TEAM_STAFF_ROLE_ENUM {
+	COACH,
+	COACH_ASSISTANT,
+	STAFF,
+}
 
 function StaffList(props: IStaffList) {
+	const { data } = props;
 	const authContext = React.useContext(AuthContext);
 	const [dialog, setDialog] = React.useState<{ open: boolean; mode: "create" | "edit" }>({
 		open: false,
 		mode: "create",
 	});
+	// const [componentData, setComponentData] = React.useState(data);
 	const [initData, setInitData] = React.useState({
 		fullname: "",
 		country: "",
@@ -83,8 +94,8 @@ function StaffList(props: IStaffList) {
 				)}
 			</Stack>
 
-			<TableContainer component={Card}>
-				<Table sx={{ minWidth: 650 }} aria-label="simple table">
+			<TableContainer sx={{ maxHeight: "45vh", overflow: "auto" }} component={Card}>
+				<Table sx={{ minWidth: 650 }} stickyHeader aria-label="sticky table">
 					<TableHead>
 						<TableRow>
 							<TableCell align="left" sx={{ width: "50px", minWidth: "50px" }}>
@@ -101,23 +112,35 @@ function StaffList(props: IStaffList) {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						<TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }} hover>
-							<TableCell
-								component="th"
-								scope="row"
-								sx={{ width: "50px", minWidth: "50px" }}
+						{data?.map((item, index) => (
+							<TableRow
+								key={index}
+								sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+								hover
 							>
-								1
-							</TableCell>
-							<TableCell align="left">Pep Guardiola</TableCell>
-							<TableCell align="left">HLV trưởng</TableCell>
-							<TableCell align="left">Tây Ban Nha</TableCell>
-							{authContext.role === "manager" && (
-								<TableCell align="left" sx={{ width: "120px" }}>
-									<ActionMenu actionList={actionList} item={{ id: "123" }} />
+								<TableCell
+									component="th"
+									scope="row"
+									sx={{ width: "50px", minWidth: "50px" }}
+								>
+									{index + 1}
 								</TableCell>
-							)}
-						</TableRow>
+								<TableCell align="left">{item.fullname}</TableCell>
+								<TableCell align="left">
+									{item.role === TEAM_STAFF_ROLE_ENUM.COACH
+										? "HLV Trưởng"
+										: item.role === TEAM_STAFF_ROLE_ENUM.COACH_ASSISTANT
+										? "Trợ lý HLV"
+										: "Nhân viên"}
+								</TableCell>
+								<TableCell align="left">{item.country}</TableCell>
+								{authContext.role === "manager" && (
+									<TableCell align="left" sx={{ width: "120px" }}>
+										<ActionMenu actionList={actionList} item={{ id: "123" }} />
+									</TableCell>
+								)}
+							</TableRow>
+						))}
 					</TableBody>
 				</Table>
 			</TableContainer>
