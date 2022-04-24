@@ -201,11 +201,11 @@ function ConfigForm(props: IConfigFormProps) {
 							justifyContent: "flex-end",
 						}}
 					>
-						Số tối đa mỗi trận <span style={{ color: "#F85166" }}>*</span>
+						Số cầu thủ tối đa mỗi trận <span style={{ color: "#F85166" }}>*</span>
 					</Typography>
 					<TextField
 						variant="outlined"
-						placeholder="Nhập số tối đa mỗi trận"
+						placeholder="Nhập số cầu thủ tối đa mỗi trận"
 						type="number"
 						size="small"
 						sx={{ flexGrow: 1 }}
