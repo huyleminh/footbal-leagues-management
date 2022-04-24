@@ -99,7 +99,6 @@ export function readStaffsTemplateUploadAsync(inputFile: File): Promise<IStaffEx
 
 			for (let staffRow of staffListJson) {
 				if (staffRow["Name"] === undefined || !staffRow["Name"].match(regex.name)) {
-					console.log(1);
 					importResult.totalError++;
 					continue;
 				}
@@ -108,7 +107,6 @@ export function readStaffsTemplateUploadAsync(inputFile: File): Promise<IStaffEx
 					staffRow["Role"] < 0 ||
 					staffRow["Role"] > 2
 				) {
-					console.log(2);
 					importResult.totalError++;
 					continue;
 				}
@@ -116,7 +114,6 @@ export function readStaffsTemplateUploadAsync(inputFile: File): Promise<IStaffEx
 					staffRow["Nationality"] === undefined ||
 					!staffRow["Nationality"].match(regex.name)
 				) {
-					console.log(3);
 					importResult.totalError++;
 					continue;
 				}
