@@ -13,12 +13,17 @@ import {
 	TableRow,
 	Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useReducer, useState } from "react";
+import { toast } from "material-react-toastify";
+import ToastMsg from "../../../../../../components/toast/ToastMsg";
+import { useMatch } from "react-router-dom";
 import Swal from "sweetalert2";
 import { ITeamStaff } from "..";
+import { IAPIResponse } from "../../../../../../@types/AppInterfaces";
 import { IBaseComponentProps } from "../../../../../../@types/ComponentInterfaces";
 import ActionMenu, { IActionList } from "../../../../../../components/actionmenu/ActionMenu";
 import AuthContext from "../../../../../../contexts/AuthContext";
+import HttpService from "../../../../../../services/HttpService";
 import StaffFormDialog, { IStaffFormDialogData } from "../StaffFormDialog";
 
 export interface IStaffList extends IBaseComponentProps {
@@ -38,6 +43,7 @@ function StaffList(props: IStaffList) {
 		open: false,
 		mode: "create",
 	});
+	const match = useMatch("tournaments/:tournamentId/teams/:id");
 	// const [componentData, setComponentData] = React.useState(data);
 	const [initData, setInitData] = React.useState({
 		fullname: "",
@@ -45,8 +51,28 @@ function StaffList(props: IStaffList) {
 		role: 2,
 	});
 
-	const handleSubmitDialog = (data: IStaffFormDialogData) => {
-		console.log(data);
+	const handleSubmitDialog = async (data: IStaffFormDialogData) => {
+		try {
+			const res = await HttpService.post<IAPIResponse<string>>(
+				`/teams/${match?.params.id || ""}/staffs`,
+				data,
+			);
+			if (res.code === 201) {
+				toast(<ToastMsg title="Tạo thành công!" type="success" />, {
+					type: toast.TYPE.SUCCESS,
+				});
+			} else {
+				toast(<ToastMsg title={res?.data as string} type="error" />, {
+					type: toast.TYPE.ERROR,
+				});
+			}
+		} catch (err) {
+			console.log(err);
+			toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
+				type: toast.TYPE.ERROR,
+			});
+		}
+		window.location.reload()
 		setDialog({ ...dialog, open: false });
 	};
 
