@@ -48,19 +48,15 @@ export default class TournamentController extends AppController {
 		const apiRes = new AppResponse(res);
 		const { payload, tokenPayload } = res.locals;
 		const filter = [];
-
+		let regexString = ".";
 		if (payload.searchTypeNum === TOURNAMENT_SEARCH_TYPE_ENUM.MANAGER_NAME) {
-			filter.push({
-				"manager.fullname": {
-					$regex: escapeStringRegexp(payload.query ? payload.query : ""),
-				},
-			});
+			regexString = escapeStringRegexp(payload.query ? payload.query : "");
 		}
 		if (payload.tournamentStatus !== undefined) {
 			filter.push({ status: payload.tournamentStatus });
 		}
 		if (payload.isSelfAssigned) {
-			filter.push({ createdBy: { $in: [new mongoose.Types.ObjectId(tokenPayload.userId)] } });
+			filter.push({ createdBy: { $eq: new mongoose.Types.ObjectId(tokenPayload.userId) } });
 		}
 
 		const pipeline: Array<any> = [
@@ -71,6 +67,9 @@ export default class TournamentController extends AppController {
 					foreignField: "_id",
 					as: "manager",
 				},
+			},
+			{
+				$match: { "manager.fullname": { $regex: regexString } },
 			},
 			{
 				$project: {
