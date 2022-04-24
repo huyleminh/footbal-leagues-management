@@ -75,7 +75,7 @@ function TournamentDetail(props: ITournamentDetailProps) {
 			setIsLoading(false);
 		};
 		fetch();
-	}, []);
+	}, [match]);
 
 	const handleChange = (event: React.SyntheticEvent, newValue: number) => {
 		setValue(newValue);
