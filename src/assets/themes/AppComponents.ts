@@ -28,6 +28,17 @@ export const AppComponents: Components = {
 			},
 		},
 	},
+	MuiOutlinedInput: {
+		styleOverrides: {
+			root: {
+				fontSize: "0.875rem",
+				"&.Mui-error": {
+					color: "#FF4842",
+					backgroundColor: "#fddad9a6",
+				},
+			},
+		},
+	},
 	MuiButton: {
 		styleOverrides: {
 			root: {
@@ -49,5 +60,85 @@ export const AppComponents: Components = {
 				color: "#FF4842",
 			},
 		},
+	},
+	MuiPaginationItem: {
+		styleOverrides: {
+			root: {
+				"&:hover": {
+					backgroundColor: "#c4a0f3",
+					color: "#fff",
+				},
+				"&.Mui-selected": {
+					backgroundColor: "#6E00FF",
+					color: "#fff",
+					"&:hover": {
+						backgroundColor: "#6E00FF",
+					},
+				},
+			},
+		},
+	},
+	MuiFormLabel: {
+		styleOverrides: {
+			root: {
+				fontSize: "15px",
+				color: "#000",
+			},
+		},
+	},
+	MuiFormControlLabel: {
+		styleOverrides: {
+			root: {
+				"&>.MuiFormControlLabel-label": {
+					fontSize: "15px",
+					color: "#000",
+				},
+			},
+		},
+	},
+	MuiChip: {
+		styleOverrides: {
+			root: {
+				fontWeight: 600,
+				fontSize: "13px",
+				"&>.MuiChip-label": {
+					paddingLeft: "1rem",
+					paddingRight: "1rem",
+				},
+			},
+		},
+	},
+	MuiMenuItem: {
+		styleOverrides: {
+			root: {
+				fontSize: "15px",
+			},
+		},
+	},
+	MuiCard: {
+		styleOverrides: {
+			root: {
+				boxShadow: "rgb(58 53 65 / 10%) 0px 2px 10px 0px;",
+				borderRadius: "0.5rem",
+			},
+		},
+	},
+	MuiTableHead: {
+		styleOverrides: {
+			root: {
+				backgroundColor: "#fafafa",
+			},
+		},
+	},
+	MuiTableCell: {
+		styleOverrides: {
+			root: {
+				fontSize: "0.875rem",
+				padding: "0.75rem 1rem",
+			},
+		},
+	},
+	MuiTableRow: {
+		styleOverrides: {},
 	},
 };

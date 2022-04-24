@@ -6,6 +6,7 @@ import * as morgan from "morgan";
 import { IAppNextFuction, IAppRequest, IAppResponse } from "./@types/AppBase";
 import ControllerList from "./controllers";
 import AppController from "./controllers/AppController";
+import AuthMiddlewares from "./middlewares/AuthMiddlewares";
 import { AppConfigs } from "./shared/AppConfigs";
 import { AppLogStream, Logger } from "./utils/Logger";
 
@@ -19,15 +20,13 @@ export default class Server {
 	}
 
 	initializeGlobalMiddlewares() {
+		this._app.use("/public", express.static("public"));
 		this._app.use(express.json());
 		this._app.use(express.urlencoded({ extended: true }));
 		this._app.use(helmet());
 		this._app.use(
 			cors({
 				origin: AppConfigs.AUTH_CLIENT_URLS,
-				// origin: function (origin, callback) {
-				//     callback(null, true);
-				// },
 				credentials: true,
 				methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
 				allowedHeaders: [
@@ -45,6 +44,7 @@ export default class Server {
 				stream: new AppLogStream(),
 			}),
 		);
+		this._app.use(AuthMiddlewares.verifyUserToken);
 	}
 
 	initializeControllers() {
@@ -87,7 +87,7 @@ export default class Server {
 
 		this.initializeErrorHandlerMiddlewares();
 		this._app.listen(this.PORT, () => {
-			Logger.info(`Server is listening on ${AppConfigs.APP_DOMAIN}:${this.PORT}`);
+			Logger.info(`Server is listening on port ${this.PORT}`);
 		});
 	}
 }

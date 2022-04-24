@@ -1,4 +1,8 @@
 import { ThemeProvider } from "@mui/material";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { ToastContainer } from "material-react-toastify";
+import "material-react-toastify/dist/ReactToastify.css";
 import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter } from "react-router-dom";
@@ -11,7 +15,19 @@ ReactDOM.render(
 	<React.StrictMode>
 		<BrowserRouter>
 			<ThemeProvider theme={GlobalTheme}>
-				<App />
+				<LocalizationProvider dateAdapter={AdapterDateFns}>
+					<App />
+				</LocalizationProvider>
+				<ToastContainer
+					position="top-right"
+					autoClose={3000}
+					hideProgressBar
+					newestOnTop={true}
+					closeOnClick
+					pauseOnFocusLoss
+					draggable
+					pauseOnHover
+				/>
 			</ThemeProvider>
 		</BrowserRouter>
 	</React.StrictMode>,

@@ -58,7 +58,7 @@ export const AppPalettesLight: PaletteOptions = {
 		white: "#FFF",
 		black: "#000",
 	},
-	divider: " rgba(145, 158, 171, 0.24)",
+	divider: "rgba(145, 158, 171, 0.24)",
 	action: {
 		active: "#637381",
 		hover: "rgba(145, 158, 171, 0.08)",

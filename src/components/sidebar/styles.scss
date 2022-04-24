@@ -1,0 +1,11 @@
+.dashboard-sidebar {
+	height: auto;
+	margin-left: 0;
+	transition: margin-left 0.3s ease-in-out;
+}
+
+.dashboard-sidebar.hidden {
+	margin-left: -260px;
+	transition: margin-left 0.3s ease-in-out, padding-left 0.3s ease-in-out,
+		padding-top 0s 0.3s, padding-bottom 0s 0.3s;
+}
