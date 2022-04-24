@@ -34,8 +34,7 @@ function TeamList(props: ITeamListProps) {
 		}
 		const formData = new FormData();
 		formData.append("name", data.name);
-		// formData.append("tournamentId", match.params.id);
-		formData.append("tournamentId", "6260414ebc4ce114bdc9953c");
+		formData.append("tournamentId", match.params.id);
 		formData.append("playerList", JSON.stringify(data.playerList));
 		formData.append("staffList", JSON.stringify(data.staffList));
 		formData.append("logo", data.logo);
