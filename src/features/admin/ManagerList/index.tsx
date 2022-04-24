@@ -51,7 +51,7 @@ export interface IManagerTableRow {
 	lastLockedDate: string;
 }
 
-interface IPagination extends IAPIBaseMetadata {
+export interface IPagination extends IAPIBaseMetadata {
 	pagination: {
 		page: number;
 		pageSize: number;

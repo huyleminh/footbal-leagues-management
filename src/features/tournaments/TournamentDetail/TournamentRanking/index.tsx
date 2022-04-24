@@ -56,7 +56,7 @@ function TournamentRanking(props: IBaseComponentProps) {
 			setIsLoading(false);
 		};
 		fetch();
-	}, []);
+	}, [match]);
 
 	return (
 		<>
