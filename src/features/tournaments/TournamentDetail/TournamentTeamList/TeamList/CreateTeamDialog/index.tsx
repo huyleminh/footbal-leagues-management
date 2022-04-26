@@ -316,7 +316,7 @@ function CreateTeamDialog(props: ICreateTeamDialog) {
 			</DialogContent>
 
 			<DialogActions>
-				<Button disabled={loading} variant="outlined" onClick={() => onCancel()}>
+				<Button disabled={loading} variant="text" onClick={() => onCancel()}>
 					Hủy
 				</Button>
 				<Button

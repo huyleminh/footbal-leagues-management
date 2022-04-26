@@ -47,7 +47,7 @@ function CreateMatch(props: ICreateMatchProps) {
 	};
 
 	return (
-		<Dialog maxWidth={false} onClose={() => onClose(false)} open={open} scroll="paper">
+		<Dialog maxWidth="sm" fullWidth onClose={() => onClose(false)} open={open} scroll="paper">
 			<DialogTitle>
 				<Box
 					sx={{
@@ -59,7 +59,7 @@ function CreateMatch(props: ICreateMatchProps) {
 				</Box>
 			</DialogTitle>
 			<DialogContent>
-				<Stack sx={{ width: "50vw" }} spacing={3}>
+				<Stack spacing={3}>
 					<Box sx={{ display: "flex" }}>
 						<Box sx={{ width: "30%" }}>
 							<FormControl sx={{ marginTop: 1, width: "100%" }} size="small">
@@ -144,7 +144,7 @@ function CreateMatch(props: ICreateMatchProps) {
 								value={form.startDate}
 								onChange={handleChangeTime}
 								renderInput={(params) => (
-									<TextField sx={{ width: "100%" }} {...params} />
+									<TextField size="small" sx={{ width: "100%" }} {...params} />
 								)}
 							/>
 						</Box>
@@ -163,6 +163,7 @@ function CreateMatch(props: ICreateMatchProps) {
 							<TextField
 								sx={{ width: "100%" }}
 								label="Sân đấu"
+								size="small"
 								// name="mainMinute"
 								// value={minuteExtra.main}
 								variant="outlined"

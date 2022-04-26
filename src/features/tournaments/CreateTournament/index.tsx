@@ -60,20 +60,18 @@ function CreateTournament(props: ICreateTournamentProps) {
 
 		setIsLoading(true);
 		try {
-			const res = await HttpService.post<IAPIResponse<any | string>>(
-				"/tournaments",
-				data,
-				{
-					headers: {
-						"Content-Type": "multipart/form-data",
-					},
+			const res = await HttpService.post<IAPIResponse<any | string>>("/tournaments", data, {
+				headers: {
+					"Content-Type": "multipart/form-data",
 				},
-			);
+			});
 			if (res.code === 201) {
 				toast(<ToastMsg title="Tạo mới thành công" type="success" />, {
 					type: toast.TYPE.SUCCESS,
 				});
-				navigate("/tournaments");
+				setTimeout(() => {
+					navigate("/tournaments");
+				}, 1500);
 			} else if (res.code === 400) {
 				toast(<ToastMsg title={res.data as string} type="error" />, {
 					type: toast.TYPE.ERROR,

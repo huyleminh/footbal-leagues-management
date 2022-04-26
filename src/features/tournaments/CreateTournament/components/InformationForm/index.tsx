@@ -152,7 +152,7 @@ function InformationForm(props: IInformationFormProps) {
 					{!disabled && (
 						<>
 							<Button
-								variant="outlined"
+								variant="text"
 								type="button"
 								onClick={() => onPrevious && onPrevious()}
 							>

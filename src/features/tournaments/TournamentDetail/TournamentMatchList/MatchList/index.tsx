@@ -9,16 +9,15 @@ import {
 	Select,
 	Stack,
 	TextField,
-	Tooltip,
-	Typography,
+	Typography
 } from "@mui/material";
 import { useContext, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { IBaseComponentProps } from "../../../../../@types/ComponentInterfaces";
 import AuthContext from "../../../../../contexts/AuthContext";
 import ViewMatchDetail from "../MatchDetail/ViewMatchDetail";
-import MatchListItem, { MatchListItemType } from "./MatchListItem";
-import { useLocation } from "react-router-dom";
 import CreateMatch from "./CreateMatch";
+import MatchListItem, { MatchListItemType } from "./MatchListItem";
 
 export interface IMatchListProps extends IBaseComponentProps {}
 
@@ -97,26 +96,25 @@ function MatchList(props: IMatchListProps) {
 				matchId={targetMatchId}
 				onClose={setOpenDetailModal}
 			/>
-			<Stack sx={{ height: "100%" }} spacing={1}>
-				<Box sx={{ display: "flex", justifyContent: "space-between", mb: 4 }}>
+			<Stack sx={{ height: "100%" }}>
+				<Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
 					<Stack
 						spacing={2}
 						sx={{ display: "flex", alignItems: "center" }}
 						direction="row"
 					>
 						{context.role === "manager" ? (
-							<Tooltip title="Tạo mới">
-								<Button
-									color="primary"
-									variant="contained"
-									size="small"
-									onClick={() => setOpenCreateModal(true)}
-								>
-									<AddRoundedIcon />
-								</Button>
-							</Tooltip>
+							<Button
+								color="primary"
+								variant="contained"
+								size="small"
+								onClick={() => setOpenCreateModal(true)}
+								startIcon={<AddRoundedIcon />}
+							>
+								Tạo mới
+							</Button>
 						) : null}
-						<Typography variant="h6">Lọc</Typography>
+						<Typography sx={{ fontSize: "1rem", fontWeight: 600 }}>Lọc</Typography>
 
 						<FormControl sx={{ m: 0, minWidth: 120 }} size="small">
 							<InputLabel id="round">Vòng đấu</InputLabel>

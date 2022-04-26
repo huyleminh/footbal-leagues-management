@@ -50,14 +50,14 @@ export default class HttpService {
 		return this.handleAPIResponse(await axiosInstance.post<T>(path, payload, extraConfig));
 	}
 
-	public static async delete<T>(path: string, extraConfig: AxiosRequestConfig): Promise<T> {
+	public static async delete<T>(path: string, extraConfig?: AxiosRequestConfig): Promise<T> {
 		return this.handleAPIResponse(await axiosInstance.delete<T>(path, extraConfig));
 	}
 
 	public static async put<T>(
 		path: string,
 		payload: any,
-		extraConfig: AxiosRequestConfig,
+		extraConfig?: AxiosRequestConfig,
 	): Promise<T> {
 		return this.handleAPIResponse(await axiosInstance.put<T>(path, payload, extraConfig));
 	}

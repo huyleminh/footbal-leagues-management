@@ -53,4 +53,7 @@ export const AppTypography: TypographyOptions = {
 		lineHeight: "26px",
 		color: "#A4AFB9",
 	},
+	body2: {
+		fontWeight: 500,
+	}
 };

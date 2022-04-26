@@ -30,9 +30,9 @@ export interface IMatchEventType {
 }
 
 interface IMatchEventProps extends IBaseComponentProps {
-    editMode: boolean;
-    matchEvent: Array<IMatchEventType>;
-    setMatchEvent: Function;
+	editMode: boolean;
+	matchEvent: Array<IMatchEventType>;
+	setMatchEvent: Function;
 	openModal: Function;
 }
 
@@ -46,48 +46,26 @@ function MatchEvent(props: IMatchEventProps) {
 	return (
 		<Stack spacing={2}>
 			{editMode ? (
-				<Box
-					sx={{
-						display: "flex",
-						minHeight: "50px",
-					}}
-				>
-					<Box sx={{ display: "flex", width: "41%" }}>
-						<Button
-							startIcon={<EditRoundedIcon fontSize="small" />}
-							color="primary"
-							variant="contained"
-							onClick={() => openModal(true)}
-						>
-							Thêm
-						</Button>
-					</Box>
-					<Box
-						sx={{
-							display: "flex",
-							justifyContent: "center",
-							width: "18%",
-						}}
+				<Stack justifyContent="space-between" direction="row">
+					<Button
+						startIcon={<EditRoundedIcon fontSize="small" />}
+						color="primary"
+						variant="contained"
+						onClick={() => openModal(true)}
+						size="small"
 					>
-						<Box
-							sx={{
-								display: "flex",
-								justifyContent: "center",
-								width: "100%",
-							}}
-						></Box>
-					</Box>
-					<Box sx={{ display: "flex", width: "41%", justifyContent: "flex-end" }}>
-						<Button
-							startIcon={<EditRoundedIcon fontSize="small" />}
-							color="primary"
-							variant="contained"
-							onClick={() => openModal(false)}
-						>
-							Thêm
-						</Button>
-					</Box>
-				</Box>
+						Thêm
+					</Button>
+					<Button
+						startIcon={<EditRoundedIcon fontSize="small" />}
+						color="primary"
+						variant="contained"
+						onClick={() => openModal(false)}
+						size="small"
+					>
+						Thêm
+					</Button>
+				</Stack>
 			) : null}
 			<Box
 				sx={{
@@ -95,107 +73,76 @@ function MatchEvent(props: IMatchEventProps) {
 					minHeight: "50px",
 				}}
 			>
-				<Box sx={{ display: "flex", width: "41%" }}>
-					<Box
-						sx={{
-							display: "flex",
-							justifyContent: "center",
-							width: "100%",
-						}}
+				<Stack sx={{ width: "41%" }} spacing={2}>
+					{matchEvent
+						.filter(
+							(item) =>
+								(item.eventType === EVENT_TYPE.GOAL ||
+									item.eventType === EVENT_TYPE.OG ||
+									item.eventType === EVENT_TYPE.PEN) &&
+								item.isHome,
+						)
+						.map((element, index) => {
+							return (
+								<Typography
+									key={index}
+									sx={{
+										width: "100%",
+										textAlign: "left",
+									}}
+									variant="body2"
+								>
+									{editMode ? (
+										<Button onClick={() => handleDelete(element)}>
+											<ClearRoundedIcon fontSize="small" />
+										</Button>
+									) : null}
+									{element.subPlayer
+										? `${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - Kiến tạo: ${element.subPlayer.name} (${element.subPlayer.stripNumber}) - ${element.minute}'`
+										: `${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - ${element.minute}'`}
+								</Typography>
+							);
+						})}
+				</Stack>
+				<Box sx={{ width: "18%" }}>
+					<Typography
+						sx={{ fontWeight: "700", textAlign: "center", width: "100%" }}
+						variant="body2"
 					>
-						<Stack sx={{ width: "100%" }} spacing={2}>
-							{matchEvent
-								.filter(
-									(item) =>
-										(item.eventType === EVENT_TYPE.GOAL ||
-											item.eventType === EVENT_TYPE.OG ||
-											item.eventType === EVENT_TYPE.PEN) &&
-										item.isHome,
-								)
-								.map((element, index) => {
-									return (
-										<Typography
-											key={index}
-											sx={{
-												width: "100%",
-												textAlign: "left",
-											}}
-											variant="body1"
-										>
-											{editMode ? (
-												<Button onClick={() => handleDelete(element)}>
-													<ClearRoundedIcon fontSize="small" />
-												</Button>
-											) : null}
-											{element.subPlayer
-												? `${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - Kiến tạo: ${element.subPlayer.name} (${element.subPlayer.stripNumber}) - ${element.minute}'`
-												: `${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - ${element.minute}'`}
-										</Typography>
-									);
-								})}
-						</Stack>
-					</Box>
+						Ghi bàn
+					</Typography>
 				</Box>
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "center",
-						width: "18%",
-					}}
-				>
-					<Box
-						sx={{
-							display: "flex",
-							justifyContent: "center",
-							width: "100%",
-						}}
-					>
-						<Typography sx={{ fontWeight: "bold" }} variant="body1">
-							Ghi bàn
-						</Typography>
-					</Box>
-				</Box>
-				<Box sx={{ display: "flex", width: "41%" }}>
-					<Box
-						sx={{
-							display: "flex",
-							width: "100%",
-							justifyContent: "center",
-						}}
-					>
-						<Stack sx={{ width: "100%" }} spacing={2}>
-							{matchEvent
-								.filter(
-									(item) =>
-										(item.eventType === EVENT_TYPE.GOAL ||
-											item.eventType === EVENT_TYPE.OG ||
-											item.eventType === EVENT_TYPE.PEN) &&
-										!item.isHome,
-								)
-								.map((element, index) => {
-									return (
-										<Typography
-											key={index}
-											sx={{
-												width: "100%",
-												textAlign: "right",
-											}}
-											variant="body1"
-										>
-											{element.subPlayer
-												? `${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - Kiến tạo: ${element.subPlayer.name} (${element.subPlayer.stripNumber}) - ${element.minute}'`
-												: `${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - ${element.minute}'`}
-											{editMode ? (
-												<Button onClick={() => handleDelete(element)}>
-													<ClearRoundedIcon fontSize="small" />
-												</Button>
-											) : null}
-										</Typography>
-									);
-								})}
-						</Stack>
-					</Box>
-				</Box>
+				<Stack sx={{ width: "41%" }} spacing={2}>
+					{matchEvent
+						.filter(
+							(item) =>
+								(item.eventType === EVENT_TYPE.GOAL ||
+									item.eventType === EVENT_TYPE.OG ||
+									item.eventType === EVENT_TYPE.PEN) &&
+								!item.isHome,
+						)
+						.map((element, index) => {
+							return (
+								<Typography
+									key={index}
+									sx={{
+										width: "100%",
+										textAlign: "right",
+									}}
+									variant="body2"
+								>
+									{element.subPlayer
+										? `${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - Kiến tạo: ${element.subPlayer.name} (${element.subPlayer.stripNumber}) - ${element.minute}'`
+										: `${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - ${element.minute}'`}
+									{editMode ? (
+										<Button onClick={() => handleDelete(element)}>
+											<ClearRoundedIcon fontSize="small" />
+										</Button>
+									) : null}
+								</Typography>
+							);
+						})}
+				</Stack>
 			</Box>
 			<Box
 				sx={{
@@ -203,115 +150,82 @@ function MatchEvent(props: IMatchEventProps) {
 					minHeight: "50px",
 				}}
 			>
-				<Box sx={{ display: "flex", width: "41%" }}>
-					<Box
-						sx={{
-							display: "flex",
-							position: "relative",
-							justifyContent: "center",
-							width: "100%",
-						}}
+				<Stack sx={{ width: "41%" }} spacing={2}>
+					{matchEvent
+						.filter(
+							(item) =>
+								(item.eventType === EVENT_TYPE.YEL_CARD ||
+									item.eventType === EVENT_TYPE.RED_CARD) &&
+								item.isHome,
+						)
+						.map((element, index) => {
+							return (
+								<Typography
+									key={index}
+									sx={{
+										width: "100%",
+										textAlign: "left",
+									}}
+									variant="body2"
+								>
+									{editMode ? (
+										<Button onClick={() => handleDelete(element)}>
+											<ClearRoundedIcon fontSize="small" />
+										</Button>
+									) : null}
+									{`${element.mainPlayer.name} (${
+										element.mainPlayer.stripNumber
+									}) - ${
+										element.eventType === EVENT_TYPE.YEL_CARD
+											? "Thẻ vàng"
+											: "Thẻ đỏ"
+									} - ${element.minute}'`}
+								</Typography>
+							);
+						})}
+				</Stack>
+				<Box sx={{ width: "18%" }}>
+					<Typography
+						sx={{ fontWeight: "700", width: "100%", textAlign: "center" }}
+						variant="body2"
 					>
-						<Stack sx={{ width: "100%" }} spacing={2}>
-							{matchEvent
-								.filter(
-									(item) =>
-										(item.eventType === EVENT_TYPE.YEL_CARD ||
-											item.eventType === EVENT_TYPE.RED_CARD) &&
-										item.isHome,
-								)
-								.map((element, index) => {
-									return (
-										<Typography
-											key={index}
-											sx={{
-												width: "100%",
-												textAlign: "left",
-											}}
-											variant="body1"
-										>
-											{editMode ? (
-												<Button onClick={() => handleDelete(element)}>
-													<ClearRoundedIcon fontSize="small" />
-												</Button>
-											) : null}
-											{`${element.mainPlayer.name} (${
-												element.mainPlayer.stripNumber
-											}) - ${
-												element.eventType === EVENT_TYPE.YEL_CARD
-													? "Thẻ vàng"
-													: "Thẻ đỏ"
-											} - ${element.minute}'`}
-										</Typography>
-									);
-								})}
-						</Stack>
-					</Box>
+						Thẻ
+					</Typography>
 				</Box>
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "center",
-						width: "18%",
-					}}
-				>
-					<Box
-						sx={{
-							display: "flex",
-							justifyContent: "center",
-							width: "100%",
-						}}
-					>
-						<Typography sx={{ fontWeight: "bold" }} variant="body1">
-							Thẻ
-						</Typography>
-					</Box>
-				</Box>
-				<Box sx={{ display: "flex", width: "41%" }}>
-					<Box
-						sx={{
-							display: "flex",
-							width: "100%",
-							justifyContent: "center",
-							position: "relative",
-						}}
-					>
-						<Stack sx={{ width: "100%" }} spacing={2}>
-							{matchEvent
-								.filter(
-									(item) =>
-										(item.eventType === EVENT_TYPE.YEL_CARD ||
-											item.eventType === EVENT_TYPE.RED_CARD) &&
-										!item.isHome,
-								)
-								.map((element, index) => {
-									return (
-										<Typography
-											key={index}
-											sx={{
-												width: "100%",
-												textAlign: "right",
-											}}
-											variant="body1"
-										>
-											{`${element.mainPlayer.name} (${
-												element.mainPlayer.stripNumber
-											}) - ${
-												element.eventType === EVENT_TYPE.YEL_CARD
-													? "Thẻ vàng"
-													: "Thẻ đỏ"
-											} - ${element.minute}'`}
-											{editMode ? (
-												<Button onClick={() => handleDelete(element)}>
-													<ClearRoundedIcon fontSize="small" />
-												</Button>
-											) : null}
-										</Typography>
-									);
-								})}
-						</Stack>
-					</Box>
-				</Box>
+				<Stack sx={{ width: "41%" }} spacing={2}>
+					{matchEvent
+						.filter(
+							(item) =>
+								(item.eventType === EVENT_TYPE.YEL_CARD ||
+									item.eventType === EVENT_TYPE.RED_CARD) &&
+								!item.isHome,
+						)
+						.map((element, index) => {
+							return (
+								<Typography
+									key={index}
+									sx={{
+										width: "100%",
+										textAlign: "right",
+									}}
+									variant="body2"
+								>
+									{`${element.mainPlayer.name} (${
+										element.mainPlayer.stripNumber
+									}) - ${
+										element.eventType === EVENT_TYPE.YEL_CARD
+											? "Thẻ vàng"
+											: "Thẻ đỏ"
+									} - ${element.minute}'`}
+									{editMode ? (
+										<Button onClick={() => handleDelete(element)}>
+											<ClearRoundedIcon fontSize="small" />
+										</Button>
+									) : null}
+								</Typography>
+							);
+						})}
+				</Stack>
 			</Box>
 			<Box
 				sx={{
@@ -342,7 +256,7 @@ function MatchEvent(props: IMatchEventProps) {
 												width: "100%",
 												textAlign: "left",
 											}}
-											variant="body1"
+											variant="body2"
 										>
 											{editMode ? (
 												<Button onClick={() => handleDelete(element)}>
@@ -358,64 +272,38 @@ function MatchEvent(props: IMatchEventProps) {
 						</Stack>
 					</Box>
 				</Box>
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "center",
-						width: "18%",
-					}}
-				>
-					<Box
-						sx={{
-							display: "flex",
-							justifyContent: "center",
-							width: "100%",
-						}}
-					>
-						<Typography sx={{ fontWeight: "bold" }} variant="body1">
-							Thay người
-						</Typography>
-					</Box>
+				<Box sx={{ width: "18%" }}>
+					<Typography sx={{ fontWeight: "700", width: "100%", textAlign: "center" }} variant="body2">
+						Thay người
+					</Typography>
 				</Box>
-				<Box sx={{ display: "flex", width: "41%" }}>
-					<Box
-						sx={{
-							display: "flex",
-							width: "100%",
-							justifyContent: "center",
-							position: "relative",
-						}}
-					>
-						<Stack sx={{ width: "100%" }} spacing={2}>
-							{matchEvent
-								.filter(
-									(item) =>
-										item.eventType === EVENT_TYPE.SUBSTITUTION && !item.isHome,
-								)
-								.map((element, index) => {
-									return (
-										<Typography
-											key={index}
-											sx={{
-												width: "100%",
-												textAlign: "right",
-											}}
-											variant="body1"
-										>
-											{element.subPlayer
-												? `Ra: ${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - Vào: ${element.subPlayer.name} (${element.subPlayer.stripNumber}) - ${element.minute}'`
-												: `Ra: ${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - ${element.minute}'`}
-											{editMode ? (
-												<Button onClick={() => handleDelete(element)}>
-													<ClearRoundedIcon fontSize="small" />
-												</Button>
-											) : null}
-										</Typography>
-									);
-								})}
-						</Stack>
-					</Box>
-				</Box>
+				<Stack sx={{ width: "41%" }} spacing={2}>
+					{matchEvent
+						.filter(
+							(item) => item.eventType === EVENT_TYPE.SUBSTITUTION && !item.isHome,
+						)
+						.map((element, index) => {
+							return (
+								<Typography
+									key={index}
+									sx={{
+										width: "100%",
+										textAlign: "right",
+									}}
+									variant="body2"
+								>
+									{element.subPlayer
+										? `Ra: ${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - Vào: ${element.subPlayer.name} (${element.subPlayer.stripNumber}) - ${element.minute}'`
+										: `Ra: ${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - ${element.minute}'`}
+									{editMode ? (
+										<Button onClick={() => handleDelete(element)}>
+											<ClearRoundedIcon fontSize="small" />
+										</Button>
+									) : null}
+								</Typography>
+							);
+						})}
+				</Stack>
 			</Box>
 		</Stack>
 	);

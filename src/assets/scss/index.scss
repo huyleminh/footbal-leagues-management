@@ -44,9 +44,13 @@ body {
 
 // Table
 .MuiTableRow-hover:hover {
-	background-color: #f9f4ff!important;
+	background-color: #f9f4ff !important;
 }
 
 .MuiTableCell-head {
-	font-weight: 600!important;
+	font-weight: 600 !important;
+}
+
+.MuiTableCell-stickyHeader {
+	background-color: #fafafa !important;
 }
