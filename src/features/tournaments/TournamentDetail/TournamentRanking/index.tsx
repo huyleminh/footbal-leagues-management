@@ -8,6 +8,7 @@ import {
 	TableContainer,
 	TableHead,
 	TableRow,
+	Typography,
 } from "@mui/material";
 import { toast } from "material-react-toastify";
 import { useEffect, useState } from "react";
@@ -116,6 +117,19 @@ function TournamentRanking(props: IBaseComponentProps) {
 						))}
 					</TableBody>
 				</Table>
+				{data.length === 0 && (
+					<Typography
+						variant="h6"
+						sx={{
+							textAlign: "center",
+							width: "100%",
+							fontSize: "0.875rem",
+							padding: "1rem",
+						}}
+					>
+						Không có dữ liệu phù hợp
+					</Typography>
+				)}
 			</TableContainer>
 		</>
 	);

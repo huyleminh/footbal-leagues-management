@@ -2,9 +2,10 @@
 
 .teams {
 	.team-card-add {
-		min-width: 220px;
+		min-width: 200px;
         width: auto;
 		height: 100%;
+		min-height: 250px;
 
 		border: 2px dashed $color-primary;
 		box-shadow: none;
@@ -17,7 +18,7 @@
 	}
 
 	.team-card {
-        $card-width: 220px;
+        $card-width: 200px;
 
         min-width: $card-width;
         // width: auto;
@@ -34,7 +35,7 @@
 
         .team-card-image {
             width: 100%;
-            height: $card-width;
+            height: 150px;
             padding: 1rem;
         }
 

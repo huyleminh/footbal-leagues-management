@@ -1,44 +1,44 @@
 .match-list-item {
-	--duration: 0.2s;
+	--duration: 0.25s;
 	position: relative;
 	border-bottom: thin solid rgba(139, 51, 255, 0.12);
 	z-index: 1;
 	transition: background-color var(--duration) ease-in-out;
-}
 
-.match-list-item:hover {
-	cursor: pointer;
-	background-color: rgba(139, 51, 255, 0.12);
-}
+	&:first-child {
+		border-top: thin solid rgba(139, 51, 255, 0.12);
+	}
 
-.match-list-item:before {
-	content: "";
-	position: absolute;
-	background-color: #6e00ff;
-	top: 50%;
-	left: 0;
-	width: 3px;
-	height: 0;
-	z-index: -1;
-	transition: height var(--duration) ease-in-out;
-}
+	&:hover {
+		cursor: pointer;
+		background-color: rgba(139, 51, 255, 0.12);
+		&:before {
+			height: 50%;
+		}
+		&:after {
+			height: 50%;
+		}
+	}
 
-.match-list-item:after {
-	content: "";
-	position: absolute;
-	background-color: #6e00ff;
-	bottom: 50%;
-	left: 0;
-	width: 3px;
-	height: 0;
-	z-index: -1;
-	transition: height var(--duration) ease-in-out;
-}
+	&:before {
+		content: "";
+		position: absolute;
+		background-color: #6e00ff;
+		top: 50%;
+		left: 0;
+		width: 2px;
+		height: 0;
+		transition: height var(--duration) ease-in-out;
+	}
 
-.match-list-item:hover:before {
-	height: 50%;
-}
-
-.match-list-item:hover:after {
-	height: 50%;
+	&:after {
+		content: "";
+		position: absolute;
+		background-color: #6e00ff;
+		bottom: 50%;
+		left: 0;
+		width: 2px;
+		height: 0;
+		transition: height var(--duration) ease-in-out;
+	}
 }

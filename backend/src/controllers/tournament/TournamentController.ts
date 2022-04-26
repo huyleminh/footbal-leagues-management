@@ -1,4 +1,3 @@
-import moment = require("moment");
 import * as mongoose from "mongoose";
 import { IAppRequest, IAppResponse } from "../../@types/AppBase";
 import escapeStringRegexp from "../../libs/escape-string-regexp";
@@ -7,13 +6,15 @@ import DiskUploadMiddleware from "../../middlewares/MulterUploadMiddlewares";
 import TournamentMiddlewares from "../../middlewares/TournamentMiddlewares";
 import TournamentModel, {
 	TOURNAMENT_SEARCH_TYPE_ENUM,
-	TOURNAMENT_STATUS_ENUM,
+	TOURNAMENT_STATUS_ENUM
 } from "../../models/TournamentModel";
+import TournamentParticipantModel from "../../models/TournamentParticipantModel";
 import UserModel from "../../models/UserModel";
 import ImgBBService from "../../services/ImgBBService";
 import AppResponse from "../../shared/AppResponse";
 import { Logger } from "../../utils/Logger";
 import AppController from "../AppController";
+import moment = require("moment");
 
 export default class TournamentController extends AppController {
 	constructor() {
@@ -41,6 +42,18 @@ export default class TournamentController extends AppController {
 				TournamentMiddlewares.validateCreateTournamentData,
 			],
 			this.postCreateTournamentAsync,
+		);
+
+		this._router.patch(
+			"/tournaments/:id/status",
+			[AuthMiddlewares.verifyManagerRole],
+			this.patchChangeTournamentStatusAsync,
+		);
+
+		this._router.delete(
+			"/tournaments/:id",
+			[AuthMiddlewares.verifyManagerRole],
+			this.deleteTournamentAsync,
 		);
 	}
 
@@ -256,6 +269,67 @@ export default class TournamentController extends AppController {
 				.message("Bad Request")
 				.data("Không thể lấy thông tin chi tiết giải đấu")
 				.send();
+		}
+	}
+
+	async patchChangeTournamentStatusAsync(req: IAppRequest, res: IAppResponse) {
+		const { id } = req.params;
+		const { body } = req;
+		let status = body.status;
+
+		if (!TOURNAMENT_STATUS_ENUM[status]) {
+			return new AppResponse(res, 400, "Bad Request", "Trạng thái không hợp lệ").send();
+		}
+
+		try {
+			const tournament = await TournamentModel.findById(id).exec();
+			if (tournament === null) throw new Error("tournament_notfound");
+
+			const now = moment();
+			const update: Record<string, any> = { status };
+			if (now.isBefore(moment(tournament.scheduledDate))) {
+				if (status !== TOURNAMENT_STATUS_ENUM.PENDING) {
+					update["scheduledDate"] = now.toISOString();
+				}
+			} else {
+				if (status === TOURNAMENT_STATUS_ENUM.PENDING) {
+					update["scheduledDate"] = now.add(1, "day").toISOString();
+				}
+			}
+
+			await TournamentModel.findByIdAndUpdate(id, update).exec();
+			new AppResponse(res, 204, "No Content").send();
+		} catch (error) {
+			Logger.error({
+				message: {
+					class: "TournamentController",
+					method: "patchChangeTournamentStatusAsync",
+					msg: error.message,
+				},
+			});
+			new AppResponse(res, 400, "Bad Request", "Không thể cập nhật trạng thái").send();
+		}
+	}
+
+	async deleteTournamentAsync(req: IAppRequest, res: IAppResponse) {
+		const { id } = req.params;
+		try {
+			const tournament = await TournamentModel.findById(id).exec();
+			if (tournament === null) throw new Error("tournament_notfound");
+			if (tournament.totalTeam > 0) throw new Error("tournament_delete_denied");
+
+			await TournamentModel.findByIdAndRemove(id).exec();
+			await TournamentParticipantModel.findOneAndRemove({ tournamentId: id }).exec();
+			new AppResponse(res, 200, "OK").send();
+		} catch (error) {
+			Logger.error({
+				message: {
+					class: "TournamentController",
+					method: "patchChangeTournamentStatusAsync",
+					msg: error.message,
+				},
+			});
+			new AppResponse(res, 400, "Bad Request", "Không thể xóa giải đấu").send();
 		}
 	}
 }

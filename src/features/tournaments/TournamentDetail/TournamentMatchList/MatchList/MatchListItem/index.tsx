@@ -27,7 +27,7 @@ function MatchListItem(props: MatchListItemProps) {
 	const { data, onClick } = props;
 
 	const handleOnClick = () => {
-		onClick(data.id)
+		onClick(data.id);
 	};
 
 	return (
@@ -35,13 +35,12 @@ function MatchListItem(props: MatchListItemProps) {
 			<Box
 				sx={{
 					display: "flex",
-					minHeight: "100px",
-					padding: "10px 20px",
+					padding: "0.75rem 1rem",
 				}}
 			>
 				<Box sx={{ display: "flex", width: "44%" }}>
 					<Box sx={{ display: "flex", alignItems: "center" }}>
-						<Typography variant="subtitle1">{`Vòng ${data.round}`}</Typography>
+						<Typography variant="subtitle2">{`Vòng ${data.round}`}</Typography>
 					</Box>
 					<Box
 						sx={{
@@ -52,7 +51,7 @@ function MatchListItem(props: MatchListItemProps) {
 						}}
 					>
 						<Box sx={{ display: "flex", alignItems: "center" }}>
-							<Typography variant="h6">{data.homeTeam.name}</Typography>
+							<Typography sx={{ fontSize: "1rem", fontWeight: 500 }}>{data.homeTeam.name}</Typography>
 						</Box>
 						<Box sx={{ display: "flex", width: "65px", alignItems: "center" }}>
 							<img
@@ -96,10 +95,10 @@ function MatchListItem(props: MatchListItemProps) {
 							/>
 						</Box>
 						<Box sx={{ display: "flex", alignItems: "center" }}>
-							<Typography variant="h6">{data.awayTeam.name}</Typography>
+							<Typography sx={{ fontSize: "1rem", fontWeight: 500 }}>{data.awayTeam.name}</Typography>
 						</Box>
 					</Box>
-					<Box sx={{ display: "flex", alignItems: "center", width: "150px" }}>
+					<Box sx={{ display: "flex", alignItems: "center", minWidth: "150px" }}>
 						<Typography variant="subtitle2">{data.stadium}</Typography>
 					</Box>
 				</Box>

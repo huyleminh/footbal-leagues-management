@@ -23,11 +23,7 @@ export default class RankingController extends AppController {
 				.select(["-__v", "_id"])
 				.exec();
 			if (participantList.length === 0) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Không tìm thấy giải đấu")
-					.send();
+				return apiRes.data([]).send();
 			}
 
 			const teams = participantList[0].teams;

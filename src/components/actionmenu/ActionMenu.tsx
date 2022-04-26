@@ -8,11 +8,12 @@ export interface IActionList {
 	title: string;
 	action?: Function;
 	icon?: JSX.Element;
+	color?: string;
 }
 
 export interface IActionMenuItem {
 	id: string;
-	[index: string]: any
+	[index: string]: any;
 }
 
 export interface IActionMenuProps extends IBaseComponentProps {
@@ -63,8 +64,14 @@ function ActionMenu(props: IActionMenuProps) {
 							onClick={() => handleItemClick(item)}
 							sx={{ padding: "0.25rem 0.5rem" }}
 						>
-							{item.icon && <ListItemIcon>{item.icon}</ListItemIcon>}
-							<ListItemText sx={{ "&>span": { fontSize: "15px" } }}>
+							{item.icon && (
+								<ListItemIcon sx={{ color: item.color }}>
+									{item.icon}
+								</ListItemIcon>
+							)}
+							<ListItemText
+								sx={{ "&>span": { fontSize: "15px", color: item.color } }}
+							>
 								{item.title}
 							</ListItemText>
 						</MenuItem>

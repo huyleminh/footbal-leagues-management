@@ -57,6 +57,14 @@ export default class TeamController extends AppController {
 		try {
 			let resultSet;
 			let totalRecord = 0;
+			const metadata: IAPIPaginationMetadata = {
+				createdDate: new Date(),
+				pagination: {
+					page: page,
+					pageSize: 0,
+					totalRecord,
+				},
+			};
 
 			if (tournamentId === undefined) {
 				resultSet = await TeamModel.find()
@@ -70,11 +78,7 @@ export default class TeamController extends AppController {
 					tournamentId,
 				}).exec();
 				if (participant === null) {
-					return apiRes
-						.code(400)
-						.message("Bad Request")
-						.data("Không tìm thấy giải đấu")
-						.send();
+					return apiRes.data([]).metadata(metadata).send();
 				}
 				const idList = participant.teams.map((item) => item.teamId);
 				resultSet = await TeamModel.find({ _id: { $in: idList } })
@@ -87,13 +91,10 @@ export default class TeamController extends AppController {
 					.exec();
 			}
 
-			const metadata: IAPIPaginationMetadata = {
-				createdDate: new Date(),
-				pagination: {
-					page: page,
-					pageSize: resultSet.length,
-					totalRecord,
-				},
+			metadata.pagination = {
+				page: page,
+				pageSize: resultSet.length,
+				totalRecord,
 			};
 			apiRes.data(resultSet).metadata(metadata).send();
 		} catch (error) {

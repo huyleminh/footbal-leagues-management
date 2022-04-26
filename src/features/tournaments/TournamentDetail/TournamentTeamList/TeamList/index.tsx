@@ -1,8 +1,9 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { Box, Card, Grid, LinearProgress, Stack, Tooltip, Typography } from "@mui/material";
 import { toast } from "material-react-toastify";
+import QueryString from "query-string";
 import React, { useContext, useEffect, useState } from "react";
-import { Link, useMatch } from "react-router-dom";
+import { Link, useMatch, useNavigate } from "react-router-dom";
 import { IAPIResponse } from "../../../../../@types/AppInterfaces";
 import { IBaseComponentProps } from "../../../../../@types/ComponentInterfaces";
 import CustomPagination from "../../../../../components/pagination";
@@ -10,10 +11,9 @@ import ToastMsg from "../../../../../components/toast/ToastMsg";
 import AuthContext from "../../../../../contexts/AuthContext";
 import HttpService from "../../../../../services/HttpService";
 import TeamService from "../../../../../services/TeamService";
-import QueryString from "query-string";
+import { IPagination } from "../../../../admin/ManagerList";
 import CreateTeamDialog, { ICreateTeamDialogData } from "./CreateTeamDialog";
 import "./styles.scss";
-import { IPagination } from "../../../../admin/ManagerList";
 
 export interface ITeamListProps extends IBaseComponentProps {}
 
@@ -26,6 +26,7 @@ export interface ITeamListData {
 }
 
 function TeamList(props: ITeamListProps) {
+	const navigate = useNavigate();
 	const authContext = useContext(AuthContext);
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
 	const [isSubmiting, setIsSubmiting] = useState(false);
@@ -45,6 +46,7 @@ function TeamList(props: ITeamListProps) {
 			const param = {
 				page: pagination.page,
 				limit: pagination.maxItem,
+				tournamentId: match?.params.id,
 			};
 			try {
 				const res = await HttpService.get<IAPIResponse<Array<ITeamListData> | string>>(
@@ -68,7 +70,7 @@ function TeamList(props: ITeamListProps) {
 			setIsLoading(false);
 		};
 		fetch();
-	}, [pagination]);
+	}, [pagination, match?.params.id]);
 
 	const handleSubmitCreate = async (data: ICreateTeamDialogData) => {
 		if (!match || !match.params.id) {
@@ -90,7 +92,7 @@ function TeamList(props: ITeamListProps) {
 					type: toast.TYPE.SUCCESS,
 				});
 				setTimeout(() => {
-					window.location.reload();
+					navigate(0);
 				}, 1500);
 			} else if (res.code === 400) {
 				toast(<ToastMsg title={`${res.data as string}`} type="error" />, {
@@ -120,14 +122,14 @@ function TeamList(props: ITeamListProps) {
 				</Box>
 			) : (
 				<Grid container spacing={2}>
-					{authContext.role === "manager" && pagination.page === 1 && (
+					{authContext.role === "manager" && (
 						<Grid
 							item
 							xl={2}
 							lg={3}
 							md={4}
 							xs={6}
-							sx={{ display: "flex", justifyContent: "center" }}
+							sx={{ display: "flex", justifyContent: "center", minHeight: "200px" }}
 						>
 							<Tooltip title="Thêm đội bóng" placement="right">
 								<Card
@@ -168,8 +170,7 @@ function TeamList(props: ITeamListProps) {
 									<Stack spacing={1} className="team-card-content">
 										<Stack spacing={1}>
 											<Typography
-												variant="h6"
-												sx={{ textTransform: "uppercase", color: "#fff" }}
+												sx={{ textTransform: "uppercase", color: "#fff", fontSize: "1rem", fontWeight: 600 }}
 											>
 												{team.name}
 											</Typography>
