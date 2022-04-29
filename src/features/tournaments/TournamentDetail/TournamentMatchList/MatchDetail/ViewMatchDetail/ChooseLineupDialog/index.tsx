@@ -107,7 +107,7 @@ function ChooseLineupDialog(props: IChooseLineupProps) {
 		} else {
 			setPlayerList(
 				playerList.map((item) =>
-					item.player === player ? { ...item, isSelected: false, position: "" } : item,
+					item.player === player ? { ...item, isSelected: false, position: undefined } : item,
 				),
 			);
 		}
@@ -154,7 +154,7 @@ function ChooseLineupDialog(props: IChooseLineupProps) {
 								(item) =>
 									item.isSelected &&
 									item.position !== InMatchPosition[InMatchPosition.length - 1] &&
-									item.position !== "",
+									item.position,
 							).length
 						} cầu thủ ra sân`}</Typography>
 					</Box>

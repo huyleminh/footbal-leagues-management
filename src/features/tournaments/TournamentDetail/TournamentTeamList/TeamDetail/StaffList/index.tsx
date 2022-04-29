@@ -13,7 +13,7 @@ import {
 	TableRow,
 	Typography,
 } from "@mui/material";
-import React, { useReducer, useState } from "react";
+import React from "react";
 import { toast } from "material-react-toastify";
 import ToastMsg from "../../../../../../components/toast/ToastMsg";
 import { useMatch } from "react-router-dom";
@@ -21,7 +21,10 @@ import Swal from "sweetalert2";
 import { ITeamStaff } from "..";
 import { IAPIResponse } from "../../../../../../@types/AppInterfaces";
 import { IBaseComponentProps } from "../../../../../../@types/ComponentInterfaces";
-import ActionMenu, { IActionList } from "../../../../../../components/actionmenu/ActionMenu";
+import ActionMenu, {
+	IActionList,
+	IActionMenuItem,
+} from "../../../../../../components/actionmenu/ActionMenu";
 import AuthContext from "../../../../../../contexts/AuthContext";
 import HttpService from "../../../../../../services/HttpService";
 import StaffFormDialog, { IStaffFormDialogData } from "../StaffFormDialog";
@@ -44,8 +47,7 @@ function StaffList(props: IStaffList) {
 		mode: "create",
 	});
 	const match = useMatch("tournaments/:tournamentId/teams/:id");
-	// const [componentData, setComponentData] = React.useState(data);
-	const [initData, setInitData] = React.useState({
+	const [initData, setInitData] = React.useState<IStaffFormDialogData>({
 		fullname: "",
 		country: "",
 		role: 2,
@@ -53,14 +55,18 @@ function StaffList(props: IStaffList) {
 
 	const handleSubmitDialog = async (data: IStaffFormDialogData) => {
 		try {
-			const res = await HttpService.post<IAPIResponse<string>>(
-				`/teams/${match?.params.id || ""}/staffs`,
-				data,
-			);
-			if (res.code === 201) {
-				toast(<ToastMsg title="Tạo thành công!" type="success" />, {
-					type: toast.TYPE.SUCCESS,
-				});
+			const res =
+				dialog.mode === "create"
+					? await HttpService.post<IAPIResponse<string>>(
+							`/teams/${match?.params.id || ""}/staffs`,
+							data,
+					  )
+					: await HttpService.put<IAPIResponse<string>>(
+							`/teams/${match?.params.id || ""}/staffs/${data.id}`,
+							data,
+					  );
+			if ((dialog.mode === "create" && res.code === 201) || (dialog.mode === "edit" && res.code === 204)) {
+				window.location.reload();
 			} else {
 				toast(<ToastMsg title={res?.data as string} type="error" />, {
 					type: toast.TYPE.ERROR,
@@ -72,15 +78,15 @@ function StaffList(props: IStaffList) {
 				type: toast.TYPE.ERROR,
 			});
 		}
-		window.location.reload()
 		setDialog({ ...dialog, open: false });
 	};
 
-	const openEdit = () => {
+	const openEdit = (item: IActionMenuItem) => {
 		setInitData({
-			fullname: "Pep Guardiola",
-			country: "Tây Ban Nha",
-			role: 0,
+			id: item.id,
+			fullname: item?.fullname,
+			country: item?.country,
+			role: item?.role,
 		});
 		setDialog({ open: true, mode: "edit" });
 	};
@@ -89,7 +95,7 @@ function StaffList(props: IStaffList) {
 		setDialog({ open: true, mode: "create" });
 	};
 
-	const handleDeleteAsync = async () => {
+	const handleDeleteAsync = async (item: IActionMenuItem) => {
 		const result = await Swal.fire({
 			title: "Xóa thành viên",
 			text: "Bạn có chắc chắn muốn xóa người này",
@@ -98,6 +104,26 @@ function StaffList(props: IStaffList) {
 			showCancelButton: true,
 			icon: "warning",
 		});
+
+		if (result.isConfirmed) {
+			try {
+				const res = await HttpService.delete<IAPIResponse<string>>(
+					`/teams/${match?.params.id || ""}/staffs/${item.id}`,
+				);
+				if (res.code === 204) {
+					window.location.reload();
+				} else {
+					toast(<ToastMsg title={`${res.data}!`} type="error" />, {
+						type: toast.TYPE.ERROR,
+					});
+				}
+			} catch (err) {
+				console.log(err);
+				toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
+					type: toast.TYPE.ERROR,
+				});
+			}
+		}
 	};
 
 	const actionList: IActionList[] = [
@@ -162,7 +188,10 @@ function StaffList(props: IStaffList) {
 								<TableCell align="left">{item.country}</TableCell>
 								{authContext.role === "manager" && (
 									<TableCell align="left" sx={{ width: "120px" }}>
-										<ActionMenu actionList={actionList} item={{ id: "123" }} />
+										<ActionMenu
+											actionList={actionList}
+											item={{ id: item._id ?? index.toString(), ...item }}
+										/>
 									</TableCell>
 								)}
 							</TableRow>

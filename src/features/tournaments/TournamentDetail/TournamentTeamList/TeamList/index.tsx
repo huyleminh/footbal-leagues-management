@@ -34,7 +34,7 @@ function TeamList(props: ITeamListProps) {
 	const [totalPage, setTotalPage] = useState(1);
 	const [pagination, setPagination] = useState({
 		page: 1,
-		maxItem: 5,
+		maxItem: 15,
 	});
 	const match = useMatch("/tournaments/:id/teams");
 

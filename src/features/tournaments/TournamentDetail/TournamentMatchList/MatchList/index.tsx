@@ -26,7 +26,7 @@ function MatchList(props: IMatchListProps) {
 	const [totalRound, setTotalRound] = useState(30);
 	const queryString = new URLSearchParams(location.search);
 	const [teamKey, setTeamKey] = useState(queryString.get("teamKey") || "");
-	const [selectedRound, setSelectedRound] = useState("");
+	const [selectedRound, setSelectedRound] = useState("0");
 	const context = useContext(AuthContext);
 	const [openDetailModal, setOpenDetailModal] = useState(false);
 	const [openCreateModal, setOpenCreateModal] = useState(false);

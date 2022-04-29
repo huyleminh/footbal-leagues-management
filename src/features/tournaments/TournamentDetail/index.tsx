@@ -151,6 +151,10 @@ function TournamentDetail(props: ITournamentDetailProps) {
 			<Box sx={{ flexGrow: "1" }}>
 				<Routes>
 					<Route
+						index
+						element={<Navigate to="./ranking" replace />}
+					/>
+					<Route
 						path="/ranking"
 						element={<PrivateRoute role="all" element={<TournamentRanking />} />}
 					/>
@@ -161,10 +165,6 @@ function TournamentDetail(props: ITournamentDetailProps) {
 					<Route
 						path="/matches/*"
 						element={<PrivateRoute role="all" element={<TournamentMatchList />} />}
-					/>
-					<Route
-						index
-						element={<PrivateRoute role="all" element={<TournamentRanking />} />}
 					/>
 					<Route path="*" element={<Navigate to={`/404`} replace />} />
 				</Routes>

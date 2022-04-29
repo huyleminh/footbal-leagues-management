@@ -1,12 +1,15 @@
 import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";
 import { Button, Stack, TextField, Typography } from "@mui/material";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import React, { useState } from "react";
 import { IBaseComponentProps } from "../../../../../@types/ComponentInterfaces";
+import moment from "moment";
 
 export interface ITournamentInfoForm {
 	name: string;
 	image: File | null;
 	sponsorName: string;
+	scheduledDate: Date | null;
 }
 
 export interface IInformationFormProps extends IBaseComponentProps {
@@ -24,10 +27,15 @@ function InformationForm(props: IInformationFormProps) {
 				name: "",
 				sponsorName: "",
 				image: null,
+				scheduledDate: null,
 			};
 		}
 		return data;
 	});
+
+	const handleChangeTime = (newValue: Date | null) => {
+		setInfo({ ...info, scheduledDate: newValue });
+	};
 
 	const handleChangeField = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const target = e.target;
@@ -112,12 +120,39 @@ function InformationForm(props: IInformationFormProps) {
 						sx={{
 							fontWeight: "500",
 							fontSize: "14px",
-							overflow: "hidder",
+							overflow: "hidden",
 							textOverflow: "ellipsis",
 						}}
 					>
 						{info.image ? info.image.name : "Không có tệp nào được chọn"}
 					</Typography>
+				</Stack>
+				<Stack direction="row" spacing={3} sx={{ width: "100%", alignItems: "center" }}>
+					<Typography
+						sx={{
+							display: "inline-flex",
+							fontWeight: "500",
+							fontSize: "15px",
+							minWidth: 250,
+							justifyContent: "flex-end",
+						}}
+					>
+						Thời gian dự kiến <span style={{ color: "#F85166" }}>*</span>
+					</Typography>
+					<DateTimePicker
+						value={info.scheduledDate}
+						onChange={handleChangeTime}
+						minDate={new Date(new Date().getTime() + 86400000)}
+						disableHighlightToday
+						renderInput={(params) => (
+							<TextField
+								size="small"
+								variant="outlined"
+								required
+								{...params}
+							/>
+						)}
+					/>
 				</Stack>
 				<Stack direction="row" spacing={3} sx={{ width: "100%", alignItems: "center" }}>
 					<Typography

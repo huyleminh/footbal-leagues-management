@@ -21,7 +21,6 @@ import MatchLineup from "./MatchLineup";
 import ChooseLineupDialog, { IModalData } from "./ChooseLineupDialog";
 import AuthContext from "../../../../../../contexts/AuthContext";
 import AddMatchEventDialog from "./AddMatchEventDialog";
-import moment from "moment";
 
 export interface ILineupType {
 	stripNumber: number;
@@ -62,7 +61,6 @@ export interface IMatchDetailType {
 function ViewMatchDetail(props: any) {
 	const { open, onClose, matchId } = props;
 	const context = useContext(AuthContext);
-	const [datetime, setDatetime] = useState<Date | null>(new Date());
 	const [editMode, setEditMode] = useState(false);
 	const [openChooseLineup, setOpenChooseLineup] = useState(false);
 	const [openAddEvent, setOpenAddEvent] = useState(false);
@@ -637,7 +635,10 @@ function ViewMatchDetail(props: any) {
 					</Box>
 				</DialogContent>
 				<DialogActions>
-					<Button color="primary" variant="contained" onClick={() => onClose(false)}>
+					<Button color="primary" variant="contained" onClick={() => {
+						setEditMode(false)
+						onClose(false)
+					}}>
 						Đóng
 					</Button>
 				</DialogActions>

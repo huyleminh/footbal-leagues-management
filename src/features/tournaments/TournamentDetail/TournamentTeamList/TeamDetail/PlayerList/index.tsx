@@ -1,6 +1,5 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import {
 	Button,
 	Card,
@@ -13,12 +12,20 @@ import {
 	TableRow,
 	Typography,
 } from "@mui/material";
+import { toast } from "material-react-toastify";
 import React from "react";
+import { useMatch } from "react-router-dom";
 import { IPlayerListDetail } from "..";
+import { IAPIResponse } from "../../../../../../@types/AppInterfaces";
 import { IBaseComponentProps } from "../../../../../../@types/ComponentInterfaces";
-import ActionMenu, { IActionList } from "../../../../../../components/actionmenu/ActionMenu";
+import ActionMenu, {
+	IActionList,
+	IActionMenuItem,
+} from "../../../../../../components/actionmenu/ActionMenu";
+import ToastMsg from "../../../../../../components/toast/ToastMsg";
 import AuthContext from "../../../../../../contexts/AuthContext";
-import PlayerFormDialog from "../PlayerFormDialog";
+import HttpService from "../../../../../../services/HttpService";
+import PlayerFormDialog, { IPlayerFormDialogData } from "../PlayerFormDialog";
 
 export interface IPlayerList extends IBaseComponentProps {
 	data?: Array<IPlayerListDetail>;
@@ -27,6 +34,7 @@ export interface IPlayerList extends IBaseComponentProps {
 function PlayerList(props: IPlayerList) {
 	const { data } = props;
 	const authContext = React.useContext(AuthContext);
+	const match = useMatch("tournaments/:tournamentId/teams/:id");
 	const [dialog, setDialog] = React.useState<{
 		open: boolean;
 		mode: "create" | "edit" | "replace";
@@ -34,32 +42,67 @@ function PlayerList(props: IPlayerList) {
 		open: false,
 		mode: "create",
 	});
-	const [initData, setInitData] = React.useState({
+	const [initData, setInitData] = React.useState<IPlayerFormDialogData>({
 		playerName: "",
 		idNumber: "",
 		country: "",
 		stripNumber: 0,
 		position: "",
+		type: 0,
 	});
 
-	const handleSubmitDialog = (data: any) => {
-		console.log(data);
+	const handleSubmitDialog = async (data: IPlayerFormDialogData) => {
+		const playerId = data.id;
+		const payload = { ...data, id: undefined, teamId: match?.params.id };
+		console.log(payload);
+
+		try {
+			const res =
+				dialog.mode === "create"
+					? await HttpService.post<IAPIResponse<string | undefined>>("/players", payload)
+					: await HttpService.put<IAPIResponse<string | undefined>>(
+							`/players/${playerId}/replace`,
+							payload,
+					  );
+			if (res.code === 201) {
+				window.location.reload()
+			} else {
+				toast(<ToastMsg title={res?.data as string} type="error" />, {
+					type: toast.TYPE.ERROR,
+				});
+			}
+		} catch (err) {
+			console.log(err);
+			toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
+				type: toast.TYPE.ERROR,
+			});
+		}
 		setDialog({ ...dialog, open: false });
 	};
 
 	const openCreate = () => {
-		setDialog({ open: true, mode: "create" });
-	};
-
-	const openReplace = () => {
-		setDialog({ open: true, mode: "replace" });
 		setInitData({
-			playerName: "Phil Foden",
+			playerName: "",
 			idNumber: "",
 			country: "",
 			stripNumber: 0,
 			position: "",
+			type: 0,
 		});
+		setDialog({ open: true, mode: "create" });
+	};
+
+	const openReplace = (item: IActionMenuItem) => {
+		setInitData({
+			id: item?.id,
+			playerName: item?.name,
+			idNumber: "",
+			country: "",
+			stripNumber: 0,
+			position: "",
+			type: 0,
+		});
+		setDialog({ open: true, mode: "replace" });
 	};
 
 	const actionList: IActionList[] = [
@@ -121,7 +164,10 @@ function PlayerList(props: IPlayerList) {
 								<TableCell align="left">{item.country}</TableCell>
 								{authContext.role === "manager" && (
 									<TableCell align="left" sx={{ width: "120px" }}>
-										<ActionMenu actionList={actionList} item={{ id: "123" }} />
+										<ActionMenu
+											actionList={actionList}
+											item={{ id: item._id ?? index.toString(), name: item.playerName }}
+										/>
 									</TableCell>
 								)}
 							</TableRow>
