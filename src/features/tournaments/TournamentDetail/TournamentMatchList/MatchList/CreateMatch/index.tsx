@@ -8,7 +8,6 @@ import {
 	Divider,
 	FormControl,
 	InputLabel,
-	LinearProgress,
 	MenuItem,
 	Select,
 	Stack,
@@ -35,7 +34,7 @@ interface ICreateMatchForm {
 function CreateMatch(props: ICreateMatchProps) {
 	const { open, onClose } = props;
 	const [form, setForm] = useState<ICreateMatchForm>({
-		startDate: new Date(),
+		startDate: null,
 	});
 
 	const handleSave = () => {
@@ -62,7 +61,7 @@ function CreateMatch(props: ICreateMatchProps) {
 				<Stack spacing={3}>
 					<Box sx={{ display: "flex" }}>
 						<Box sx={{ width: "30%" }}>
-							<FormControl sx={{ marginTop: 1, width: "100%" }} size="small">
+							<FormControl sx={{ marginTop: 1, width: "100%" }} size="small" required>
 								<InputLabel id="home-team">Chọn đội nhà</InputLabel>
 								<Select
 									labelId="home-team"
@@ -87,7 +86,7 @@ function CreateMatch(props: ICreateMatchProps) {
 							<Typography variant="h5">VS</Typography>
 						</Box>
 						<Box sx={{ width: "30%" }}>
-							<FormControl sx={{ marginTop: 1, width: "100%" }} size="small">
+							<FormControl sx={{ marginTop: 1, width: "100%" }} size="small" required>
 								<InputLabel id="away-team">Chọn đội khách</InputLabel>
 								<Select
 									labelId="away-team"
@@ -113,7 +112,7 @@ function CreateMatch(props: ICreateMatchProps) {
 								width: "40%",
 							}}
 						>
-							<FormControl sx={{ marginTop: 1, width: "100%" }} size="small">
+							<FormControl sx={{ marginTop: 1, width: "100%" }} size="small" required>
 								<InputLabel id="round">Vòng đấu</InputLabel>
 								<Select
 									labelId="round"
@@ -143,8 +142,10 @@ function CreateMatch(props: ICreateMatchProps) {
 								label="Thời gian"
 								value={form.startDate}
 								onChange={handleChangeTime}
+								minDate={new Date(new Date().getTime() + 86400000)}
+								disableHighlightToday
 								renderInput={(params) => (
-									<TextField size="small" sx={{ width: "100%" }} {...params} />
+									<TextField size="small" sx={{ width: "100%" }} required {...params} />
 								)}
 							/>
 						</Box>

@@ -22,6 +22,7 @@ export interface IStaffFormDialog extends IBaseComponentProps {
 }
 
 export interface IStaffFormDialogData {
+	id?: string;
 	fullname: string;
 	country: string;
 	role: number;
@@ -33,19 +34,40 @@ function StaffFormDialog(props: IStaffFormDialog) {
 
 	React.useEffect(() => {
 		if (mode === "create") {
-			setStaff({ fullname: "", country: "", role: 2 });
+			setStaff({
+				id: "",
+				fullname: "",
+				country: "",
+				role: 2,
+			});
 		} else setStaff(data);
-	}, [mode]);
+	}, [mode, data]);
+
+	const clearForm = () => {
+		setStaff({
+			id: "",
+			fullname: "",
+			country: "",
+			role: 2,
+		});
+	};
 
 	const handleSubmit = () => {
-		onSubmit(staff);
+		clearForm();
+		const resStaff = {
+			...staff,
+			fullname: staff.fullname.trim(),
+			country: staff.country.trim(),
+		}
+		setStaff(resStaff);
+		onSubmit(resStaff);
 	};
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const target = e.target;
 		setStaff({
 			...staff,
-			[target.name]: target.value.trim(),
+			[target.name]: target.value,
 		});
 	};
 
@@ -103,7 +125,13 @@ function StaffFormDialog(props: IStaffFormDialog) {
 			</DialogContent>
 
 			<DialogActions>
-				<Button variant="outlined" onClick={() => onCancel()}>
+				<Button
+					variant="outlined"
+					onClick={() => {
+						clearForm();
+						onCancel();
+					}}
+				>
 					Hủy
 				</Button>
 				<Button variant="contained" onClick={handleSubmit}>

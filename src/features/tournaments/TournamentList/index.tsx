@@ -377,11 +377,11 @@ function TournamentList(props: ITournamentListProps) {
 												(pagination.page - 1) * pagination.pageSize}
 										</TableCell>
 										<TableCell align="left" sx={{}}>
-											<Box sx={{ width: "max-content", height: "100px" }}>
+											<Box sx={{ width: "max-content", height: "80px" }}>
 												<img
 													src={row.logoUrl}
 													alt="logoTournament"
-													style={{ width: "100%", height: "100%" }}
+													style={{ width: "100%", height: "auto" }}
 												/>
 											</Box>
 										</TableCell>

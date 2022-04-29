@@ -22,7 +22,7 @@ export interface IMatchEventType {
 		stripNumber: number;
 	};
 	subPlayer?: {
-		// sub player of the event. Ex: assist (if exists) in goal related event, player who was substitute in
+		// sub player of the event. Ex: assist (if exists) in goal related event, player who was substituted in
 		name: string;
 		stripNumber: number;
 	};
