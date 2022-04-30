@@ -38,7 +38,7 @@ export function verifyGetParams(req: IAppRequest, res: IAppResponse, next: IAppN
 
 export function validateRergisterData(req: IAppRequest, res: IAppResponse, next: IAppNextFuction) {
 	const { body } = req;
-	const apiResponse = new AppResponse(res, 400, "Bad Request");
+	const apiResponse = new AppResponse(res, 400);
 
 	let { username, password, email, fullname, address, status } = body;
 	if (!username || !username.toString().trim()) {

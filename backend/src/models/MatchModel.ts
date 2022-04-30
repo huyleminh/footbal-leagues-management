@@ -4,29 +4,39 @@ import LineupModel from "./LineupModel";
 import MatchEventModel from "./MatchEventModel";
 import TeamModel from "./TeamModel";
 
+export enum MATCH_COMPETITOR_ENUM {
+	HOME,
+	AWAY,
+}
+
 const CompetitorModel = new Schema<ICompetitor>({
 	teamId: { type: Schema.Types.ObjectId, required: true, ref: TeamModel },
-	teamType: { type: String, required: true },
+	teamType: {
+		type: Number,
+		enum: [MATCH_COMPETITOR_ENUM.HOME, MATCH_COMPETITOR_ENUM.AWAY],
+		required: true,
+	},
 	isWinner: { type: Boolean, required: true },
-	totalShot: { type: Number, required: true },
-	shotsOntarget: { type: Number, required: true },
-	possessions: { type: Number, required: true },
-	totalPass: { type: Number, required: true },
-	passAccuracy: { type: Number, required: true },
-	offsides: { type: Number, required: true },
-	conners: { type: Number, required: true },
-	fouls: { type: Number, required: true },
-	lineupId: { type: Schema.Types.ObjectId, required: true, ref: LineupModel },
+	goal: { type: Number },
+	totalShot: { type: Number },
+	shotsOntarget: { type: Number },
+	possessions: { type: Number },
+	totalPass: { type: Number },
+	passAccuracy: { type: Number },
+	offsides: { type: Number },
+	conners: { type: Number },
+	fouls: { type: Number },
+	lineupId: { type: Schema.Types.ObjectId, ref: LineupModel },
 });
 
 const MatchSchema = new Schema<IMatchModel>({
-	scheduleDate: { type: Date, required: true },
-	kickedOffDate: { type: Date, required: true },
-	location: { type: String },
-	stadiumName: { type: String },
+	tournamentId: { type: Schema.Types.ObjectId, required: true },
+	scheduledDate: { type: Date, required: true },
+	kickedOffDate: { type: Date },
+	stadiumName: { type: String, required: true },
 	round: { type: Number, required: true },
-	season: { type: Number, required: true },
-	events: { type: [{ type: Schema.Types.ObjectId, ref: MatchEventModel }], required: true },
+	// season: { type: Number, required: true },
+	events: { type: [{ type: Schema.Types.ObjectId, ref: MatchEventModel }], default: [] },
 	competitors: { type: [CompetitorModel], required: true },
 });
 
