@@ -2,12 +2,15 @@ import { IAppRequest, IAppResponse } from "../../@types/AppBase";
 import TeamModel from "../../models/TeamModel";
 import TournamentParticipantModel from "../../models/TournamentParticipantModel";
 import AppResponse from "../../shared/AppResponse";
-import { Logger } from "../../utils/Logger";
 import AppController from "../AppController";
 
 export default class RankingController extends AppController {
 	constructor() {
-		super();
+		super("RankingController");
+	}
+
+	binding(): void {
+		this.getTournamentRankingAsync = this.getTournamentRankingAsync.bind(this);
 	}
 
 	init(): void {
@@ -33,16 +36,13 @@ export default class RankingController extends AppController {
 				.select(["_id", "name", "logo"])
 				.exec();
 			if (teamList.length === 0) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Không thể xem bảng xếp hạng giải đấu")
-					.send();
+				return apiRes.code(400).data("Không thể xem bảng xếp hạng giải đấu").send();
 			}
 
 			const mappedData = teamList.map((team) => {
 				const index = teams.findIndex((item) => item.teamId.equals(team._id));
 				const item = {
+					id: team._id,
 					name: team.name,
 					logo: team.logo,
 					participatedAt: teams[index]?.participatedAt,
@@ -56,18 +56,8 @@ export default class RankingController extends AppController {
 
 			apiRes.data(mappedData).send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "RankingController",
-					method: "getTournamentRankingAsync",
-					msg: error.message,
-				},
-			});
-			apiRes
-				.code(400)
-				.message("Bad Request")
-				.data("Không thể xem bảng xếp hạng giải đấu")
-				.send();
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể xem bảng xếp hạng giải đấu").send();
 		}
 	}
 }

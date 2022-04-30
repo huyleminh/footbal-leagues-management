@@ -10,7 +10,14 @@ import TokenUtil from "../../utils/TokenUtil";
 import AppController from "../AppController";
 export default class AuthController extends AppController {
 	constructor() {
-		super();
+		super("AuthController");
+	}
+
+	binding(): void {
+		this.postLoginAsync = this.postLoginAsync.bind(this);
+		this.postRefreshTokenAsync = this.postRefreshTokenAsync.bind(this);
+		this.postLogoutAsync = this.postLogoutAsync.bind(this);
+		this.postRefreshTokenAsync = this.postRefreshTokenAsync.bind(this);
 	}
 
 	init(): void {
@@ -33,11 +40,7 @@ export default class AuthController extends AppController {
 		try {
 			const user = await UserModel.findOne({ username });
 			if (user === null || !BcryptUtil.verifyHashedString(password, user.password)) {
-				return apiResponse
-					.code(400)
-					.message("Bad Request")
-					.data("Tên đăng nhập hoặc mật khẩu không đúng")
-					.send();
+				return apiResponse.code(400).data("Tên đăng nhập hoặc mật khẩu không đúng").send();
 			}
 
 			const accessToken = TokenUtil.generateAccessToken({
@@ -101,18 +104,8 @@ export default class AuthController extends AppController {
 				})
 				.send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "AuthController",
-					method: "postLoginAsync",
-					msg: error.message,
-				},
-			});
-			apiResponse
-				.code(400)
-				.message("Bad Request")
-				.data("Không thể đăng nhập, vui lòng thử lại")
-				.send();
+			this._errorHandler.handle(error.message);
+			apiResponse.code(400).data("Không thể đăng nhập, vui lòng thử lại").send();
 		}
 	}
 
@@ -149,7 +142,6 @@ export default class AuthController extends AppController {
 
 			apiRes
 				.code(200)
-				.message("OK")
 				.data({
 					accessToken,
 					refreshToken: newRefreshToken.refreshToken,
@@ -159,16 +151,9 @@ export default class AuthController extends AppController {
 				})
 				.send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "AuthController",
-					method: "postRefreshTokenAsync",
-					msg: error.message,
-				},
-			});
+			this._errorHandler.handle(error.message);
 			apiRes
 				.code(401)
-				.message("Unauthorized")
 				.data("Không thể làm mới phiên đăng nhập, vui lòng đăng nhập lại")
 				.send();
 		}
@@ -177,7 +162,7 @@ export default class AuthController extends AppController {
 	async postLogoutAsync(req: IAppRequest, res: IAppResponse) {
 		const { authorization } = req.headers;
 		const { refreshToken } = req.body;
-		const apiRes = new AppResponse(res, 204, "No Content");
+		const apiRes = new AppResponse(res, 204);
 		if (!authorization || !refreshToken) {
 			return apiRes.send();
 		}
@@ -191,20 +176,14 @@ export default class AuthController extends AppController {
 			const payload = await TokenUtil.verifyToken(idToken, "id_token");
 			await UserTokenModel.findOneAndRemove({ userId: payload.sub });
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "AuthController",
-					method: "postLogoutAsync",
-					msg: error.message,
-				},
-			});
+			this._errorHandler.handle(error.message);
 		}
 		apiRes.send();
 	}
 
 	async getVerifyTokenAsync(req: IAppRequest, res: IAppResponse) {
 		const { tokenPayload } = res.locals;
-		new AppResponse(res, 200, "OK", {
+		new AppResponse(res, 200, {
 			scope: tokenPayload.scope,
 			role: tokenPayload.role,
 		}).send();

@@ -7,13 +7,18 @@ import TeamModel from "../../models/TeamModel";
 import TournamentModel from "../../models/TournamentModel";
 import TournamentParticipantModel from "../../models/TournamentParticipantModel";
 import AppResponse from "../../shared/AppResponse";
-import { Logger } from "../../utils/Logger";
 import AppController from "../AppController";
 
 export default class PlayerController extends AppController {
 	constructor() {
-		super();
+		super("PlayerController");
 	}
+
+	binding(): void {
+		this.postCreatePlayerAsync = this.postCreatePlayerAsync.bind(this);
+		this.putReplacePlayerAsync = this.putReplacePlayerAsync.bind(this);
+	}
+
 	init(): void {
 		this._router.post(
 			"/players",
@@ -49,20 +54,14 @@ export default class PlayerController extends AppController {
 
 			const joinedTeam = participant.teams.find((team) => team.teamId.toString() === teamId);
 			if (joinedTeam.usedConfig.addedPlayer === tournament.config.maxAdditionalPlayer) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Lượng cầu thủ thêm mới đã đạt giới hạn");
+				return apiRes.code(400).data("Lượng cầu thủ thêm mới đã đạt giới hạn");
 			}
 
 			if (
 				type === 1 &&
 				joinedTeam.usedConfig.abroadPlayer === tournament.config.maxAbroardPlayer
 			) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Lượng ngoại binh đã đạt giới hạn");
+				return apiRes.code(400).data("Lượng ngoại binh đã đạt giới hạn");
 			}
 
 			const playerInserted = await PlayerModel.create({
@@ -83,16 +82,10 @@ export default class PlayerController extends AppController {
 			type === 1 && ++joinedTeam.usedConfig.abroadPlayer;
 			await TournamentParticipantModel.findByIdAndUpdate(participant._id, participant);
 
-			apiRes.code(201).message("Created").send();
+			apiRes.code(201).send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "PlayerController",
-					method: "postCreatePlayerAsync",
-					msg: error.message,
-				},
-			});
-			apiRes.code(400).message("Bad Request").data("Không thể tạo mới cầu thủ").send();
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể tạo mới cầu thủ").send();
 		}
 	}
 
@@ -119,20 +112,14 @@ export default class PlayerController extends AppController {
 
 			const joinedTeam = participant.teams.find((team) => team.teamId.toString() === teamId);
 			if (joinedTeam.usedConfig.changedPlayer === tournament.config.maxChangingPlayer) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Lượng cầu thủ thay thế đã đạt giới hạn");
+				return apiRes.code(400).data("Lượng cầu thủ thay thế đã đạt giới hạn");
 			}
 
 			if (
 				type === 1 &&
 				joinedTeam.usedConfig.abroadPlayer === tournament.config.maxAbroardPlayer
 			) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Lượng ngoại binh đã đạt giới hạn");
+				return apiRes.code(400).data("Lượng ngoại binh đã đạt giới hạn");
 			}
 
 			const playerInserted = await PlayerModel.create({
@@ -144,30 +131,24 @@ export default class PlayerController extends AppController {
 				position,
 			});
 
-			await Promise.all([
-				TeamModel.findByIdAndUpdate(teamId, {
-					$pull: { players: { $in: [new mongoose.Types.ObjectId(id)] } },
-				}).exec(),
-				TeamModel.updateOne({ _id: teamId }, [
-					{ $set: { players: { $concatArrays: ["$players", [playerInserted._id]] } } },
-				]).exec(),
-			]);
+			await TeamModel.findByIdAndUpdate(teamId, {
+				$pull: { players: { $eq: new mongoose.Types.ObjectId(id) } },
+			}).exec();
+
+			await TeamModel.updateOne({ _id: teamId }, [
+				{ $set: { players: { $concatArrays: ["$players", [playerInserted._id]] } } },
+			]).exec();
+
+			await PlayerModel.findByIdAndUpdate(id, { teamId: new mongoose.Types.ObjectId() });
 
 			++joinedTeam.usedConfig.changedPlayer;
 			type === 1 && ++joinedTeam.usedConfig.abroadPlayer;
 			await TournamentParticipantModel.findByIdAndUpdate(participant._id, participant);
 
-			apiRes.code(201).message("Created").send();
+			apiRes.code(201).send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "PlayerController",
-					method: "putReplacePlayerAsync",
-					msg: error.message,
-				},
-			});
-			console.log(error);
-			apiRes.code(400).message("Bad Request").data("Không thể thay thế cầu thủ").send();
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể thay thế cầu thủ").send();
 		}
 	}
 }

@@ -6,7 +6,7 @@ import TokenUtil from "../utils/TokenUtil";
 export function validateLoginData(req: IAppRequest, res: IAppResponse, next: IAppNextFuction) {
 	const { body } = req;
 
-	const apiResponse = new AppResponse(res, 400, "Bad Request");
+	const apiResponse = new AppResponse(res, 400);
 
 	let { username, password } = body;
 
@@ -32,7 +32,7 @@ export function validateRefreshTokenData(
 ) {
 	const { authorization } = req.headers;
 	const { refreshToken } = req.body;
-	const apiRes = new AppResponse(res, 401, "Unauthorized");
+	const apiRes = new AppResponse(res, 401);
 	if (!authorization || !refreshToken) {
 		return apiRes.send();
 	}
@@ -57,7 +57,7 @@ export function verifyUserToken(req: IAppRequest, res: IAppResponse, next: IAppN
 	}
 
 	const { authorization } = req.headers;
-	const apiRes = new AppResponse(res, 401, "Unauthorized");
+	const apiRes = new AppResponse(res, 401);
 	if (!authorization) {
 		return apiRes.send();
 	}
@@ -87,12 +87,7 @@ export function verifyAdminRole(req: IAppRequest, res: IAppResponse, next: IAppN
 		return next();
 	}
 
-	return new AppResponse(
-		res,
-		403,
-		"Forbidden",
-		"Bạn không có quyền truy cập chức năng này",
-	).send();
+	return new AppResponse(res, 403, "Bạn không có quyền truy cập chức năng này").send();
 }
 
 export function verifyManagerRole(req: IAppRequest, res: IAppResponse, next: IAppNextFuction) {
@@ -102,12 +97,7 @@ export function verifyManagerRole(req: IAppRequest, res: IAppResponse, next: IAp
 		return next();
 	}
 
-	return new AppResponse(
-		res,
-		403,
-		"Forbidden",
-		"Bạn không có quyền truy cập chức năng này",
-	).send();
+	return new AppResponse(res, 403, "Bạn không có quyền truy cập chức năng này").send();
 }
 
 export default {
