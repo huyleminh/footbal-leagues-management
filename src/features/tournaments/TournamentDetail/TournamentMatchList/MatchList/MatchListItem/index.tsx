@@ -7,12 +7,12 @@ export interface MatchListItemType {
 	round: string;
 	homeTeam: {
 		name: string;
-		point: number;
+		point: number | null;
 		logo: string;
 	};
 	awayTeam: {
 		name: string;
-		point: number;
+		point: number | null;
 		logo: string;
 	};
 	stadium: string;
@@ -51,7 +51,9 @@ function MatchListItem(props: MatchListItemProps) {
 						}}
 					>
 						<Box sx={{ display: "flex", alignItems: "center" }}>
-							<Typography sx={{ fontSize: "1rem", fontWeight: 500 }}>{data.homeTeam.name}</Typography>
+							<Typography sx={{ fontSize: "1rem", fontWeight: 500 }}>
+								{data.homeTeam.name}
+							</Typography>
 						</Box>
 						<Box sx={{ display: "flex", width: "65px", alignItems: "center" }}>
 							<img
@@ -75,10 +77,9 @@ function MatchListItem(props: MatchListItemProps) {
 						width: "12%",
 					}}
 				>
-					<Typography
-						color="primary"
-						variant="h4"
-					>{`${data.homeTeam.point} - ${data.awayTeam.point}`}</Typography>
+					<Typography color="primary" variant="h4">{`${data.homeTeam.point ?? ""} - ${
+						data.awayTeam.point ?? ""
+					}`}</Typography>
 				</Box>
 				<Box sx={{ display: "flex", width: "44%" }}>
 					<Box sx={{ display: "flex", flexGrow: "1", "& > *": { marginLeft: "20px" } }}>
@@ -95,7 +96,9 @@ function MatchListItem(props: MatchListItemProps) {
 							/>
 						</Box>
 						<Box sx={{ display: "flex", alignItems: "center" }}>
-							<Typography sx={{ fontSize: "1rem", fontWeight: 500 }}>{data.awayTeam.name}</Typography>
+							<Typography sx={{ fontSize: "1rem", fontWeight: 500 }}>
+								{data.awayTeam.name}
+							</Typography>
 						</Box>
 					</Box>
 					<Box sx={{ display: "flex", alignItems: "center", minWidth: "150px" }}>
