@@ -143,14 +143,9 @@ function InformationForm(props: IInformationFormProps) {
 						value={info.scheduledDate}
 						onChange={handleChangeTime}
 						minDate={new Date(new Date().getTime() + 86400000)}
-						disableHighlightToday
+						defaultCalendarMonth={new Date(new Date().getTime() + 86400000)}
 						renderInput={(params) => (
-							<TextField
-								size="small"
-								variant="outlined"
-								required
-								{...params}
-							/>
+							<TextField size="small" variant="outlined" required {...params} />
 						)}
 					/>
 				</Stack>

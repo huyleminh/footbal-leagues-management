@@ -98,7 +98,14 @@ function TournamentRanking(props: IBaseComponentProps) {
 									{index + 1}
 								</TableCell>
 								<TableCell align="left" sx={{ width: "100px" }}>
-									<Box sx={{ width: "40px", height: "auto" }}>
+									<Box
+										sx={{
+											width: "40px",
+											height: "40px",
+											display: "flex",
+											alignItems: "center",
+										}}
+									>
 										<img
 											src={item.logo || ""}
 											alt="logoTournament"
