@@ -114,11 +114,11 @@ function TournamentDetail(props: ITournamentDetailProps) {
 							<Typography variant="h5" sx={{ textTransform: "uppercase" }}>
 								{data.name || ""}
 							</Typography>
-							<Typography sx={{ fontSize: "1.2rem" }}>
-								{data.createdByName || "Không rõ"}
-							</Typography>
 							<Typography sx={{ fontSize: "1rem" }}>
 								{`Tài trợ: ${data.sponsorName?.map((item) => `${item} `) || ""}`}
+							</Typography>
+							<Typography sx={{ fontSize: "1rem" }}>
+								Người tạo: {data.createdByName || "Không rõ"}
 							</Typography>
 							<Box sx={{ maxWidth: "200px" }}>
 								{data.status === TOURNAMENT_STATUS_ENUM.PENDING ? (
@@ -151,6 +151,10 @@ function TournamentDetail(props: ITournamentDetailProps) {
 			<Box sx={{ flexGrow: "1" }}>
 				<Routes>
 					<Route
+						index
+						element={<Navigate to="./ranking" replace />}
+					/>
+					<Route
 						path="/ranking"
 						element={<PrivateRoute role="all" element={<TournamentRanking />} />}
 					/>
@@ -161,10 +165,6 @@ function TournamentDetail(props: ITournamentDetailProps) {
 					<Route
 						path="/matches/*"
 						element={<PrivateRoute role="all" element={<TournamentMatchList />} />}
-					/>
-					<Route
-						index
-						element={<PrivateRoute role="all" element={<TournamentRanking />} />}
 					/>
 					<Route path="*" element={<Navigate to={`/404`} replace />} />
 				</Routes>

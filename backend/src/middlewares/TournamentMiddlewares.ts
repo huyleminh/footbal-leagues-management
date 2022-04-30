@@ -9,7 +9,7 @@ export function validateCreateTournamentData(
 	next: IAppNextFuction,
 ) {
 	const body = req.body;
-	const apiRes = new AppResponse(res, 400, "Bad Request");
+	const apiRes = new AppResponse(res, 400);
 
 	if (!body.name || !body.name.toString().trim()) {
 		return apiRes.data("Thiếu tên giải đấu").send();
@@ -32,11 +32,7 @@ export function validateCreateTournamentData(
 
 	let status;
 	let scheduledDate;
-	if (
-		// body.status === null ||
-		// body.status === undefined ||
-		TOURNAMENT_STATUS_ENUM[body.status]
-	) {
+	if (TOURNAMENT_STATUS_ENUM[body.status]) {
 		status = body.status;
 	}
 	if (body.scheduledDate && status !== undefined) {
@@ -91,12 +87,9 @@ export function validateGetParams(req: IAppRequest, res: IAppResponse, next: IAp
 		tournamentStatus,
 		searchTypeNum,
 		query: searchQuery,
-		isSelfAssigned
+		isSelfAssigned,
 	};
 	next();
 }
 
-export default {
-	validateCreateTournamentData,
-	validateGetParams,
-};
+export default { validateCreateTournamentData, validateGetParams };

@@ -6,21 +6,27 @@ import Swal from "sweetalert2";
 import { IAPIResponse } from "../../../@types/AppInterfaces";
 import ToastMsg from "../../../components/toast/ToastMsg";
 import HttpService from "../../../services/HttpService";
-import ConfigForm from "./components/ConfigForm";
-import InformationForm from "./components/InformationForm";
+import ConfigForm, { ITournamentConfigForm } from "./components/ConfigForm";
+import InformationForm, { ITournamentInfoForm } from "./components/InformationForm";
 
 export interface ICreateTournamentProps {}
 
 const steps = ["Thêm thông tin cơ bản", "Đặt quy định giải đấu", "Kiểm tra và Xác nhận"];
 
+interface IFormData {
+	info: ITournamentInfoForm;
+	config: ITournamentConfigForm;
+}
+
 function CreateTournament(props: ICreateTournamentProps) {
 	const navigate = useNavigate();
 	const [activeStep, setActiveStep] = useState(0);
-	const [formData, setFormData] = useState({
+	const [formData, setFormData] = useState<IFormData>({
 		info: {
 			name: "",
 			sponsorName: "",
 			image: null,
+			scheduledDate: null,
 		},
 		config: {
 			maxAdditionalPlayer: 0,
@@ -55,25 +61,23 @@ function CreateTournament(props: ICreateTournamentProps) {
 		data.append("name", formData.info.name);
 		data.append("sponsorName", formData.info.sponsorName);
 		data.append("config", JSON.stringify(formData.config));
-		data.append("scheduledDate", new Date(new Date().getTime() + 86400000).toISOString());
+		data.append("scheduledDate", formData.info.scheduledDate!.toISOString());
 		data.append("logo", formData.info.image);
 
 		setIsLoading(true);
 		try {
-			const res = await HttpService.post<IAPIResponse<any | string>>(
-				"/tournaments",
-				data,
-				{
-					headers: {
-						"Content-Type": "multipart/form-data",
-					},
+			const res = await HttpService.post<IAPIResponse<any | string>>("/tournaments", data, {
+				headers: {
+					"Content-Type": "multipart/form-data",
 				},
-			);
+			});
 			if (res.code === 201) {
 				toast(<ToastMsg title="Tạo mới thành công" type="success" />, {
 					type: toast.TYPE.SUCCESS,
 				});
-				navigate("/tournaments");
+				setTimeout(() => {
+					navigate("/tournaments");
+				}, 1500);
 			} else if (res.code === 400) {
 				toast(<ToastMsg title={res.data as string} type="error" />, {
 					type: toast.TYPE.ERROR,

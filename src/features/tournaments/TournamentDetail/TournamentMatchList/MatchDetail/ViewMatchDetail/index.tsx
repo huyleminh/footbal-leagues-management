@@ -21,7 +21,6 @@ import MatchLineup from "./MatchLineup";
 import ChooseLineupDialog, { IModalData } from "./ChooseLineupDialog";
 import AuthContext from "../../../../../../contexts/AuthContext";
 import AddMatchEventDialog from "./AddMatchEventDialog";
-import moment from "moment";
 
 export interface ILineupType {
 	stripNumber: number;
@@ -62,7 +61,6 @@ export interface IMatchDetailType {
 function ViewMatchDetail(props: any) {
 	const { open, onClose, matchId } = props;
 	const context = useContext(AuthContext);
-	const [datetime, setDatetime] = useState<Date | null>(new Date());
 	const [editMode, setEditMode] = useState(false);
 	const [openChooseLineup, setOpenChooseLineup] = useState(false);
 	const [openAddEvent, setOpenAddEvent] = useState(false);
@@ -297,14 +295,9 @@ function ViewMatchDetail(props: any) {
 				onClose={setOpenChooseLineup}
 			/>
 			<AddMatchEventDialog data={modalData} open={openAddEvent} onClose={setOpenAddEvent} />
-			<Dialog maxWidth={false} onClose={() => onClose(false)} open={open} scroll="paper">
+			<Dialog maxWidth="lg" fullWidth open={open} scroll="paper" disableEscapeKeyDown>
 				<DialogTitle>
-					<Box
-						sx={{
-							display: "flex",
-							justifyContent: "space-between",
-						}}
-					>
+					<Stack direction="row" justifyContent="space-between">
 						Chi tiết trận đấu
 						{context.role === "manager" ? (
 							<Button
@@ -322,20 +315,15 @@ function ViewMatchDetail(props: any) {
 								{editMode ? "Lưu" : "Sửa"}
 							</Button>
 						) : null}
-					</Box>
+					</Stack>
 				</DialogTitle>
 				<DialogContent>
-					<Box
-						sx={{
-							paddingTop: "10px",
-							minWidth: "80vw",
-						}}
-					>
-						<Stack spacing={2}>
+					<Box sx={{ paddingTop: "10px" }}>
+						<Stack spacing={1}>
 							<Box
 								sx={{
 									display: "flex",
-									minHeight: "50px",
+									minHeight: "45px",
 									justifyContent: "center",
 									alignItems: "center",
 								}}
@@ -348,6 +336,7 @@ function ViewMatchDetail(props: any) {
 								>
 									{editMode ? (
 										<TextField
+											size="small"
 											label="Sân vận động"
 											name="stadium"
 											variant="outlined"
@@ -380,6 +369,7 @@ function ViewMatchDetail(props: any) {
 											onChange={handleChangeTime}
 											renderInput={(params) => (
 												<TextField
+													size="small"
 													label="Thời gian"
 													variant="outlined"
 													{...params}
@@ -420,23 +410,27 @@ function ViewMatchDetail(props: any) {
 											width: "100%",
 										}}
 									>
-										<img
-											style={{
-												height: "100px",
-												width: "100px",
-												objectFit: "cover",
-												borderRadius: "10px",
-											}}
-											src="https://upload.wikimedia.org/wikipedia/vi/thumb/1/1d/Manchester_City_FC_logo.svg/1200px-Manchester_City_FC_logo.svg.png"
-											alt="home-team-logo"
-										/>
+										<Box sx={{ height: "auto", width: "120px" }}>
+											<img
+												style={{
+													height: "auto",
+													width: "100%",
+													objectFit: "contain",
+													borderRadius: "10px",
+												}}
+												src="https://upload.wikimedia.org/wikipedia/vi/thumb/1/1d/Manchester_City_FC_logo.svg/1200px-Manchester_City_FC_logo.svg.png"
+												alt="home-team-logo"
+											/>
+										</Box>
 										{editMode ? (
 											<TextField
+												size="small"
 												sx={{
 													position: "absolute",
 													right: "0",
 													top: "50%",
 													transform: "translateY(-50%)",
+													maxWidth: "100px",
 												}}
 												label="Điểm số"
 												name="home-point"
@@ -445,20 +439,18 @@ function ViewMatchDetail(props: any) {
 												onChange={handleOnChange}
 											/>
 										) : (
-											<>
-												<Typography
-													sx={{
-														position: "absolute",
-														right: "0",
-														top: "50%",
-														transform: "translateY(-50%)",
-													}}
-													color="primary"
-													variant="h3"
-												>
-													{matchDetail.homeTeam.point}
-												</Typography>
-											</>
+											<Typography
+												sx={{
+													position: "absolute",
+													right: "0",
+													top: "50%",
+													transform: "translateY(-50%)",
+												}}
+												color="primary"
+												variant="h3"
+											>
+												{matchDetail.homeTeam.point}
+											</Typography>
 										)}
 									</Box>
 								</Box>
@@ -478,7 +470,9 @@ function ViewMatchDetail(props: any) {
 											width: "100%",
 										}}
 									>
-										<Typography variant="h5">VS</Typography>
+										<Typography sx={{ fontSize: "1rem", fontWeight: 700 }}>
+											VS
+										</Typography>
 									</Box>
 								</Box>
 								<Box sx={{ display: "flex", width: "41%" }}>
@@ -493,11 +487,13 @@ function ViewMatchDetail(props: any) {
 									>
 										{editMode ? (
 											<TextField
+												size="small"
 												sx={{
 													position: "absolute",
 													left: "0",
 													top: "50%",
 													transform: "translateY(-50%)",
+													maxWidth: "100px",
 												}}
 												label="Điểm số"
 												name="away-point"
@@ -506,31 +502,31 @@ function ViewMatchDetail(props: any) {
 												onChange={handleOnChange}
 											/>
 										) : (
-											<>
-												<Typography
-													sx={{
-														position: "absolute",
-														left: "0",
-														top: "50%",
-														transform: "translateY(-50%)",
-													}}
-													color="primary"
-													variant="h3"
-												>
-													{matchDetail.awayTeam.point}
-												</Typography>
-											</>
+											<Typography
+												sx={{
+													position: "absolute",
+													left: "0",
+													top: "50%",
+													transform: "translateY(-50%)",
+												}}
+												color="primary"
+												variant="h3"
+											>
+												{matchDetail.awayTeam.point}
+											</Typography>
 										)}
-										<img
-											style={{
-												height: "100px",
-												width: "100px",
-												objectFit: "cover",
-												borderRadius: "10px",
-											}}
-											src="https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/Manchester_United_FC_crest.svg/1200px-Manchester_United_FC_crest.svg.png"
-											alt="home-team-logo"
-										/>
+										<Box sx={{ height: "auto", width: "120px" }}>
+											<img
+												style={{
+													height: "auto",
+													width: "100%",
+													objectFit: "contain",
+													borderRadius: "10px",
+												}}
+												src="https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/Manchester_United_FC_crest.svg/1200px-Manchester_United_FC_crest.svg.png"
+												alt="home-team-logo"
+											/>
+										</Box>
 									</Box>
 								</Box>
 							</Box>
@@ -539,42 +535,41 @@ function ViewMatchDetail(props: any) {
 									key={index}
 									sx={{
 										display: "flex",
-										minHeight: "50px",
+										padding: "0.75rem 0",
 									}}
 								>
-									<Box sx={{ display: "flex", width: "41%" }}>
-										<Box
-											sx={{
-												display: "flex",
-												justifyContent: "center",
-												alignItems: "center",
-												width: "100%",
-											}}
-										>
-											{editMode && item.dataKey !== "name" ? ( // cannot change team name
-												<TextField
-													label={item.title}
-													name={`home-${item.dataKey}`}
-													variant="outlined"
-													value={
+									<Box
+										sx={{
+											display: "flex",
+											width: "41%",
+											justifyContent: "center",
+											alignItems: "center",
+										}}
+									>
+										{editMode && item.dataKey !== "name" ? ( // cannot change team name
+											<TextField
+												size="small"
+												label={item.title}
+												name={`home-${item.dataKey}`}
+												variant="outlined"
+												value={
+													matchDetail.homeTeam[
+														item.dataKey as keyof ITeamMatchDetailType
+													]
+												}
+												onChange={handleOnChange}
+											/>
+										) : (
+											<>
+												<Typography variant="body2">
+													{`${
 														matchDetail.homeTeam[
 															item.dataKey as keyof ITeamMatchDetailType
 														]
-													}
-													onChange={handleOnChange}
-												/>
-											) : (
-												<>
-													<Typography variant="body1">
-														{`${
-															matchDetail.homeTeam[
-																item.dataKey as keyof ITeamMatchDetailType
-															]
-														}${item.postfix || ""}`}
-													</Typography>
-												</>
-											)}
-										</Box>
+													}${item.postfix || ""}`}
+												</Typography>
+											</>
+										)}
 									</Box>
 									<Box
 										sx={{
@@ -584,52 +579,42 @@ function ViewMatchDetail(props: any) {
 											width: "18%",
 										}}
 									>
-										<Box
-											sx={{
-												display: "flex",
-												justifyContent: "center",
-												alignItems: "center",
-												width: "100%",
-											}}
-										>
-											<Typography sx={{ fontWeight: "bold" }} variant="body1">
-												{item.title}
-											</Typography>
-										</Box>
+										<Typography sx={{ fontWeight: "700" }} variant="body2">
+											{item.title}
+										</Typography>
 									</Box>
-									<Box sx={{ display: "flex", width: "41%" }}>
-										<Box
-											sx={{
-												display: "flex",
-												width: "100%",
-												justifyContent: "center",
-												alignItems: "center",
-											}}
-										>
-											{editMode && item.dataKey !== "name" ? ( // cannot change team name
-												<TextField
-													label={item.title}
-													name={`away-${item.dataKey}`}
-													variant="outlined"
-													value={
+									<Box
+										sx={{
+											display: "flex",
+											width: "41%",
+											justifyContent: "center",
+											alignItems: "center",
+										}}
+									>
+										{editMode && item.dataKey !== "name" ? ( // cannot change team name
+											<TextField
+												size="small"
+												label={item.title}
+												name={`away-${item.dataKey}`}
+												variant="outlined"
+												value={
+													matchDetail.awayTeam[
+														item.dataKey as keyof ITeamMatchDetailType
+													]
+												}
+												onChange={handleOnChange}
+											/>
+										) : (
+											<>
+												<Typography variant="body2">
+													{`${
 														matchDetail.awayTeam[
 															item.dataKey as keyof ITeamMatchDetailType
 														]
-													}
-													onChange={handleOnChange}
-												/>
-											) : (
-												<>
-													<Typography variant="body1">
-														{`${
-															matchDetail.awayTeam[
-																item.dataKey as keyof ITeamMatchDetailType
-															]
-														}${item.postfix || ""}`}
-													</Typography>
-												</>
-											)}
-										</Box>
+													}${item.postfix || ""}`}
+												</Typography>
+											</>
+										)}
 									</Box>
 								</Box>
 							))}
@@ -650,7 +635,10 @@ function ViewMatchDetail(props: any) {
 					</Box>
 				</DialogContent>
 				<DialogActions>
-					<Button color="primary" variant="contained" onClick={() => onClose(false)}>
+					<Button color="primary" variant="contained" onClick={() => {
+						setEditMode(false)
+						onClose(false)
+					}}>
 						Đóng
 					</Button>
 				</DialogActions>

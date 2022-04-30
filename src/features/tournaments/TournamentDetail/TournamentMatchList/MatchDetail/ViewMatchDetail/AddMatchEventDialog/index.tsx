@@ -230,7 +230,7 @@ function AddMatchEventDialog(props: IAddMatchEventProps) {
 							justifyContent: "space-between",
 						}}
 					>
-						<Box sx={{ display: "flex", "& > *": { marginRight: "10px" } }}>
+						<Box sx={{ display: "flex", alignItems: "center" }}>
 							<Radio checked={timeType} onChange={() => setTimeType(!timeType)} />
 							<TextField
 								sx={{ width: "100px" }}
@@ -242,9 +242,10 @@ function AddMatchEventDialog(props: IAddMatchEventProps) {
 								onChange={handleOnChange}
 								disabled={!timeType}
 								InputProps={{ inputProps: { min: 0, max: 120 } }}
+								size="small"
 							/>
 						</Box>
-						<Box sx={{ display: "flex", "& > *": { marginRight: "10px" } }}>
+						<Box sx={{ display: "flex", alignItems: "center" }}>
 							<Radio checked={!timeType} onChange={() => setTimeType(!timeType)} />
 							<TextField
 								sx={{ width: "100px" }}
@@ -256,10 +257,10 @@ function AddMatchEventDialog(props: IAddMatchEventProps) {
 								onChange={handleOnChange}
 								disabled={timeType}
 								InputProps={{ inputProps: { min: 0, max: 120 } }}
+								size="small"
 							/>
 							<Typography
-								sx={{ display: "inline-flex", alignItems: "center" }}
-								variant="body1"
+								sx={{ display: "inline-block", margin: "0 1rem", fontSize: "1.25rem" }}
 							>
 								+
 							</Typography>
@@ -273,6 +274,7 @@ function AddMatchEventDialog(props: IAddMatchEventProps) {
 								onChange={handleOnChange}
 								disabled={timeType}
 								InputProps={{ inputProps: { min: 0, max: 120 } }}
+								size="small"
 							/>
 						</Box>
 					</Box>

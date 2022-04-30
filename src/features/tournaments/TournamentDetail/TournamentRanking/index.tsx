@@ -8,16 +8,18 @@ import {
 	TableContainer,
 	TableHead,
 	TableRow,
+	Typography,
 } from "@mui/material";
 import { toast } from "material-react-toastify";
 import { useEffect, useState } from "react";
-import { useMatch } from "react-router-dom";
+import { Link, useMatch } from "react-router-dom";
 import { IAPIResponse } from "../../../../@types/AppInterfaces";
 import { IBaseComponentProps } from "../../../../@types/ComponentInterfaces";
 import ToastMsg from "../../../../components/toast/ToastMsg";
 import HttpService from "../../../../services/HttpService";
 
 interface ITournamentRankingData {
+	id?: string;
 	name?: string;
 	logo?: string;
 	participatedAt?: string;
@@ -65,8 +67,8 @@ function TournamentRanking(props: IBaseComponentProps) {
 					<LinearProgress />
 				</Box>
 			) : null}
-			<TableContainer sx={{ maxHeight: "58vh", overflow: "auto" }} component={Card}>
-				<Table sx={{ minWidth: 650 }} stickyHeader aria-label="sticky table">
+			<TableContainer component={Card}>
+				<Table sx={{ minWidth: 650 }}>
 					<TableHead>
 						<TableRow>
 							<TableCell align="left" sx={{ width: "100px", minWidth: "100px" }}>
@@ -96,15 +98,22 @@ function TournamentRanking(props: IBaseComponentProps) {
 									{index + 1}
 								</TableCell>
 								<TableCell align="left" sx={{ width: "100px" }}>
-									<Box sx={{ width: "100px", height: "100px" }}>
+									<Box sx={{ width: "40px", height: "auto" }}>
 										<img
 											src={item.logo || ""}
 											alt="logoTournament"
-											style={{ width: "100%", height: "100%" }}
+											style={{ width: "100%", height: "auto" }}
 										/>
 									</Box>
 								</TableCell>
-								<TableCell align="left">{item.name}</TableCell>
+								<TableCell align="left">
+									<Link
+										style={{ color: "#000", textDecoration: "none" }}
+										to={`../teams/${item.id}`}
+									>
+										{item.name}
+									</Link>
+								</TableCell>
 								<TableCell align="left">
 									{(item.totalLost || 0) +
 										(item.totalTied || 0) +
@@ -116,6 +125,19 @@ function TournamentRanking(props: IBaseComponentProps) {
 						))}
 					</TableBody>
 				</Table>
+				{data.length === 0 && (
+					<Typography
+						variant="h6"
+						sx={{
+							textAlign: "center",
+							width: "100%",
+							fontSize: "0.875rem",
+							padding: "1rem",
+						}}
+					>
+						Không có dữ liệu phù hợp
+					</Typography>
+				)}
 			</TableContainer>
 		</>
 	);

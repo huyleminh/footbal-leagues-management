@@ -90,7 +90,7 @@ function TeamDetail(props: ITeamDetailProps) {
 				<>
 					<Stack alignItems="center" sx={{ mb: 4, position: "relative" }}>
 						<Box
-							sx={{ width: "100px", height: "100px", mb: 1 }}
+							sx={{ width: "150px", height: "150px", mb: 1 }}
 							className="team-card-image"
 						>
 							<img

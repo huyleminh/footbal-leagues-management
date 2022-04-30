@@ -6,18 +6,25 @@ import TournamentModel from "../../models/TournamentModel";
 import UserModel, {
 	USER_ROLE_ENUM,
 	USER_SEARCH_TYPE_ENUM,
-	USER_STATUS
+	USER_STATUS,
 } from "../../models/UserModel";
 import UserTokenModel from "../../models/UserTokenModel";
 import EmailService from "../../services/EmailService";
 import AppResponse from "../../shared/AppResponse";
 import BcryptUtil from "../../utils/BcryptUtil";
-import { Logger } from "../../utils/Logger";
 import AppController from "../AppController";
 
 export default class ManagerController extends AppController {
 	constructor() {
-		super();
+		super("ManagerController");
+	}
+
+	binding(): void {
+		this.getLocalManagerListAsync = this.getLocalManagerListAsync.bind(this);
+		this.getLocalManagerByIdAsync = this.getLocalManagerByIdAsync.bind(this);
+		this.postRegisterLocalManagerAsync = this.postRegisterLocalManagerAsync.bind(this);
+		this.patchResetPasswordAsync = this.patchResetPasswordAsync.bind(this);
+		this.deleteLocalManageAsync = this.deleteLocalManageAsync.bind(this);
 	}
 
 	init(): void {
@@ -88,16 +95,10 @@ export default class ManagerController extends AppController {
 					totalRecord,
 				},
 			};
-			apiRes.code(200).message("OK").data(userList).metadata(metadata).send();
+			apiRes.code(200).data(userList).metadata(metadata).send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "ManagerController",
-					method: "getLocalManagerListAsync",
-					msg: error.message,
-				},
-			});
-			apiRes.code(400).message("Bad Request").data("Không thể lấy danh sách manager").send();
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể lấy danh sách manager").send();
 		}
 	}
 
@@ -108,27 +109,13 @@ export default class ManagerController extends AppController {
 		try {
 			const user = await UserModel.findById(id).select(["-__v", "-password"]).exec();
 			if (user === null) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Không tìm thấy quản lý")
-					.send();
+				return apiRes.code(400).data("Không tìm thấy quản lý").send();
 			}
 			const tournamentList = await TournamentModel.find({ createdBy: user._id }).exec();
 			apiRes.data({ user, tournamentList }).send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "ManagerController",
-					method: "getLocalManagerByIdAsync",
-					msg: error.message,
-				},
-			});
-			apiRes
-				.code(400)
-				.message("Bad Request")
-				.data("Không thể lấy danh sách chi tiết manager")
-				.send();
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể lấy danh sách chi tiết manager").send();
 		}
 	}
 
@@ -147,27 +134,17 @@ export default class ManagerController extends AppController {
 					throw new Error(result.reason);
 				} else {
 					if (result.value !== null) {
-						return apiRes.code(400).message("Bad Request").data(allResMsg[i]).send();
+						return apiRes.code(400).data(allResMsg[i]).send();
 					}
 				}
 			}
 
 			await UserModel.create(payload);
 			EmailService.sendUsernamePassword(payload.email, payload.username, payload.password);
-			apiRes.code(201).message("Created").send();
+			apiRes.code(201).send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "ManagerController",
-					method: "postRegisterLocalManagerAsync",
-					msg: error.message,
-				},
-			});
-			apiRes
-				.code(400)
-				.message("Bad Request")
-				.data("Không thể tạo mới quản lý, vui lòng thử lại")
-				.send();
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể tạo mới quản lý, vui lòng thử lại").send();
 		}
 	}
 
@@ -177,7 +154,7 @@ export default class ManagerController extends AppController {
 		const apiRes = new AppResponse(res);
 
 		if (!password || !password.toString().trim()) {
-			return apiRes.code(400).message("Bad Request").data("Thiếu mật khẩu").send();
+			return apiRes.code(400).data("Thiếu mật khẩu").send();
 		}
 
 		try {
@@ -186,26 +163,16 @@ export default class ManagerController extends AppController {
 			}).exec();
 
 			if (queryResponse === null) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Không tìm thấy quản lý")
-					.send();
+				return apiRes.code(400).data("Không tìm thấy quản lý").send();
 			}
 
 			UserTokenModel.findByIdAndRemove(id).exec();
 			EmailService.sendResetPassword(queryResponse.email, password);
 
-			apiRes.code(200).message("OK").data("Cấp lại mật khẩu thành công").send();
+			apiRes.code(200).data("Cấp lại mật khẩu thành công").send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "ManagerController",
-					method: "patchResetPasswordAsync",
-					msg: error.message,
-				},
-			});
-			apiRes.code(400).message("Bad Request").data("Không thể cấp lại mật khẩu").send();
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể cấp lại mật khẩu").send();
 		}
 	}
 
@@ -216,11 +183,7 @@ export default class ManagerController extends AppController {
 		try {
 			const user = await UserModel.findById(id).exec();
 			if (user === null) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Không tìm thấy quản lý")
-					.send();
+				return apiRes.code(400).data("Không tìm thấy quản lý").send();
 			}
 
 			let data = "";
@@ -234,16 +197,10 @@ export default class ManagerController extends AppController {
 			}
 			await UserTokenModel.findByIdAndRemove(user._id);
 
-			apiRes.code(200).message("OK").data(data).send();
+			apiRes.code(200).data(data).send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "ManagerController",
-					method: "deleteLocalManageAsync",
-					msg: error.message,
-				},
-			});
-			apiRes.code(400).message("Bad Request").data("Không thể xóa quản lý").send();
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể xóa quản lý").send();
 		}
 	}
 }

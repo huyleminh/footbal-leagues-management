@@ -1,10 +1,4 @@
-import {
-	Box,
-	Button,
-	Stack,
-	Divider,
-	Typography,
-} from "@mui/material";
+import { Box, Button, Stack, Divider, Typography } from "@mui/material";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import { IBaseComponentProps } from "../../../../../../../@types/ComponentInterfaces";
 import { IMatchDetailType } from "..";
@@ -20,48 +14,26 @@ function MatchLineup(props: IMatchLineupProps) {
 	return (
 		<Stack spacing={2}>
 			{editMode ? (
-				<Box
-					sx={{
-						display: "flex",
-						minHeight: "50px",
-					}}
-				>
-					<Box sx={{ display: "flex", width: "41%" }}>
-						<Button
-							startIcon={<EditRoundedIcon fontSize="small" />}
-							color="primary"
-							variant="contained"
-							onClick={() => openModal(true)}
-						>
-							Chọn
-						</Button>
-					</Box>
-					<Box
-						sx={{
-							display: "flex",
-							justifyContent: "center",
-							width: "18%",
-						}}
+				<Stack direction="row" justifyContent="space-between">
+					<Button
+						startIcon={<EditRoundedIcon fontSize="small" />}
+						color="primary"
+						variant="contained"
+						onClick={() => openModal(true)}
+						size="small"
 					>
-						<Box
-							sx={{
-								display: "flex",
-								justifyContent: "center",
-								width: "100%",
-							}}
-						></Box>
-					</Box>
-					<Box sx={{ display: "flex", width: "41%", justifyContent: "flex-end" }}>
-						<Button
-							startIcon={<EditRoundedIcon fontSize="small" />}
-							color="primary"
-							variant="contained"
-							onClick={() => openModal(false)}
-						>
-							Chọn
-						</Button>
-					</Box>
-				</Box>
+						Chọn
+					</Button>
+					<Button
+						startIcon={<EditRoundedIcon fontSize="small" />}
+						color="primary"
+						variant="contained"
+						onClick={() => openModal(false)}
+						size="small"
+					>
+						Chọn
+					</Button>
+				</Stack>
 			) : null}
 			<Box
 				sx={{
@@ -69,66 +41,36 @@ function MatchLineup(props: IMatchLineupProps) {
 					minHeight: "50px",
 				}}
 			>
-				<Box sx={{ display: "flex", width: "41%" }}>
-					<Box
-						sx={{
-							display: "flex",
-							width: "100%",
-						}}
+				<Stack sx={{ width: "41%" }} spacing={2}>
+					{matchDetail.homeTeam.lineup.map((item, index) => {
+						return (
+							<Typography key={index} textAlign="left" variant="body2">{`${
+								item.stripNumber
+							} - ${item.name} - ${item.position} ${
+								item.captain ? "(Đội trưởng)" : ""
+							}`}</Typography>
+						);
+					})}
+				</Stack>
+				<Box sx={{ width: "18%" }}>
+					<Typography
+						sx={{ fontWeight: "700", width: "100%", textAlign: "center" }}
+						variant="body2"
 					>
-						<Stack sx={{ width: "100%" }} spacing={2}>
-							{matchDetail.homeTeam.lineup.map((item, index) => {
-								return (
-									<Typography key={index} textAlign="left" variant="body1">{`${
-										item.stripNumber
-									} - ${item.name} - ${item.position} ${
-										item.captain ? "(Đội trưởng)" : ""
-									}`}</Typography>
-								);
-							})}
-						</Stack>
-					</Box>
+						Đội hình ra sân
+					</Typography>
 				</Box>
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "center",
-						width: "18%",
-					}}
-				>
-					<Box
-						sx={{
-							display: "flex",
-							justifyContent: "center",
-							width: "100%",
-						}}
-					>
-						<Typography sx={{ fontWeight: "bold" }} variant="body1">
-							Đội hình ra sân
-						</Typography>
-					</Box>
-				</Box>
-				<Box sx={{ display: "flex", width: "41%" }}>
-					<Box
-						sx={{
-							display: "flex",
-							width: "100%",
-							justifyContent: "flex-end",
-						}}
-					>
-						<Stack sx={{ width: "100%" }} spacing={2}>
-							{matchDetail.awayTeam.lineup.map((item, index) => {
-								return (
-									<Typography key={index} textAlign="right" variant="body1">{`${
-										item.name
-									} - ${item.position} ${item.captain ? "(Đội trưởng) " : ""}- ${
-										item.stripNumber
-									}`}</Typography>
-								);
-							})}
-						</Stack>
-					</Box>
-				</Box>
+				<Stack sx={{ width: "41%" }} spacing={2}>
+					{matchDetail.awayTeam.lineup.map((item, index) => {
+						return (
+							<Typography key={index} textAlign="right" variant="body2">{`${
+								item.name
+							} - ${item.position} ${item.captain ? "(Đội trưởng) " : ""}- ${
+								item.stripNumber
+							}`}</Typography>
+						);
+					})}
+				</Stack>
 			</Box>
 			<Divider></Divider>
 			<Box
@@ -137,67 +79,34 @@ function MatchLineup(props: IMatchLineupProps) {
 					minHeight: "50px",
 				}}
 			>
-				<Box sx={{ display: "flex", width: "41%" }}>
-					<Box
-						sx={{
-							display: "flex",
-							width: "100%",
-						}}
+				<Stack sx={{ width: "41%" }} spacing={2}>
+					{matchDetail.homeTeam.substitution.map((item, index) => {
+						return (
+							<Typography key={index} textAlign="left" variant="body2">
+								{`${item.stripNumber} - ${item.name}`}
+							</Typography>
+						);
+					})}
+				</Stack>
+				<Box sx={{ width: "18%" }}>
+					<Typography
+						sx={{ fontWeight: "700", width: "100%", textAlign: "center" }}
+						variant="body2"
 					>
-						<Stack sx={{ width: "100%" }} spacing={2}>
-							{matchDetail.homeTeam.substitution.map((item, index) => {
-								return (
-									<Typography
-										key={index}
-										textAlign="left"
-										variant="body1"
-									>{`${item.stripNumber} - ${item.name}`}</Typography>
-								);
-							})}
-						</Stack>
-					</Box>
+						Dự bị
+					</Typography>
 				</Box>
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "center",
-						width: "18%",
-					}}
-				>
-					<Box
-						sx={{
-							display: "flex",
-							justifyContent: "center",
-							width: "100%",
-						}}
-					>
-						<Typography sx={{ fontWeight: "bold" }} variant="body1">
-							Dự bị
-						</Typography>
-					</Box>
-				</Box>
-				<Box sx={{ display: "flex", width: "41%" }}>
-					<Box
-						sx={{
-							display: "flex",
-							width: "100%",
-							justifyContent: "center",
-							alignItems: "center",
-						}}
-					>
-						<Stack sx={{ width: "100%" }} spacing={2}>
-							{matchDetail.homeTeam.substitution.map((item, index) => {
-								return (
-									<Typography
-										key={index}
-										textAlign="right"
-										variant="body1"
-									>{`${item.name} - ${item.stripNumber}`}</Typography>
-								);
-							})}
-						</Stack>
-					</Box>
-				</Box>
+				<Stack sx={{ width: "41%" }} spacing={2}>
+					{matchDetail.homeTeam.substitution.map((item, index) => {
+						return (
+							<Typography
+								key={index}
+								textAlign="right"
+								variant="body2"
+							>{`${item.name} - ${item.stripNumber}`}</Typography>
+						);
+					})}
+				</Stack>
 			</Box>
 		</Stack>
 	);

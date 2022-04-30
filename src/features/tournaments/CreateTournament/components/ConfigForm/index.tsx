@@ -228,7 +228,7 @@ function ConfigForm(props: IConfigFormProps) {
 					{!disabled && (
 						<>
 							<Button
-								variant="outlined"
+								variant="text"
 								type="button"
 								onClick={() => onPrevious && onPrevious()}
 							>

@@ -9,15 +9,29 @@ import TournamentModel from "../../models/TournamentModel";
 import TournamentParticipantModel from "../../models/TournamentParticipantModel";
 import ImgBBService from "../../services/ImgBBService";
 import AppResponse from "../../shared/AppResponse";
-import { Logger } from "../../utils/Logger";
 import AppController from "../AppController";
 
 export default class TeamController extends AppController {
 	constructor() {
-		super();
+		super("TeamController");
+	}
+
+	binding(): void {
+		this.getPlayerListByTeamIdAsync = this.getPlayerListByTeamIdAsync.bind(this);
+		this.getTeamDetailByIdAsync = this.getTeamDetailByIdAsync.bind(this);
+		this.getTeamListAsync = this.getTeamListAsync.bind(this);
+		this.postCreateTeamAsync = this.postCreateTeamAsync.bind(this);
+		this.postCreateTeamStaffAsync = this.postCreateTeamStaffAsync.bind(this);
+		this.putUpdateTeamStaffAsync = this.putUpdateTeamStaffAsync.bind(this);
+		this.deleteTeamStaffAsync = this.deleteTeamStaffAsync.bind(this);
 	}
 
 	init(): void {
+		this._router.get(
+			"/teams/:id/players",
+			[AuthMiddlewares.verifyManagerRole],
+			this.getPlayerListByTeamIdAsync,
+		);
 		this._router.get("/teams/:id", this.getTeamDetailByIdAsync);
 		this._router.get("/teams", [TeamMiddlewares.validateGetParams], this.getTeamListAsync);
 
@@ -49,6 +63,26 @@ export default class TeamController extends AppController {
 		);
 	}
 
+	async getPlayerListByTeamIdAsync(req: IAppRequest, res: IAppResponse) {
+		const { id } = req.params;
+		const apiRes = new AppResponse(res);
+
+		try {
+			const team = await TeamModel.findById(id).exec();
+			if (team === null) throw new Error("team_notfound");
+
+			const playerIdList = team.players;
+			const playerList = await PlayerModel.find({ _id: { $in: playerIdList } })
+				.select(["-__v"])
+				.exec();
+
+			apiRes.data(playerList).send();
+		} catch (error) {
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể lấy danh sách cầu thủ").send();
+		}
+	}
+
 	async getTeamListAsync(req: IAppRequest, res: IAppResponse) {
 		const apiRes = new AppResponse(res);
 		const {
@@ -57,6 +91,14 @@ export default class TeamController extends AppController {
 		try {
 			let resultSet;
 			let totalRecord = 0;
+			const metadata: IAPIPaginationMetadata = {
+				createdDate: new Date(),
+				pagination: {
+					page: page,
+					pageSize: 0,
+					totalRecord,
+				},
+			};
 
 			if (tournamentId === undefined) {
 				resultSet = await TeamModel.find()
@@ -70,11 +112,7 @@ export default class TeamController extends AppController {
 					tournamentId,
 				}).exec();
 				if (participant === null) {
-					return apiRes
-						.code(400)
-						.message("Bad Request")
-						.data("Không tìm thấy giải đấu")
-						.send();
+					return apiRes.data([]).metadata(metadata).send();
 				}
 				const idList = participant.teams.map((item) => item.teamId);
 				resultSet = await TeamModel.find({ _id: { $in: idList } })
@@ -87,24 +125,15 @@ export default class TeamController extends AppController {
 					.exec();
 			}
 
-			const metadata: IAPIPaginationMetadata = {
-				createdDate: new Date(),
-				pagination: {
-					page: page,
-					pageSize: resultSet.length,
-					totalRecord,
-				},
+			metadata.pagination = {
+				page: page,
+				pageSize: resultSet.length,
+				totalRecord,
 			};
 			apiRes.data(resultSet).metadata(metadata).send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "TeamController",
-					method: "getTeamListAsync",
-					msg: error.message,
-				},
-			});
-			apiRes.code(400).message("Bad Request").data("Không thể lấy danh sách đội bóng").send();
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể lấy danh sách đội bóng").send();
 		}
 	}
 
@@ -121,11 +150,7 @@ export default class TeamController extends AppController {
 			// check team
 			const team = await TeamModel.findById(id).exec();
 			if (team === null) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Không tìm thấy đội bóng")
-					.send();
+				return apiRes.code(400).data("Không tìm thấy đội bóng").send();
 			}
 
 			const teamStaff = team.teamStaff;
@@ -139,23 +164,17 @@ export default class TeamController extends AppController {
 				totalMember: ++team.totalMember,
 				teamStaff: teamStaff,
 			});
-			apiRes.code(201).message("Created").send();
+			apiRes.code(201).send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "TeamController",
-					method: "getTeamListAsync",
-					msg: error.message,
-				},
-			});
-			apiRes.code(400).message("Bad Request").data("Không thể tạo mới ban huấn luyện").send();
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể tạo mới ban huấn luyện").send();
 		}
 	}
 
 	async postCreateTeamAsync(req: IAppRequest, res: IAppResponse) {
 		const apiRes = new AppResponse(res);
 		if (!req.file) {
-			return apiRes.code(400).message("Bad Request").data("Thiếu logo đội bóng").send();
+			return apiRes.code(400).data("Thiếu logo đội bóng").send();
 		}
 		const {
 			payload: { tournamentId, name, playerList, staffList, coachName, totalForeign },
@@ -165,26 +184,18 @@ export default class TeamController extends AppController {
 			// Load tournament config
 			const tournament = await TournamentModel.findById(tournamentId).exec();
 			if (tournament === null) {
-				return apiRes.code(400).message("Bad Request").data("Giải đấu không hợp lệ").send();
+				return apiRes.code(400).data("Giải đấu không hợp lệ").send();
 			}
 
 			// Check max team
 			const participant = await TournamentParticipantModel.findOne({ tournamentId });
 			if (participant !== null && participant.teams.length >= tournament.config.maxTeam) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Số đội bóng đã đạt giới hạn")
-					.send();
+				return apiRes.code(400).data("Số đội bóng đã đạt giới hạn").send();
 			}
 
 			// Check max abroad players
 			if (totalForeign > tournament.config.maxAbroardPlayer) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Số ngoại binh vượt quá giới hạn")
-					.send();
+				return apiRes.code(400).data("Số ngoại binh vượt quá giới hạn").send();
 			}
 
 			const tempCode = new mongoose.Types.ObjectId(32);
@@ -239,16 +250,10 @@ export default class TeamController extends AppController {
 				totalTeam: participant === null ? 1 : participant.teams.length + 1,
 			}).exec();
 
-			apiRes.code(201).message("Created").send();
+			apiRes.code(201).send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "TeamController",
-					method: "postCreateTeamAsync",
-					msg: error.message,
-				},
-			});
-			apiRes.code(400).message("Bad Request").data("Không thể tạo mới đội bóng").send();
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể tạo mới đội bóng").send();
 		}
 	}
 
@@ -267,14 +272,8 @@ export default class TeamController extends AppController {
 			}
 			apiRes.data({ team, playerList }).send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "TeamController",
-					method: "getTeamDetailByIdAsync",
-					msg: error.message,
-				},
-			});
-			apiRes.code(400).message("Bad Request").data("Không thể lấy chi tiết đội bóng").send();
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể lấy chi tiết đội bóng").send();
 		}
 	}
 
@@ -286,21 +285,13 @@ export default class TeamController extends AppController {
 		try {
 			const team = await TeamModel.findById(id).exec();
 			if (team === null) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Không tìm thấy đội bóng")
-					.send();
+				return apiRes.code(400).data("Không tìm thấy đội bóng").send();
 			}
 
 			const teamStaff: Array<any> = team.teamStaff;
 			const index = teamStaff.findIndex((staff) => staff._id.toString() === staffId);
 			if (index === -1) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Không tìm thấy thành viên")
-					.send();
+				return apiRes.code(400).data("Không tìm thấy thành viên").send();
 			}
 
 			const staff = teamStaff[index];
@@ -325,20 +316,10 @@ export default class TeamController extends AppController {
 			}
 
 			await TeamModel.findByIdAndUpdate(id, { coachName, teamStaff }).exec();
-			apiRes.code(204).message("No Content").send();
+			apiRes.code(204).send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "TeamController",
-					method: "putUpdateTeamStaffAsync",
-					msg: error.message,
-				},
-			});
-			apiRes
-				.code(400)
-				.message("Bad Request")
-				.data("Không thể cập nhật ban huấn luyện")
-				.send();
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể cập nhật ban huấn luyện").send();
 		}
 	}
 
@@ -348,11 +329,7 @@ export default class TeamController extends AppController {
 		try {
 			const team = await TeamModel.findById(id).exec();
 			if (team === null) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Không tìm thấy đội bóng")
-					.send();
+				return apiRes.code(400).data("Không tìm thấy đội bóng").send();
 			}
 
 			const teamStaff: Array<any> = team.teamStaff;
@@ -363,31 +340,17 @@ export default class TeamController extends AppController {
 
 			const staff = teamStaff[index];
 			if (staff.role === TEAM_STAFF_ROLE_ENUM.COACH) {
-				return apiRes
-					.code(400)
-					.message("Bad Request")
-					.data("Không thể xóa huấn luyện viên trưởng")
-					.send();
+				return apiRes.code(400).data("Không thể xóa huấn luyện viên trưởng").send();
 			}
 
 			await TeamModel.findByIdAndUpdate(id, {
 				totalMember: --team.totalMember,
 				$pull: { teamStaff: { _id: new mongoose.Types.ObjectId(staffId) } },
 			}).exec();
-			apiRes.code(2040).message("OK").send();
+			apiRes.code(204).send();
 		} catch (error) {
-			Logger.error({
-				message: {
-					class: "TeamController",
-					method: "deleteTeamStaffAsync",
-					msg: error.message,
-				},
-			});
-			apiRes
-				.code(400)
-				.message("Bad Request")
-				.data("Không thể xóa thành viên ban huấn luyện")
-				.send();
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể xóa thành viên ban huấn luyện").send();
 		}
 	}
 }

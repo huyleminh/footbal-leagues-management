@@ -6,7 +6,7 @@ import { Logger } from "../utils/Logger";
 
 export function validateCreateTeamData(req: IAppRequest, res: IAppResponse, next: IAppNextFuction) {
 	const { body } = req;
-	const apiRes = new AppResponse(res, 400, "Bad Request");
+	const apiRes = new AppResponse(res, 400);
 
 	if (!body.tournamentId || !body.tournamentId.toString().trim()) {
 		return apiRes.data("Thiếu thông tin giải đấu").send();
@@ -110,7 +110,7 @@ export function validateCreateStaffData(
 	next: IAppNextFuction,
 ) {
 	const { body } = req;
-	const apiRes = new AppResponse(res, 400, "Bad Request");
+	const apiRes = new AppResponse(res, 400);
 
 	if (!body.fullname || !body.fullname.toString().trim()) {
 		return apiRes.data("Thiếu tên thành viên").send();

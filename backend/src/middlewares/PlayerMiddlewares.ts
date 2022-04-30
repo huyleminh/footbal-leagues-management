@@ -6,7 +6,7 @@ export function validateCreatePlayerData(
 	res: IAppResponse,
 	next: IAppNextFuction,
 ) {
-	const apiRes = new AppResponse(res, 400, "Bad Request");
+	const apiRes = new AppResponse(res, 400);
 	const { body } = req;
 
 	if (!body.teamId || !body.teamId.toString().trim()) {
