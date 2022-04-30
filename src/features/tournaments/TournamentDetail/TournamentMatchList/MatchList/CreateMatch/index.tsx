@@ -7,42 +7,215 @@ import {
 	DialogTitle,
 	Divider,
 	FormControl,
+	FormHelperText,
 	InputLabel,
+	LinearProgress,
 	MenuItem,
 	Select,
+	SelectChangeEvent,
 	Stack,
 	TextField,
 	Typography,
 } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { useState } from "react";
+import { toast } from "material-react-toastify";
+import React, { ChangeEvent, useEffect, useState } from "react";
+import { IAPIResponse } from "../../../../../../@types/AppInterfaces";
 import { IBaseComponentProps } from "../../../../../../@types/ComponentInterfaces";
+import ToastMsg from "../../../../../../components/toast/ToastMsg";
+import HttpService from "../../../../../../services/HttpService";
 
 export interface ICreateMatchProps extends IBaseComponentProps {
 	open: boolean;
 	onClose: Function;
+	totalRound: number;
+	onSubmit: (item: ICreateMatchForm) => void;
+	tournamentId?: string;
 }
 
-interface ICreateMatchForm {
-	homeTeam?: string;
-	awayTeam?: string;
-	stadium?: string;
+export interface ICreateMatchForm {
+	homeId?: string;
+	awayId?: string;
+	stadiumName?: string;
 	round?: number;
-	startDate?: Date | null;
+	scheduledDate?: Date | null;
 }
+
+interface IParticipantResData {
+	_id: string;
+	name: string;
+	logo: string;
+	totalMember: number;
+	coachName: string;
+}
+
+const initValid = {
+	homeId: {
+		error: undefined,
+		msg: "",
+	},
+	awayId: {
+		error: undefined,
+		msg: "",
+	},
+	stadiumName: {
+		error: undefined,
+		msg: "",
+	},
+	round: {
+		error: undefined,
+		msg: "",
+	},
+	scheduledDate: {
+		error: undefined,
+		msg: "",
+	},
+};
 
 function CreateMatch(props: ICreateMatchProps) {
-	const { open, onClose } = props;
+	const { open, onClose, onSubmit, totalRound, tournamentId } = props;
 	const [form, setForm] = useState<ICreateMatchForm>({
-		startDate: null,
+		scheduledDate: null,
 	});
+	const [participantList, setParticipantList] = useState<Array<IParticipantResData>>([]);
+	const [isLoading, setIsLoading] = useState(false);
+	const [valid, setValid] = useState<{
+		homeId: {
+			error: boolean | undefined;
+			msg: string;
+		};
+		awayId: {
+			error: boolean | undefined;
+			msg: string;
+		};
+		stadiumName: {
+			error: boolean | undefined;
+			msg: string;
+		};
+		round: {
+			error: boolean | undefined;
+			msg: string;
+		};
+		scheduledDate: {
+			error: boolean | undefined;
+			msg: string;
+		};
+	}>(initValid);
+
+	useEffect(() => {
+		const fetchParticipants = async () => {
+			setIsLoading(true);
+			try {
+				const res = await HttpService.get<
+					IAPIResponse<Array<IParticipantResData> | string>
+				>(`tournaments/${tournamentId}/participants`);
+				if (res.code === 200) {
+					setParticipantList(res.data as Array<IParticipantResData>);
+				} else if (res.code === 400) {
+					toast(<ToastMsg title={res.data as string} type="error" />, {
+						type: toast.TYPE.ERROR,
+					});
+				} else {
+					toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
+						type: toast.TYPE.ERROR,
+					});
+				}
+			} catch (err) {
+				console.log(err);
+				toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
+					type: toast.TYPE.ERROR,
+				});
+			}
+			setIsLoading(false);
+		};
+		if (open) fetchParticipants();
+	}, [open]);
+
+	const clearForm = () => {
+		setValid(initValid);
+		setForm({
+			scheduledDate: null,
+		});
+	};
 
 	const handleSave = () => {
-		onClose(false);
+		const res = { ...form };
+		const validate = { ...valid };
+
+		// Validate individual field
+		if (!res.homeId) {
+			validate.homeId = {
+				error: true,
+				msg: "Thiếu đội nhà.",
+			};
+		} else {
+			validate.homeId = {
+				error: false,
+				msg: "",
+			};
+		}
+
+		if (!res.awayId) {
+			validate.awayId = {
+				error: true,
+				msg: "Thiếu đội khách.",
+			};
+		} else {
+			validate.awayId = {
+				error: false,
+				msg: "",
+			};
+		}
+
+		if (!res.round) {
+			validate.round = {
+				error: true,
+				msg: "Thiếu vòng đấu.",
+			};
+		} else {
+			validate.round = {
+				error: false,
+				msg: "",
+			};
+		}
+
+		if (!res.scheduledDate) {
+			validate.scheduledDate = {
+				error: true,
+				msg: "Thiếu thời gian bắt đầu trận.",
+			};
+		} else {
+			validate.scheduledDate = {
+				error: false,
+				msg: "",
+			};
+		}
+
+		if (!res.stadiumName || res.stadiumName === "") res.stadiumName = "Chưa xác định";
+
+		setValid(validate);
+
+		if (
+			validate.homeId.error === false &&
+			validate.awayId.error === false &&
+			validate.round.error === false &&
+			validate.scheduledDate.error === false
+		) {
+			clearForm();
+			onSubmit(res);
+		}
+	};
+
+	const handleChange = (e: any) => {
+		const target = e.target;
+		setForm({
+			...form,
+			[target.name]: target.value,
+		});
 	};
 
 	const handleChangeTime = (newValue: Date | null) => {
-		setForm({ ...form, startDate: newValue });
+		setForm({ ...form, scheduledDate: newValue });
 	};
 
 	return (
@@ -59,48 +232,80 @@ function CreateMatch(props: ICreateMatchProps) {
 			</DialogTitle>
 			<DialogContent>
 				<Stack spacing={3}>
-					<Box sx={{ display: "flex" }}>
-						<Box sx={{ width: "30%" }}>
-							<FormControl sx={{ marginTop: 1, width: "100%" }} size="small" required>
-								<InputLabel id="home-team">Chọn đội nhà</InputLabel>
-								<Select
-									labelId="home-team"
-									label="Chọn đội nhà"
-									// value={eventType}
-									// onChange={(e) => setEventType(e.target.value)}
+					{isLoading ? (
+						<Box sx={{ width: "100%" }}>
+							<LinearProgress />
+						</Box>
+					) : (
+						<Box sx={{ display: "flex" }}>
+							<Box sx={{ width: "30%" }}>
+								<FormControl
+									sx={{ marginTop: 1, width: "100%" }}
+									size="small"
+									required
+									error={valid.homeId.error}
 								>
-									{/* <MenuItem key={index} value={item.value}>
-											{item.name}
-										</MenuItem> */}
-								</Select>
-							</FormControl>
-						</Box>
-						<Box
-							sx={{
-								display: "flex",
-								justifyContent: "center",
-								alignItems: "center",
-								width: "40%",
-							}}
-						>
-							<Typography variant="h5">VS</Typography>
-						</Box>
-						<Box sx={{ width: "30%" }}>
-							<FormControl sx={{ marginTop: 1, width: "100%" }} size="small" required>
-								<InputLabel id="away-team">Chọn đội khách</InputLabel>
-								<Select
-									labelId="away-team"
-									label="Chọn đội khách"
-									// value={eventType}
-									// onChange={(e) => setEventType(e.target.value)}
+									<InputLabel id="home-team">Chọn đội nhà</InputLabel>
+									<Select
+										labelId="home-team"
+										label="Chọn đội nhà"
+										name="homeId"
+										value={form.homeId || ""}
+										onChange={handleChange}
+									>
+										{participantList.map((item, index) => (
+											<MenuItem
+												key={index}
+												value={item._id}
+												disabled={form.awayId === item._id}
+											>
+												{item.name}
+											</MenuItem>
+										))}
+									</Select>
+									<FormHelperText>{valid.homeId.msg}</FormHelperText>
+								</FormControl>
+							</Box>
+							<Box
+								sx={{
+									display: "flex",
+									justifyContent: "center",
+									alignItems: "center",
+									width: "40%",
+								}}
+							>
+								<Typography variant="h5">VS</Typography>
+							</Box>
+							<Box sx={{ width: "30%" }}>
+								<FormControl
+									sx={{ marginTop: 1, width: "100%" }}
+									size="small"
+									required
+									error={valid.awayId.error}
 								>
-									{/* <MenuItem key={index} value={item.value}>
-											{item.name}
-										</MenuItem> */}
-								</Select>
-							</FormControl>
+									<InputLabel id="away-team">Chọn đội khách</InputLabel>
+									<Select
+										labelId="away-team"
+										label="Chọn đội khách"
+										name="awayId"
+										value={form.awayId || ""}
+										onChange={handleChange}
+									>
+										{participantList.map((item, index) => (
+											<MenuItem
+												key={index}
+												value={item._id}
+												disabled={form.homeId === item._id}
+											>
+												{item.name}
+											</MenuItem>
+										))}
+									</Select>
+									<FormHelperText>{valid.awayId.msg}</FormHelperText>
+								</FormControl>
+							</Box>
 						</Box>
-					</Box>
+					)}
 					<Divider></Divider>
 					<Box sx={{ display: "flex" }}>
 						<Box sx={{ width: "30%" }}></Box>
@@ -112,18 +317,27 @@ function CreateMatch(props: ICreateMatchProps) {
 								width: "40%",
 							}}
 						>
-							<FormControl sx={{ marginTop: 1, width: "100%" }} size="small" required>
+							<FormControl
+								sx={{ marginTop: 1, width: "100%" }}
+								size="small"
+								required
+								error={valid.round.error}
+							>
 								<InputLabel id="round">Vòng đấu</InputLabel>
 								<Select
 									labelId="round"
 									label="Vòng đấu"
-									// value={eventType}
-									// onChange={(e) => setEventType(e.target.value)}
+									name="round"
+									value={form.round ?? ""}
+									onChange={handleChange}
 								>
-									{/* <MenuItem key={index} value={item.value}>
-                                                        {item.name}
-                                                    </MenuItem> */}
+									{[...Array(totalRound)].map((item, index) => (
+										<MenuItem key={index} value={(index + 1) as number}>
+											{`Vòng ${index + 1}`}
+										</MenuItem>
+									))}
 								</Select>
+								<FormHelperText>{valid.round.msg}</FormHelperText>
 							</FormControl>
 						</Box>
 						<Box sx={{ width: "30%" }}></Box>
@@ -140,12 +354,19 @@ function CreateMatch(props: ICreateMatchProps) {
 						>
 							<DateTimePicker
 								label="Thời gian"
-								value={form.startDate}
+								value={form.scheduledDate}
 								onChange={handleChangeTime}
 								minDate={new Date(new Date().getTime() + 86400000)}
-								disableHighlightToday
+								defaultCalendarMonth={new Date(new Date().getTime() + 86400000)}
 								renderInput={(params) => (
-									<TextField size="small" sx={{ width: "100%" }} required {...params} />
+									<TextField
+										{...params}
+										size="small"
+										sx={{ width: "100%" }}
+										required
+										error={valid.scheduledDate.error}
+										helperText={valid.scheduledDate.msg}
+									/>
 								)}
 							/>
 						</Box>
@@ -165,10 +386,10 @@ function CreateMatch(props: ICreateMatchProps) {
 								sx={{ width: "100%" }}
 								label="Sân đấu"
 								size="small"
-								// name="mainMinute"
-								// value={minuteExtra.main}
+								name="stadiumName"
+								value={form.stadiumName ?? ""}
 								variant="outlined"
-								// onChange={handleOnChange}
+								onChange={handleChange}
 							/>
 						</Box>
 						<Box sx={{ width: "30%" }}></Box>
