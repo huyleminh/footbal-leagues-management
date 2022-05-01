@@ -5,7 +5,7 @@ export type GoalType = "normal" | "og" | "penalty";
 export type CardType = "red" | "yellow";
 
 export interface IMatchEventModel {
-	ocurringMinute: number;
+	ocurringMinute: string;
 	isHome: boolean;
 	goal?: {
 		type: GoalType;

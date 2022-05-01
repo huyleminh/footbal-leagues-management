@@ -1,5 +1,11 @@
 import { Types } from "mongoose";
 
+export interface ICompetitorLineup {
+	playerId: Types.ObjectId;
+	playerType: number;
+	inMatchPosition: string;
+}
+
 export interface ICompetitor {
 	teamId: Types.ObjectId;
 	teamType: number;
@@ -13,7 +19,7 @@ export interface ICompetitor {
 	offsides: number;
 	conners: number;
 	fouls: number;
-	lineupId: Types.ObjectId;
+	lineup: Array<ICompetitorLineup>;
 }
 
 export interface IMatchModel {
