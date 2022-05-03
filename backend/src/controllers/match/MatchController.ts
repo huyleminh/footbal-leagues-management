@@ -106,21 +106,26 @@ export default class MatchController extends AppController {
 				// map card
 				if (event.card_players.length > 0) {
 					result.card.playerName = event.card_players[0].playerName;
+					result.card.playerStrip = event.card_players[0].stripNumber;
 				}
 				// map goal
 				if (event.goal_players.length > 0) {
 					result.goal.playerName = event.goal_players[0].playerName;
+					result.goal.playerStrip = event.goal_players[0].stripNumber;
 				}
 				// map assist
 				if (event.goal_assist_players.length > 0) {
 					result.goal.assistName = event.goal_assist_players[0].playerName;
+					result.goal.assistStrip = event.goal_assist_players[0].stripNumber;
 				}
 				// map subs
 				if (event.sub_in_players.length > 0) {
-					result.substitution.playerName = event.sub_in_players[0].playerName;
+					result.substitution.inName = event.sub_in_players[0].playerName;
+					result.substitution.inStrip = event.sub_in_players[0].stripNumber;
 				}
 				if (event.sub_out_players.length > 0) {
-					result.substitution.playerName = event.sub_out_players[0].playerName;
+					result.substitution.outName = event.sub_out_players[0].playerName;
+					result.substitution.outStrip = event.sub_out_players[0].stripNumber;
 				}
 				return result;
 			});
@@ -173,6 +178,7 @@ export default class MatchController extends AppController {
 						playerId: player.playerId,
 						playerType: player.playerType,
 						inMatchPosition: player.inMatchPosition,
+						stripNumber: playerMatchLineup ? playerMatchLineup.stripNumber : NaN,
 						playerName: playerMatchLineup
 							? playerMatchLineup.playerName
 							: "Không xác định",
@@ -196,6 +202,7 @@ export default class MatchController extends AppController {
 						playerId: player.playerId,
 						playerType: player.playerType,
 						inMatchPosition: player.inMatchPosition,
+						stripNumber: playerMatchLineup ? playerMatchLineup.stripNumber : NaN,
 						playerName: playerMatchLineup
 							? playerMatchLineup.playerName
 							: "Không xác định",

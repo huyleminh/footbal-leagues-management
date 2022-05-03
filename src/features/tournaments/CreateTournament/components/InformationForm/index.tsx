@@ -3,7 +3,6 @@ import { Button, Stack, TextField, Typography } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import React, { useState } from "react";
 import { IBaseComponentProps } from "../../../../../@types/ComponentInterfaces";
-import moment from "moment";
 
 export interface ITournamentInfoForm {
 	name: string;

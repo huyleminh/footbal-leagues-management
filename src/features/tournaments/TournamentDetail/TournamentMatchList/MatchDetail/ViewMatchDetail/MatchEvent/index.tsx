@@ -1,8 +1,8 @@
 import { Box, Button, Stack, Typography } from "@mui/material";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
-import { useState } from "react";
 import { IBaseComponentProps } from "../../../../../../../@types/ComponentInterfaces";
+import { CardType, GoalType } from "../MatchDetailInterfaces";
 
 export enum EVENT_TYPE {
 	GOAL,
@@ -14,19 +14,21 @@ export enum EVENT_TYPE {
 }
 
 export interface IMatchEventType {
-	eventType: EVENT_TYPE; // goal, OG, penalty, red card, yellow card, substitution
+	eventType: GoalType | CardType; // goal, OG, penalty, red card, yellow card, substitution
 	isHome: boolean; // event of home team or away team
 	mainPlayer: {
+		id?: string;
 		// main player of the event. Ex: scorer in goal event, player who received card, player who was substitute out
 		name: string;
 		stripNumber: number;
 	};
 	subPlayer?: {
+		id?: string;
 		// sub player of the event. Ex: assist (if exists) in goal related event, player who was substituted in
 		name: string;
 		stripNumber: number;
 	};
-	minute: number;
+	minute: string;
 }
 
 interface IMatchEventProps extends IBaseComponentProps {
@@ -77,9 +79,9 @@ function MatchEvent(props: IMatchEventProps) {
 					{matchEvent
 						.filter(
 							(item) =>
-								(item.eventType === EVENT_TYPE.GOAL ||
-									item.eventType === EVENT_TYPE.OG ||
-									item.eventType === EVENT_TYPE.PEN) &&
+								(item.eventType === "normal" ||
+									item.eventType === "og" ||
+									item.eventType === "penalty") &&
 								item.isHome,
 						)
 						.map((element, index) => {
@@ -116,9 +118,9 @@ function MatchEvent(props: IMatchEventProps) {
 					{matchEvent
 						.filter(
 							(item) =>
-								(item.eventType === EVENT_TYPE.GOAL ||
-									item.eventType === EVENT_TYPE.OG ||
-									item.eventType === EVENT_TYPE.PEN) &&
+								(item.eventType === "normal" ||
+									item.eventType === "og" ||
+									item.eventType === "penalty") &&
 								!item.isHome,
 						)
 						.map((element, index) => {
@@ -154,8 +156,7 @@ function MatchEvent(props: IMatchEventProps) {
 					{matchEvent
 						.filter(
 							(item) =>
-								(item.eventType === EVENT_TYPE.YEL_CARD ||
-									item.eventType === EVENT_TYPE.RED_CARD) &&
+								(item.eventType === "yellow" || item.eventType === "red") &&
 								item.isHome,
 						)
 						.map((element, index) => {
@@ -176,9 +177,7 @@ function MatchEvent(props: IMatchEventProps) {
 									{`${element.mainPlayer.name} (${
 										element.mainPlayer.stripNumber
 									}) - ${
-										element.eventType === EVENT_TYPE.YEL_CARD
-											? "Thẻ vàng"
-											: "Thẻ đỏ"
+										element.eventType === "yellow" ? "Thẻ vàng" : "Thẻ đỏ"
 									} - ${element.minute}'`}
 								</Typography>
 							);
@@ -196,8 +195,7 @@ function MatchEvent(props: IMatchEventProps) {
 					{matchEvent
 						.filter(
 							(item) =>
-								(item.eventType === EVENT_TYPE.YEL_CARD ||
-									item.eventType === EVENT_TYPE.RED_CARD) &&
+								(item.eventType === "yellow" || item.eventType === "red") &&
 								!item.isHome,
 						)
 						.map((element, index) => {
@@ -213,9 +211,7 @@ function MatchEvent(props: IMatchEventProps) {
 									{`${element.mainPlayer.name} (${
 										element.mainPlayer.stripNumber
 									}) - ${
-										element.eventType === EVENT_TYPE.YEL_CARD
-											? "Thẻ vàng"
-											: "Thẻ đỏ"
+										element.eventType === "yellow" ? "Thẻ vàng" : "Thẻ đỏ"
 									} - ${element.minute}'`}
 									{editMode ? (
 										<Button onClick={() => handleDelete(element)}>
@@ -246,7 +242,7 @@ function MatchEvent(props: IMatchEventProps) {
 							{matchEvent
 								.filter(
 									(item) =>
-										item.eventType === EVENT_TYPE.SUBSTITUTION && item.isHome,
+										item.eventType === null && item.isHome,
 								)
 								.map((element, index) => {
 									return (
@@ -273,14 +269,17 @@ function MatchEvent(props: IMatchEventProps) {
 					</Box>
 				</Box>
 				<Box sx={{ width: "18%" }}>
-					<Typography sx={{ fontWeight: "700", width: "100%", textAlign: "center" }} variant="body2">
+					<Typography
+						sx={{ fontWeight: "700", width: "100%", textAlign: "center" }}
+						variant="body2"
+					>
 						Thay người
 					</Typography>
 				</Box>
 				<Stack sx={{ width: "41%" }} spacing={2}>
 					{matchEvent
 						.filter(
-							(item) => item.eventType === EVENT_TYPE.SUBSTITUTION && !item.isHome,
+							(item) => item.eventType === null && !item.isHome,
 						)
 						.map((element, index) => {
 							return (
