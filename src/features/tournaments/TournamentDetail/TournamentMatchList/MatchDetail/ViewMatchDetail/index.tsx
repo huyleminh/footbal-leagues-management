@@ -367,7 +367,7 @@ function ViewMatchDetail(props: IMatchDetailProps) {
 									teamId: matchDetail.homeTeam.id,
 									teamType: 0,
 									isWinner: false,
-									goal: matchDetail.homeTeam.point,
+									goal: matchDetail.homeTeam.point || 0,
 									totalShot: matchDetail.homeTeam.totalShot,
 									shotsOntarget: matchDetail.homeTeam.shotsOnTarget,
 									possessions: matchDetail.homeTeam.possessions,
@@ -393,7 +393,7 @@ function ViewMatchDetail(props: IMatchDetailProps) {
 									teamId: matchDetail.awayTeam.id,
 									teamType: 1,
 									isWinner: false,
-									goal: matchDetail.awayTeam.point,
+									goal: matchDetail.awayTeam.point || 0,
 									totalShot: matchDetail.awayTeam.totalShot,
 									shotsOntarget: matchDetail.awayTeam.shotsOnTarget,
 									possessions: matchDetail.awayTeam.possessions,
@@ -743,10 +743,12 @@ function ViewMatchDetail(props: IMatchDetailProps) {
 														maxWidth: "100px",
 													}}
 													label="Điểm số"
+													type="number"
 													name="home-point"
 													variant="outlined"
 													value={matchDetail.homeTeam.point ?? ""}
 													onChange={handleOnChange}
+													inputProps={{ min: "0" }}
 												/>
 											) : (
 												<Typography
@@ -806,10 +808,12 @@ function ViewMatchDetail(props: IMatchDetailProps) {
 														maxWidth: "100px",
 													}}
 													label="Điểm số"
+													type="number"
 													name="away-point"
 													variant="outlined"
 													value={matchDetail.awayTeam.point ?? ""}
 													onChange={handleOnChange}
+													inputProps={{ min: "0" }}
 												/>
 											) : (
 												<Typography
@@ -858,16 +862,22 @@ function ViewMatchDetail(props: IMatchDetailProps) {
 										>
 											{editMode && item.dataKey !== "name" ? ( // cannot change team name
 												<TextField
+													sx={{ width: "50%" }}
 													size="small"
 													label={item.title}
 													name={`home-${item.dataKey}`}
 													variant="outlined"
+													type="number"
 													value={
 														matchDetail.homeTeam[
 															item.dataKey as keyof ITeamMatchDetailType
 														] ?? ""
 													}
 													onChange={handleOnChange}
+													inputProps={{
+														min: "0",
+														max: item.postfix ? "100" : undefined,
+													}}
 												/>
 											) : (
 												<>
@@ -907,16 +917,22 @@ function ViewMatchDetail(props: IMatchDetailProps) {
 										>
 											{editMode && item.dataKey !== "name" ? ( // cannot change team name
 												<TextField
+													sx={{ width: "50%" }}
 													size="small"
 													label={item.title}
 													name={`away-${item.dataKey}`}
 													variant="outlined"
+													type="number"
 													value={
 														matchDetail.awayTeam[
 															item.dataKey as keyof ITeamMatchDetailType
 														] ?? ""
 													}
 													onChange={handleOnChange}
+													inputProps={{
+														min: "0",
+														max: item.postfix ? "100" : undefined,
+													}}
 												/>
 											) : (
 												<>
@@ -945,7 +961,6 @@ function ViewMatchDetail(props: IMatchDetailProps) {
 								<Divider></Divider>
 								<MatchEvent
 									matchEvent={matchEvent}
-									// setMatchEvent={setMatchEvent}
 									setMatchEvent={(data: any) => {
 										setMatchEvent(data);
 										changeDetail.current = true;

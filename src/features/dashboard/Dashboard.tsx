@@ -118,17 +118,17 @@ function Dashboard(props: IDashboardType) {
 									<Route
 										path="/managers/*"
 										element={
-											<PrivateRoute role="admin" element={<ManagerFeature />} />
+											<PrivateRoute
+												role="admin"
+												element={<ManagerFeature />}
+											/>
 										}
 									/>
 									<Route
 										index
 										element={<PrivateRoute role="all" element={<Home />} />}
 									/>
-									<Route
-										path="*"
-										element={<Navigate to="/404" replace />}
-									/>
+									<Route path="*" element={<Navigate to="/404" replace />} />
 								</Routes>
 							</Box>
 						</Stack>

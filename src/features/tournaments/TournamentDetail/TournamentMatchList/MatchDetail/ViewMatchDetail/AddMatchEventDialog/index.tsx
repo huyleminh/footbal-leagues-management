@@ -1,4 +1,5 @@
 import {
+	Alert,
 	Box,
 	Button,
 	Dialog,
@@ -192,6 +193,9 @@ function AddMatchEventDialog(props: IAddMatchEventProps) {
 			</DialogTitle>
 			<DialogContent>
 				<Stack sx={{ width: "500px" }} spacing={3}>
+					<Alert severity="info" color="info" variant="outlined">
+						Chọn đội hình ra sân trước khi thêm sự kiện để có danh sách cầu thủ
+					</Alert>
 					<Stack sx={{ width: "100%" }} direction="row" spacing={3}>
 						<Box sx={{ width: "50%", display: "flex" }}>
 							<Stack sx={{ width: "100%" }} spacing={3}>

@@ -221,7 +221,22 @@ function ChooseLineupDialog(props: IChooseLineupProps) {
 	};
 
 	const handleSave = () => {
-		onClose({ players: playerList.filter((player) => player.isSelected), isHome: data.isHome });
+		const players = playerList.filter((player) => player.isSelected);
+		if (
+			players.filter(
+				(item) =>
+					item.position !== InMatchPosition[InMatchPosition.length - 1] && item.position,
+			).length < 11
+		) {
+			toast(<ToastMsg title="Phải chọn ít nhất là 11 cầu thủ ra sân." type="warning" />, {
+				type: toast.TYPE.WARNING,
+			});
+		} else {
+			onClose({
+				players: players,
+				isHome: data.isHome,
+			});
+		}
 	};
 
 	return (

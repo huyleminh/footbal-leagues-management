@@ -102,7 +102,15 @@ function MatchEvent(props: IMatchEventProps) {
 									) : null}
 									{element.subPlayer
 										? `${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - Kiến tạo: ${element.subPlayer.name} (${element.subPlayer.stripNumber}) - ${element.minute}'`
-										: `${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - ${element.minute}'`}
+										: `${
+												element.eventType === "og"
+													? "Phản lưới nhà: "
+													: element.eventType === "penalty"
+													? "Phạt đền: "
+													: ""
+										  }$${element.mainPlayer.name} (${
+												element.mainPlayer.stripNumber
+										  }) - ${element.minute}'`}
 								</Typography>
 							);
 						})}
@@ -136,7 +144,15 @@ function MatchEvent(props: IMatchEventProps) {
 								>
 									{element.subPlayer
 										? `${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - Kiến tạo: ${element.subPlayer.name} (${element.subPlayer.stripNumber}) - ${element.minute}'`
-										: `${element.mainPlayer.name} (${element.mainPlayer.stripNumber}) - ${element.minute}'`}
+										: `${
+												element.eventType === "og"
+													? "Phản lưới nhà: "
+													: element.eventType === "penalty"
+													? "Phạt đền: "
+													: ""
+										  }${element.mainPlayer.name} (${
+												element.mainPlayer.stripNumber
+										  }) - ${element.minute}'`}
 									{editMode ? (
 										<Button onClick={() => handleDelete(element)}>
 											<ClearRoundedIcon fontSize="small" />
@@ -241,10 +257,7 @@ function MatchEvent(props: IMatchEventProps) {
 					>
 						<Stack sx={{ width: "100%" }} spacing={2}>
 							{matchEvent
-								.filter(
-									(item) =>
-										item.eventType === null && item.isHome,
-								)
+								.filter((item) => item.eventType === null && item.isHome)
 								.map((element, index) => {
 									return (
 										<Typography
@@ -279,9 +292,7 @@ function MatchEvent(props: IMatchEventProps) {
 				</Box>
 				<Stack sx={{ width: "41%" }} spacing={2}>
 					{matchEvent
-						.filter(
-							(item) => item.eventType === null && !item.isHome,
-						)
+						.filter((item) => item.eventType === null && !item.isHome)
 						.map((element, index) => {
 							return (
 								<Typography
