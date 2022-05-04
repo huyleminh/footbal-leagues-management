@@ -9,248 +9,323 @@ import {
 	Divider,
 	Typography,
 	TextField,
+	LinearProgress,
 } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
 import StadiumRoundedIcon from "@mui/icons-material/StadiumRounded";
 import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
-import { useContext, useState } from "react";
-import MatchEvent, { EVENT_TYPE, IMatchEventType } from "./MatchEvent";
+import { useContext, useEffect, useRef, useState } from "react";
+import MatchEvent, { IMatchEventType } from "./MatchEvent";
 import MatchLineup from "./MatchLineup";
 import ChooseLineupDialog, { IModalData } from "./ChooseLineupDialog";
 import AuthContext from "../../../../../../contexts/AuthContext";
 import AddMatchEventDialog from "./AddMatchEventDialog";
+import { toast } from "material-react-toastify";
+import ToastMsg from "../../../../../../components/toast/ToastMsg";
+import HttpService from "../../../../../../services/HttpService";
+import { IAPIResponse } from "../../../../../../@types/AppInterfaces";
+import {
+	ITeamMatchDetailType,
+	IMatchDetailType,
+	IMatchDetailResData,
+	IMatchDetailProps,
+	IMatchEventResData,
+	ILineupType,
+	ISubstitutionType,
+} from "./MatchDetailInterfaces";
+import Swal from "sweetalert2";
+import _ from "lodash";
 
-export interface ILineupType {
-	stripNumber: number;
-	name: string;
-	position: string;
-	captain?: boolean;
-}
+const titleList = [
+	{
+		title: "Tên đội",
+		dataKey: "name",
+	},
+	{
+		title: "Số cú sút",
+		dataKey: "totalShot",
+	},
+	{
+		title: "Sút trúng đích",
+		dataKey: "shotsOnTarget",
+	},
+	{
+		title: "Kiểm soát bóng",
+		dataKey: "possessions",
+		postfix: "%",
+	},
+	{
+		title: "Số đường chuyền",
+		dataKey: "totalPasses",
+	},
+	{
+		title: "Chuyền chính xác",
+		dataKey: "passAccuracy",
+		postfix: "%",
+	},
+	{
+		title: "Việt vị",
+		dataKey: "offside",
+	},
+	{
+		title: "Số phạt góc",
+		dataKey: "corners",
+	},
+	{
+		title: "Số lỗi",
+		dataKey: "fouls",
+	},
+];
 
-export interface ISubstitutionType {
-	stripNumber: number;
-	name: string;
-}
-
-export interface ITeamMatchDetailType {
-	name: string;
-	point: number;
-	logo: string;
-	totalShot: number;
-	shotsOnTarget: number;
-	possessions: number;
-	totalPasses: number;
-	passAccuracy: number;
-	offside: number;
-	corners: number;
-	fouls: number;
-	lineup: Array<ILineupType>;
-	substitution: Array<ISubstitutionType>;
-}
-
-export interface IMatchDetailType {
-	id: string;
-	homeTeam: ITeamMatchDetailType;
-	awayTeam: ITeamMatchDetailType;
-	stadium: string;
-	date: string | Date | null;
-}
-
-function ViewMatchDetail(props: any) {
-	const { open, onClose, matchId } = props;
+function ViewMatchDetail(props: IMatchDetailProps) {
+	const { open, onClose, match } = props;
 	const context = useContext(AuthContext);
 	const [editMode, setEditMode] = useState(false);
+	const backup = useRef<IMatchDetailType>({
+		id: "",
+		homeTeam: {
+			id: "",
+			name: "",
+			logo: "",
+			lineup: [],
+			substitution: [],
+		},
+		awayTeam: {
+			id: "",
+			name: "",
+			logo: "",
+			lineup: [],
+			substitution: [],
+		},
+		stadium: "",
+		date: "",
+	});
+	const [isLoading, setIsLoading] = useState(false);
 	const [openChooseLineup, setOpenChooseLineup] = useState(false);
+	const changeDetail = useRef(false);
+	const refresh = useRef(false);
+	const [reload, setReload] = useState(false);
 	const [openAddEvent, setOpenAddEvent] = useState(false);
 	const [modalData, setModalData] = useState<IModalData>({});
 	const [matchDetail, setMatchDetail] = useState<IMatchDetailType>({
-		id: matchId,
+		id: match?.id || "",
 		homeTeam: {
-			name: "Manchester City",
-			point: 4,
-			logo: "https://upload.wikimedia.org/wikipedia/vi/thumb/1/1d/Manchester_City_FC_logo.svg/1200px-Manchester_City_FC_logo.svg.png",
-			totalShot: 24,
-			shotsOnTarget: 10,
-			possessions: 70,
-			totalPasses: 754,
-			passAccuracy: 92,
-			offside: 0,
-			corners: 9,
-			fouls: 10,
-			lineup: [
-				{
-					stripNumber: 31,
-					name: "Ederson",
-					position: "Thủ môn",
-				},
-				{
-					stripNumber: 17,
-					name: "K. De Bruyne",
-					position: "Tiền vệ",
-					captain: true,
-				},
-				{
-					stripNumber: 47,
-					name: "P. Foden",
-					position: "Tiền đạo",
-				},
-			],
-			substitution: [
-				{
-					stripNumber: 8,
-					name: "Raheem Sterling",
-				},
-				{
-					stripNumber: 9,
-					name: "Gabriel Jesus",
-				},
-			],
+			id: "",
+			name: "",
+			logo: "",
+			lineup: [],
+			substitution: [],
 		},
 		awayTeam: {
-			name: "Manchester United",
-			point: 1,
-			logo: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/Manchester_United_FC_crest.svg/1200px-Manchester_United_FC_crest.svg.png",
-			totalShot: 5,
-			shotsOnTarget: 2,
-			possessions: 30,
-			totalPasses: 331,
-			passAccuracy: 83,
-			offside: 1,
-			corners: 3,
-			fouls: 14,
-			lineup: [
-				{
-					stripNumber: 1,
-					name: "D. De Gea",
-					position: "Thủ môn",
-				},
-				{
-					stripNumber: 5,
-					name: "H. Maguire",
-					position: "Hậu vệ",
-					captain: true,
-				},
-				{
-					stripNumber: 17,
-					name: "Fred",
-					position: "Tiền vệ",
-				},
-			],
-			substitution: [
-				{
-					stripNumber: 4,
-					name: "Phil Jones",
-				},
-				{
-					stripNumber: 10,
-					name: "Marcus Rashford",
-				},
-			],
+			id: "",
+			name: "",
+			logo: "",
+			lineup: [],
+			substitution: [],
 		},
-		stadium: "City of Manchester Stadium",
-		date: "06/03/2022 00:00",
+		stadium: "",
+		date: "",
 	});
 
-	const [matchEvent, setMatchEvent] = useState<Array<IMatchEventType>>([
-		{
-			eventType: EVENT_TYPE.GOAL,
-			isHome: true,
-			mainPlayer: {
-				name: "K. De Bruyne",
-				stripNumber: 17,
-			},
-			minute: 5,
-		},
-		{
-			eventType: EVENT_TYPE.GOAL,
-			isHome: true,
-			mainPlayer: {
-				name: "K. De Bruyne",
-				stripNumber: 17,
-			},
-			minute: 28,
-		},
-		{
-			eventType: EVENT_TYPE.GOAL,
-			isHome: false,
-			mainPlayer: {
-				name: "Jadon Sancho",
-				stripNumber: 17,
-			},
-			subPlayer: {
-				name: "P. Pogba",
-				stripNumber: 6,
-			},
-			minute: 22,
-		},
-		{
-			eventType: EVENT_TYPE.YEL_CARD,
-			isHome: false,
-			mainPlayer: {
-				name: "H. Maguire",
-				stripNumber: 5,
-			},
-			minute: 63,
-		},
-		{
-			eventType: EVENT_TYPE.SUBSTITUTION,
-			isHome: false,
-			mainPlayer: {
-				name: "Anthony Elanga",
-				stripNumber: 36,
-			},
-			subPlayer: {
-				name: "Jesse Lingard",
-				stripNumber: 14,
-			},
-			minute: 64,
-		},
-	]);
+	const [matchEvent, setMatchEvent] = useState<Array<IMatchEventType>>([]);
 
-	const titleList = [
-		{
-			title: "Tên đội",
-			dataKey: "name",
-		},
-		{
-			title: "Số cú sút",
-			dataKey: "totalShot",
-		},
-		{
-			title: "Sút trúng đích",
-			dataKey: "shotsOnTarget",
-		},
-		{
-			title: "Kiểm soát bóng",
-			dataKey: "possessions",
-			postfix: "%",
-		},
-		{
-			title: "Số đường chuyền",
-			dataKey: "totalPasses",
-		},
-		{
-			title: "Chuyền chính xác",
-			dataKey: "passAccuracy",
-			postfix: "%",
-		},
-		{
-			title: "Việt vị",
-			dataKey: "offside",
-		},
-		{
-			title: "Số phạt góc",
-			dataKey: "corners",
-		},
-		{
-			title: "Số lỗi",
-			dataKey: "fouls",
-		},
-	];
+	useEffect(() => {
+		const fetchDetail = async () => {
+			setIsLoading(true);
+			try {
+				const [detail, event] = await Promise.allSettled([
+					HttpService.get<IAPIResponse<IMatchDetailResData | string>>(
+						`/matches/${match?.id}`,
+					),
+					HttpService.get<IAPIResponse<any | string>>(`/matches/${match?.id}/events`),
+				]);
+				// handle detail response
+				if (detail.status === "fulfilled") {
+					const res = detail.value;
+					if (res.code === 200) {
+						let data = res.data as IMatchDetailResData;
+						let home = data.competitors.find((item) => item.teamType === 0);
+						let homeLineup = home?.lineup.filter((player) => player.playerType === 0);
+						let homeSub = home?.lineup.filter((player) => player.playerType === 1);
+						let away = data.competitors.find((item) => item.teamType === 1);
+						let awayLineup = away?.lineup.filter((player) => player.playerType === 0);
+						let awaySub = away?.lineup.filter((player) => player.playerType === 1);
+
+						setMatchDetail({
+							id: data._id,
+							homeTeam: {
+								id: home?.teamId ?? "",
+								name: match?.homeTeam.name ?? "",
+								logo: match?.homeTeam.logo ?? "",
+								point: home?.goal,
+								totalShot: home?.totalShot,
+								totalPasses: home?.totalPass,
+								shotsOnTarget: home?.shotsOntarget,
+								possessions: home?.possessions,
+								offside: home?.offsides,
+								passAccuracy: home?.passAccuracy,
+								corners: home?.conners,
+								fouls: home?.fouls,
+								lineup:
+									homeLineup?.map((element) => ({
+										playerId: element.playerId,
+										stripNumber: element.stripNumber,
+										name: element.playerName,
+										position: element.inMatchPosition,
+									})) || [],
+								substitution:
+									homeSub?.map((element) => ({
+										playerId: element.playerId,
+										stripNumber: element.stripNumber,
+										name: element.playerName,
+									})) || [],
+							},
+							awayTeam: {
+								id: away?.teamId ?? "",
+								name: match?.awayTeam.name ?? "",
+								logo: match?.awayTeam.logo ?? "",
+								point: away?.goal,
+								totalShot: away?.totalShot,
+								totalPasses: away?.totalPass,
+								shotsOnTarget: away?.shotsOntarget,
+								possessions: away?.possessions,
+								offside: away?.offsides,
+								passAccuracy: away?.passAccuracy,
+								corners: away?.conners,
+								fouls: away?.fouls,
+								lineup:
+									awayLineup?.map((element) => ({
+										playerId: element.playerId,
+										stripNumber: element.stripNumber,
+										name: element.playerName,
+										position: element.inMatchPosition,
+									})) || [],
+								substitution:
+									awaySub?.map((element) => ({
+										playerId: element.playerId,
+										stripNumber: element.stripNumber,
+										name: element.playerName,
+									})) || [],
+							},
+							stadium: data.stadiumName,
+							date: new Date(data.scheduledDate),
+						});
+					} else if (res.code === 400) {
+						toast(<ToastMsg title={res.data as string} type="error" />, {
+							type: toast.TYPE.ERROR,
+						});
+					} else {
+						toast(
+							<ToastMsg
+								title="Có lỗi xảy ra khi lấy dữ liệu trận đấu, vui lòng thử lại sau!"
+								type="error"
+							/>,
+							{
+								type: toast.TYPE.ERROR,
+							},
+						);
+					}
+				} else {
+					toast(
+						<ToastMsg
+							title="Có lỗi xảy ra khi lấy dữ liệu trận đấu, vui lòng thử lại sau!"
+							type="error"
+						/>,
+						{
+							type: toast.TYPE.ERROR,
+						},
+					);
+				}
+
+				// handle event response
+				if (event.status === "fulfilled") {
+					const res = event.value;
+					if (res.code === 200) {
+						setMatchEvent(
+							(res.data as Array<IMatchEventResData>).map((item) => {
+								return {
+									eventType:
+										item.goal?.type || item.card?.type || item.substitution,
+									isHome: item.isHome,
+									minute: item.ocurringMinute,
+									mainPlayer: {
+										id:
+											item.goal?.player ||
+											item.card?.player ||
+											item.substitution?.outPlayer,
+										name:
+											item.goal?.playerName ||
+											item.card?.playerName ||
+											item.substitution?.outName,
+										stripNumber: parseInt(
+											(item.goal?.playerStrip ||
+												item.card?.playerStrip ||
+												item.substitution?.outStrip) ??
+												"0",
+										),
+									},
+									subPlayer:
+										item.goal?.assist || item.substitution
+											? {
+													id:
+														item.goal?.assist ||
+														item.substitution?.inPlayer,
+													name:
+														item.goal?.assistName ||
+														item.substitution?.outName,
+													stripNumber: parseInt(
+														(item.goal?.assistStrip ||
+															item.substitution?.inStrip) ??
+															"0",
+													),
+											  }
+											: undefined,
+								} as IMatchEventType;
+							}),
+						);
+					} else if (res.code === 400) {
+						toast(<ToastMsg title={res.data as string} type="error" />, {
+							type: toast.TYPE.ERROR,
+						});
+					} else {
+						toast(
+							<ToastMsg
+								title="Có lỗi xảy ra khi lấy dữ liệu trận đấu, vui lòng thử lại sau!"
+								type="error"
+							/>,
+							{
+								type: toast.TYPE.ERROR,
+							},
+						);
+					}
+				} else {
+					toast(
+						<ToastMsg
+							title="Có lỗi xảy ra khi lấy dữ liệu trận đấu, vui lòng thử lại sau!"
+							type="error"
+						/>,
+						{
+							type: toast.TYPE.ERROR,
+						},
+					);
+				}
+			} catch (err) {
+				console.log(err);
+				toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
+					type: toast.TYPE.ERROR,
+				});
+			}
+			setIsLoading(false);
+		};
+		if (open) fetchDetail();
+	}, [open, match, reload]);
 
 	const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (e.target.name !== "stadium") {
+			changeDetail.current = true; // check if there are changes
+		}
 		const temp = { ...matchDetail };
 		let [teamType, fieldName] = e.target.name.split("-");
 		if (!fieldName) fieldName = teamType;
@@ -258,6 +333,8 @@ function ViewMatchDetail(props: any) {
 			temp.homeTeam[fieldName as keyof ITeamMatchDetailType] = e.target.value.trim() as never;
 		else if (teamType === "away")
 			temp.awayTeam[fieldName as keyof ITeamMatchDetailType] = e.target.value.trim() as never;
+		else if (fieldName === "stadium")
+			temp[fieldName as keyof IMatchDetailType] = e.target.value as never;
 		else temp[fieldName as keyof IMatchDetailType] = e.target.value.trim() as never;
 		setMatchDetail(temp);
 	};
@@ -266,15 +343,160 @@ function ViewMatchDetail(props: any) {
 		setMatchDetail({ ...matchDetail, date: newValue });
 	};
 
-	const handleOpenEditModal = (reload: boolean) => {
-		// console.log("Edit match detail");
-		setEditMode(!editMode);
+	const handleSwitchToEditMode = async () => {
+		if (editMode) {
+			const res = await Swal.fire({
+				icon: "warning",
+				title: "Xác nhận",
+				text: "Bấm đồng ý để xác nhận thay đổi. Nếu thay đổi thông tin trận đấu (trừ thời gian và tên sân) lần đầu sẽ tính thời gian 1 giờ trước khi khóa chức năng sửa.",
+				confirmButtonText: "Đồng ý",
+				denyButtonText: "Hủy",
+				showDenyButton: true,
+				allowEscapeKey: false,
+				allowOutsideClick: false,
+			});
+
+			if (res.isConfirmed) {
+				// submit form
+				const payload = {
+					scheduledDate: (matchDetail.date as Date).toISOString(),
+					stadiumName: matchDetail.stadium.trim(),
+					competitors: changeDetail.current
+						? [
+								{
+									teamId: matchDetail.homeTeam.id,
+									teamType: 0,
+									isWinner: false,
+									goal: matchDetail.homeTeam.point || 0,
+									totalShot: matchDetail.homeTeam.totalShot,
+									shotsOntarget: matchDetail.homeTeam.shotsOnTarget,
+									possessions: matchDetail.homeTeam.possessions,
+									totalPass: matchDetail.homeTeam.totalPasses,
+									passAccuracy: matchDetail.homeTeam.passAccuracy,
+									offsides: matchDetail.homeTeam.offside,
+									conners: matchDetail.homeTeam.corners,
+									fouls: matchDetail.homeTeam.fouls,
+									lineup: [
+										...matchDetail.homeTeam.lineup.map((player) => ({
+											playerId: player.playerId,
+											playerType: 0,
+											inMatchPosition: player.position,
+										})),
+										...matchDetail.homeTeam.substitution.map((player) => ({
+											playerId: player.playerId,
+											playerType: 1,
+											inMatchPosition: "Dự bị",
+										})),
+									],
+								},
+								{
+									teamId: matchDetail.awayTeam.id,
+									teamType: 1,
+									isWinner: false,
+									goal: matchDetail.awayTeam.point || 0,
+									totalShot: matchDetail.awayTeam.totalShot,
+									shotsOntarget: matchDetail.awayTeam.shotsOnTarget,
+									possessions: matchDetail.awayTeam.possessions,
+									totalPass: matchDetail.awayTeam.totalPasses,
+									passAccuracy: matchDetail.awayTeam.passAccuracy,
+									offsides: matchDetail.awayTeam.offside,
+									conners: matchDetail.awayTeam.corners,
+									fouls: matchDetail.awayTeam.fouls,
+									lineup: [
+										...matchDetail.awayTeam.lineup.map((player) => ({
+											playerId: player.playerId,
+											playerType: 0,
+											inMatchPosition: player.position,
+										})),
+										...matchDetail.awayTeam.substitution.map((player) => ({
+											playerId: player.playerId,
+											playerType: 1,
+											inMatchPosition: "Dự bị",
+										})),
+									],
+								},
+						  ]
+						: null,
+					events: changeDetail.current
+						? matchEvent.map((event) => ({
+								ocurringMinute: event.minute,
+								isHome: event.isHome,
+								card:
+									event.eventType === "yellow" || event.eventType === "red"
+										? {
+												type: event.eventType,
+												player: event.mainPlayer.id,
+										  }
+										: undefined,
+								goal:
+									event.eventType === "normal" ||
+									event.eventType === "og" ||
+									event.eventType === "penalty"
+										? {
+												type: event.eventType,
+												player: event.mainPlayer.id,
+												assist: event.subPlayer
+													? event.subPlayer.id
+													: undefined,
+										  }
+										: undefined,
+								substitution: !event.eventType
+									? {
+											type: undefined,
+											inPlayer: event.subPlayer?.id,
+											outPlayer: event.mainPlayer.id,
+									  }
+									: undefined,
+						  }))
+						: null,
+				};
+
+				// call API
+				try {
+					const res = await HttpService.put<IAPIResponse<string | undefined>>(
+						`/matches/${matchDetail.id}`,
+						payload,
+					);
+					if (res.code === 204) {
+						refresh.current = true; // notify match list to refresh
+						setEditMode(!editMode);
+						setReload(!reload);
+					} else if (res.code === 400) {
+						toast(<ToastMsg title={res.data as string} type="error" />, {
+							type: toast.TYPE.ERROR,
+						});
+					} else {
+						toast(
+							<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />,
+							{
+								type: toast.TYPE.ERROR,
+							},
+						);
+					}
+				} catch (err) {
+					console.log(err);
+					toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
+						type: toast.TYPE.ERROR,
+					});
+				}
+			} else if (res.isDenied) {
+				// undo all change
+				changeDetail.current = false;
+				refresh.current = false;
+				setMatchDetail(_.cloneDeep(backup.current));
+				setEditMode(!editMode);
+			}
+		} else {
+			backup.current = _.cloneDeep(matchDetail);
+			setEditMode(!editMode);
+		}
 	};
 
 	const handleOpenChooseLineup = (isHome: boolean) => {
 		setModalData({
 			matchId: matchDetail.id,
 			isHome: isHome,
+			teamId: isHome ? matchDetail.homeTeam.id : matchDetail.awayTeam.id,
 		});
 		setOpenChooseLineup(true);
 	};
@@ -283,8 +505,74 @@ function ViewMatchDetail(props: any) {
 		setModalData({
 			matchId: matchDetail.id,
 			isHome: isHome,
+			teamId: isHome ? matchDetail.homeTeam.id : matchDetail.awayTeam.id,
 		});
 		setOpenAddEvent(true);
+	};
+
+	const getResultFromChooseLineup = (
+		data: {
+			players: Array<{
+				isSelected: boolean;
+				player: {
+					playerId: string;
+					name: string;
+					stripNumber: number;
+					nationality: string;
+				};
+				position?: string;
+			}>;
+			isHome: boolean;
+		} | null,
+	) => {
+		if (!data) {
+			setOpenChooseLineup(false);
+		} else {
+			const lineup = data.players
+				.filter((player) => player.position && player.position !== "Dự bị")
+				.map(
+					(item) =>
+						({
+							playerId: item.player.playerId,
+							stripNumber: item.player.stripNumber,
+							name: item.player.name,
+							position: item.position,
+						} as ILineupType),
+				);
+			const substitution = data.players
+				.filter((player) => !player.position || player.position === "Dự bị")
+				.map(
+					(item) =>
+						({
+							playerId: item.player.playerId,
+							stripNumber: item.player.stripNumber,
+							name: item.player.name,
+						} as ISubstitutionType),
+				);
+
+			const temp = { ...matchDetail };
+			if (data.isHome) {
+				temp.homeTeam.lineup = lineup;
+				temp.homeTeam.substitution = substitution;
+				setMatchDetail(temp);
+			} else {
+				temp.awayTeam.lineup = lineup;
+				temp.awayTeam.substitution = substitution;
+				setMatchDetail(temp);
+			}
+			changeDetail.current = true;
+			setOpenChooseLineup(false);
+		}
+	};
+
+	const getResultFromAddEvent = (event: IMatchEventType | null) => {
+		if (!event) {
+			setOpenAddEvent(false);
+		} else {
+			setMatchEvent([...matchEvent, event]);
+			changeDetail.current = true;
+			setOpenAddEvent(false);
+		}
 	};
 
 	return (
@@ -292,284 +580,191 @@ function ViewMatchDetail(props: any) {
 			<ChooseLineupDialog
 				data={modalData}
 				open={openChooseLineup}
-				onClose={setOpenChooseLineup}
+				onClose={getResultFromChooseLineup}
 			/>
-			<AddMatchEventDialog data={modalData} open={openAddEvent} onClose={setOpenAddEvent} />
-			<Dialog maxWidth="lg" fullWidth open={open} scroll="paper" disableEscapeKeyDown>
+			<AddMatchEventDialog
+				data={modalData}
+				matchData={matchDetail}
+				open={openAddEvent}
+				onClose={getResultFromAddEvent}
+			/>
+			<Dialog maxWidth="xl" fullWidth open={open} scroll="paper" disableEscapeKeyDown>
 				<DialogTitle>
 					<Stack direction="row" justifyContent="space-between">
 						Chi tiết trận đấu
 						{context.role === "manager" ? (
-							<Button
-								startIcon={
-									editMode ? (
-										<SaveRoundedIcon fontSize="small" />
-									) : (
-										<EditRoundedIcon fontSize="small" />
-									)
-								}
-								color="primary"
-								variant="contained"
-								onClick={() => handleOpenEditModal(true)}
-							>
-								{editMode ? "Lưu" : "Sửa"}
-							</Button>
+							isLoading ? null : (
+								<Button
+									startIcon={
+										editMode ? (
+											<SaveRoundedIcon fontSize="small" />
+										) : (
+											<EditRoundedIcon fontSize="small" />
+										)
+									}
+									color="primary"
+									variant="contained"
+									onClick={() => handleSwitchToEditMode()}
+								>
+									{editMode ? "Lưu" : "Sửa"}
+								</Button>
+							)
 						) : null}
 					</Stack>
 				</DialogTitle>
 				<DialogContent>
-					<Box sx={{ paddingTop: "10px" }}>
-						<Stack spacing={1}>
-							<Box
-								sx={{
-									display: "flex",
-									minHeight: "45px",
-									justifyContent: "center",
-									alignItems: "center",
-								}}
-							>
+					{isLoading ? (
+						<Box sx={{ width: "100%" }}>
+							<LinearProgress />
+						</Box>
+					) : (
+						<Box sx={{ paddingTop: "10px" }}>
+							<Stack spacing={1}>
 								<Box
 									sx={{
 										display: "flex",
-										marginRight: "25px",
-									}}
-								>
-									{editMode ? (
-										<TextField
-											size="small"
-											label="Sân vận động"
-											name="stadium"
-											variant="outlined"
-											value={matchDetail.stadium}
-											onChange={handleOnChange}
-										/>
-									) : (
-										<>
-											<StadiumRoundedIcon
-												sx={{ marginRight: "10px" }}
-												color="primary"
-												fontSize="medium"
-											/>
-											<Typography sx={{ color: "black" }} variant="subtitle2">
-												{matchDetail.stadium}
-											</Typography>
-										</>
-									)}
-								</Box>
-								<Box
-									sx={{
-										display: "flex",
-										marginRight: "25px",
-									}}
-								>
-									{editMode ? (
-										<DateTimePicker
-											label="Thời gian"
-											value={matchDetail.date}
-											onChange={handleChangeTime}
-											renderInput={(params) => (
-												<TextField
-													size="small"
-													label="Thời gian"
-													variant="outlined"
-													{...params}
-												/>
-											)}
-										/>
-									) : (
-										<>
-											<AccessTimeRoundedIcon
-												sx={{ marginRight: "10px" }}
-												color="primary"
-												fontSize="medium"
-											/>
-											<Typography sx={{ color: "black" }} variant="subtitle2">
-												{matchDetail.date instanceof Date
-													? `${matchDetail.date.getDate()}/${
-															matchDetail.date.getMonth() + 1
-													  }/${matchDetail.date.getFullYear()} ${matchDetail.date.getHours()}:${matchDetail.date.getMinutes()}`
-													: matchDetail.date}
-											</Typography>
-										</>
-									)}
-								</Box>
-							</Box>
-							<Box
-								sx={{
-									display: "flex",
-									minHeight: "100px",
-								}}
-							>
-								<Box sx={{ display: "flex", width: "41%" }}>
-									<Box
-										sx={{
-											display: "flex",
-											position: "relative",
-											justifyContent: "center",
-											alignItems: "center",
-											width: "100%",
-										}}
-									>
-										<Box sx={{ height: "auto", width: "120px" }}>
-											<img
-												style={{
-													height: "auto",
-													width: "100%",
-													objectFit: "contain",
-													borderRadius: "10px",
-												}}
-												src="https://upload.wikimedia.org/wikipedia/vi/thumb/1/1d/Manchester_City_FC_logo.svg/1200px-Manchester_City_FC_logo.svg.png"
-												alt="home-team-logo"
-											/>
-										</Box>
-										{editMode ? (
-											<TextField
-												size="small"
-												sx={{
-													position: "absolute",
-													right: "0",
-													top: "50%",
-													transform: "translateY(-50%)",
-													maxWidth: "100px",
-												}}
-												label="Điểm số"
-												name="home-point"
-												variant="outlined"
-												value={matchDetail.homeTeam.point}
-												onChange={handleOnChange}
-											/>
-										) : (
-											<Typography
-												sx={{
-													position: "absolute",
-													right: "0",
-													top: "50%",
-													transform: "translateY(-50%)",
-												}}
-												color="primary"
-												variant="h3"
-											>
-												{matchDetail.homeTeam.point}
-											</Typography>
-										)}
-									</Box>
-								</Box>
-								<Box
-									sx={{
-										display: "flex",
-										alignItems: "center",
+										minHeight: "45px",
 										justifyContent: "center",
-										width: "18%",
+										alignItems: "center",
 									}}
 								>
 									<Box
 										sx={{
 											display: "flex",
-											justifyContent: "center",
-											alignItems: "center",
-											width: "100%",
-										}}
-									>
-										<Typography sx={{ fontSize: "1rem", fontWeight: 700 }}>
-											VS
-										</Typography>
-									</Box>
-								</Box>
-								<Box sx={{ display: "flex", width: "41%" }}>
-									<Box
-										sx={{
-											display: "flex",
-											width: "100%",
-											justifyContent: "center",
-											alignItems: "center",
-											position: "relative",
+											marginRight: "25px",
 										}}
 									>
 										{editMode ? (
 											<TextField
 												size="small"
-												sx={{
-													position: "absolute",
-													left: "0",
-													top: "50%",
-													transform: "translateY(-50%)",
-													maxWidth: "100px",
-												}}
-												label="Điểm số"
-												name="away-point"
+												label="Sân vận động"
+												name="stadium"
 												variant="outlined"
-												value={matchDetail.awayTeam.point}
-												onChange={handleOnChange}
-											/>
-										) : (
-											<Typography
-												sx={{
-													position: "absolute",
-													left: "0",
-													top: "50%",
-													transform: "translateY(-50%)",
-												}}
-												color="primary"
-												variant="h3"
-											>
-												{matchDetail.awayTeam.point}
-											</Typography>
-										)}
-										<Box sx={{ height: "auto", width: "120px" }}>
-											<img
-												style={{
-													height: "auto",
-													width: "100%",
-													objectFit: "contain",
-													borderRadius: "10px",
-												}}
-												src="https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/Manchester_United_FC_crest.svg/1200px-Manchester_United_FC_crest.svg.png"
-												alt="home-team-logo"
-											/>
-										</Box>
-									</Box>
-								</Box>
-							</Box>
-							{titleList.map((item, index) => (
-								<Box
-									key={index}
-									sx={{
-										display: "flex",
-										padding: "0.75rem 0",
-									}}
-								>
-									<Box
-										sx={{
-											display: "flex",
-											width: "41%",
-											justifyContent: "center",
-											alignItems: "center",
-										}}
-									>
-										{editMode && item.dataKey !== "name" ? ( // cannot change team name
-											<TextField
-												size="small"
-												label={item.title}
-												name={`home-${item.dataKey}`}
-												variant="outlined"
-												value={
-													matchDetail.homeTeam[
-														item.dataKey as keyof ITeamMatchDetailType
-													]
-												}
+												value={matchDetail.stadium}
 												onChange={handleOnChange}
 											/>
 										) : (
 											<>
-												<Typography variant="body2">
-													{`${
-														matchDetail.homeTeam[
-															item.dataKey as keyof ITeamMatchDetailType
-														]
-													}${item.postfix || ""}`}
+												<StadiumRoundedIcon
+													sx={{ marginRight: "10px" }}
+													color="primary"
+													fontSize="medium"
+												/>
+												<Typography
+													sx={{ color: "black" }}
+													variant="subtitle2"
+												>
+													{matchDetail.stadium}
 												</Typography>
 											</>
 										)}
+									</Box>
+									<Box
+										sx={{
+											display: "flex",
+											marginRight: "25px",
+										}}
+									>
+										{editMode ? (
+											<DateTimePicker
+												label="Thời gian"
+												value={matchDetail.date}
+												onChange={handleChangeTime}
+												renderInput={(params) => (
+													<TextField
+														size="small"
+														label="Thời gian"
+														variant="outlined"
+														{...params}
+													/>
+												)}
+											/>
+										) : (
+											<>
+												<AccessTimeRoundedIcon
+													sx={{ marginRight: "10px" }}
+													color="primary"
+													fontSize="medium"
+												/>
+												<Typography
+													sx={{ color: "black" }}
+													variant="subtitle2"
+												>
+													{matchDetail.date instanceof Date
+														? `${matchDetail.date.getDate()}/${
+																matchDetail.date.getMonth() + 1
+														  }/${matchDetail.date.getFullYear()} ${matchDetail.date.getHours()}:${
+																matchDetail.date.getMinutes() < 10
+																	? `0${matchDetail.date.getMinutes()}`
+																	: matchDetail.date.getMinutes()
+														  }`
+														: matchDetail.date}
+												</Typography>
+											</>
+										)}
+									</Box>
+								</Box>
+								<Box
+									sx={{
+										display: "flex",
+										minHeight: "100px",
+									}}
+								>
+									<Box sx={{ display: "flex", width: "41%" }}>
+										<Box
+											sx={{
+												display: "flex",
+												position: "relative",
+												justifyContent: "center",
+												alignItems: "center",
+												width: "100%",
+											}}
+										>
+											<Box sx={{ height: "auto", width: "120px" }}>
+												<img
+													style={{
+														height: "auto",
+														width: "100%",
+														objectFit: "contain",
+														borderRadius: "10px",
+													}}
+													src={matchDetail.homeTeam.logo}
+													alt="home-team-logo"
+												/>
+											</Box>
+											{editMode ? (
+												<TextField
+													size="small"
+													sx={{
+														position: "absolute",
+														right: "0",
+														top: "50%",
+														transform: "translateY(-50%)",
+														maxWidth: "100px",
+													}}
+													label="Điểm số"
+													type="number"
+													name="home-point"
+													variant="outlined"
+													value={matchDetail.homeTeam.point ?? ""}
+													onChange={handleOnChange}
+													inputProps={{ min: "0" }}
+												/>
+											) : (
+												<Typography
+													sx={{
+														position: "absolute",
+														right: "0",
+														top: "50%",
+														transform: "translateY(-50%)",
+													}}
+													color="primary"
+													variant="h3"
+												>
+													{matchDetail.homeTeam.point ?? ""}
+												</Typography>
+											)}
+										</Box>
 									</Box>
 									<Box
 										sx={{
@@ -579,66 +774,214 @@ function ViewMatchDetail(props: any) {
 											width: "18%",
 										}}
 									>
-										<Typography sx={{ fontWeight: "700" }} variant="body2">
-											{item.title}
-										</Typography>
+										<Box
+											sx={{
+												display: "flex",
+												justifyContent: "center",
+												alignItems: "center",
+												width: "100%",
+											}}
+										>
+											<Typography sx={{ fontSize: "1rem", fontWeight: 700 }}>
+												VS
+											</Typography>
+										</Box>
 									</Box>
-									<Box
-										sx={{
-											display: "flex",
-											width: "41%",
-											justifyContent: "center",
-											alignItems: "center",
-										}}
-									>
-										{editMode && item.dataKey !== "name" ? ( // cannot change team name
-											<TextField
-												size="small"
-												label={item.title}
-												name={`away-${item.dataKey}`}
-												variant="outlined"
-												value={
-													matchDetail.awayTeam[
-														item.dataKey as keyof ITeamMatchDetailType
-													]
-												}
-												onChange={handleOnChange}
-											/>
-										) : (
-											<>
-												<Typography variant="body2">
-													{`${
-														matchDetail.awayTeam[
-															item.dataKey as keyof ITeamMatchDetailType
-														]
-													}${item.postfix || ""}`}
+									<Box sx={{ display: "flex", width: "41%" }}>
+										<Box
+											sx={{
+												display: "flex",
+												width: "100%",
+												justifyContent: "center",
+												alignItems: "center",
+												position: "relative",
+											}}
+										>
+											{editMode ? (
+												<TextField
+													size="small"
+													sx={{
+														position: "absolute",
+														left: "0",
+														top: "50%",
+														transform: "translateY(-50%)",
+														maxWidth: "100px",
+													}}
+													label="Điểm số"
+													type="number"
+													name="away-point"
+													variant="outlined"
+													value={matchDetail.awayTeam.point ?? ""}
+													onChange={handleOnChange}
+													inputProps={{ min: "0" }}
+												/>
+											) : (
+												<Typography
+													sx={{
+														position: "absolute",
+														left: "0",
+														top: "50%",
+														transform: "translateY(-50%)",
+													}}
+													color="primary"
+													variant="h3"
+												>
+													{matchDetail.awayTeam.point ?? ""}
 												</Typography>
-											</>
-										)}
+											)}
+											<Box sx={{ height: "auto", width: "120px" }}>
+												<img
+													style={{
+														height: "auto",
+														width: "100%",
+														objectFit: "contain",
+														borderRadius: "10px",
+													}}
+													src={matchDetail.awayTeam.logo}
+													alt="home-team-logo"
+												/>
+											</Box>
+										</Box>
 									</Box>
 								</Box>
-							))}
-							<Divider></Divider>
-							<MatchLineup
-								matchDetail={matchDetail}
-								editMode={editMode}
-								openModal={handleOpenChooseLineup}
-							/>
-							<Divider></Divider>
-							<MatchEvent
-								matchEvent={matchEvent}
-								setMatchEvent={setMatchEvent}
-								editMode={editMode}
-								openModal={handleOpenAddEvent}
-							/>
-						</Stack>
-					</Box>
+								{titleList.map((item, index) => (
+									<Box
+										key={index}
+										sx={{
+											display: "flex",
+											padding: "0.75rem 0",
+										}}
+									>
+										<Box
+											sx={{
+												display: "flex",
+												width: "41%",
+												justifyContent: "center",
+												alignItems: "center",
+											}}
+										>
+											{editMode && item.dataKey !== "name" ? ( // cannot change team name
+												<TextField
+													sx={{ width: "50%" }}
+													size="small"
+													label={item.title}
+													name={`home-${item.dataKey}`}
+													variant="outlined"
+													type="number"
+													value={
+														matchDetail.homeTeam[
+															item.dataKey as keyof ITeamMatchDetailType
+														] ?? ""
+													}
+													onChange={handleOnChange}
+													inputProps={{
+														min: "0",
+														max: item.postfix ? "100" : undefined,
+													}}
+												/>
+											) : (
+												<>
+													<Typography variant="body2">
+														{matchDetail.homeTeam[
+															item.dataKey as keyof ITeamMatchDetailType
+														]
+															? `${
+																	matchDetail.homeTeam[
+																		item.dataKey as keyof ITeamMatchDetailType
+																	]
+															  }${item.postfix || ""}`
+															: ""}
+													</Typography>
+												</>
+											)}
+										</Box>
+										<Box
+											sx={{
+												display: "flex",
+												alignItems: "center",
+												justifyContent: "center",
+												width: "18%",
+											}}
+										>
+											<Typography sx={{ fontWeight: "700" }} variant="body2">
+												{item.title}
+											</Typography>
+										</Box>
+										<Box
+											sx={{
+												display: "flex",
+												width: "41%",
+												justifyContent: "center",
+												alignItems: "center",
+											}}
+										>
+											{editMode && item.dataKey !== "name" ? ( // cannot change team name
+												<TextField
+													sx={{ width: "50%" }}
+													size="small"
+													label={item.title}
+													name={`away-${item.dataKey}`}
+													variant="outlined"
+													type="number"
+													value={
+														matchDetail.awayTeam[
+															item.dataKey as keyof ITeamMatchDetailType
+														] ?? ""
+													}
+													onChange={handleOnChange}
+													inputProps={{
+														min: "0",
+														max: item.postfix ? "100" : undefined,
+													}}
+												/>
+											) : (
+												<>
+													<Typography variant="body2">
+														{matchDetail.awayTeam[
+															item.dataKey as keyof ITeamMatchDetailType
+														]
+															? `${
+																	matchDetail.awayTeam[
+																		item.dataKey as keyof ITeamMatchDetailType
+																	]
+															  }${item.postfix || ""}`
+															: ""}
+													</Typography>
+												</>
+											)}
+										</Box>
+									</Box>
+								))}
+								<Divider></Divider>
+								<MatchLineup
+									matchDetail={matchDetail}
+									editMode={editMode}
+									openModal={handleOpenChooseLineup}
+								/>
+								<Divider></Divider>
+								<MatchEvent
+									matchEvent={matchEvent}
+									setMatchEvent={(data: any) => {
+										setMatchEvent(data);
+										changeDetail.current = true;
+									}}
+									editMode={editMode}
+									openModal={handleOpenAddEvent}
+								/>
+							</Stack>
+						</Box>
+					)}
 				</DialogContent>
 				<DialogActions>
-					<Button color="primary" variant="contained" onClick={() => {
-						setEditMode(false)
-						onClose(false)
-					}}>
+					<Button
+						color="primary"
+						variant="contained"
+						onClick={() => {
+							setEditMode(false);
+							onClose(refresh.current);
+							refresh.current = false;
+						}}
+					>
 						Đóng
 					</Button>
 				</DialogActions>
