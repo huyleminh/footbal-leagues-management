@@ -42,7 +42,8 @@ function MatchEvent(props: IMatchEventProps) {
 	const { editMode, matchEvent, setMatchEvent, openModal } = props;
 
 	const handleDelete = (element: IMatchEventType) => {
-		setMatchEvent(matchEvent.filter((item) => item !== element));
+		const deleted = matchEvent.filter((item) => item !== element);
+		setMatchEvent(deleted);
 	};
 
 	return (

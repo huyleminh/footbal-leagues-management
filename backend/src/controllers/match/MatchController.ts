@@ -263,6 +263,14 @@ export default class MatchController extends AppController {
 			];
 			const matchList = await MatchModel.aggregate(pipeline).exec();
 			const mapped = matchList.map((match) => {
+				const home = match.competitors.find(
+					(item) => item.teamType === MATCH_COMPETITOR_ENUM.HOME,
+				);
+				const away = match.competitors.find(
+					(item) => item.teamType === MATCH_COMPETITOR_ENUM.AWAY,
+				);
+				const homeInfo = match.teamInfo.find((item) => item._id.equals(home.teamId));
+				const awayInfo = match.teamInfo.find((item) => item._id.equals(away.teamId));
 				return {
 					_id: match._id,
 					scheduledDate: match.scheduledDate,
@@ -270,26 +278,20 @@ export default class MatchController extends AppController {
 					round: match.round,
 					competitors: [
 						{
-							teamId: match.competitors[0].teamId,
-							teamType: match.competitors[0].teamType,
-							isWinner: match.competitors[0].isWinner,
-							name: match.teamInfo[0].name,
-							logo: match.teamInfo[0].logo,
-							goal:
-								match.competitors[0].goal === undefined
-									? null
-									: match.competitors[0].goal,
+							teamId: home.teamId,
+							teamType: home.teamType,
+							isWinner: home.isWinner,
+							name: homeInfo.name,
+							logo: homeInfo.logo,
+							goal: home.goal === undefined ? null : home.goal,
 						},
 						{
-							teamId: match.competitors[1].teamId,
-							teamType: match.competitors[1].teamType,
-							isWinner: match.competitors[1].isWinner,
-							name: match.teamInfo[1].name,
-							logo: match.teamInfo[1].logo,
-							goal:
-								match.competitors[1].goal === undefined
-									? null
-									: match.competitors[1].goal,
+							teamId: away.teamId,
+							teamType: away.teamType,
+							isWinner: away.isWinner,
+							name: awayInfo.name,
+							logo: awayInfo.logo,
+							goal: away.goal === undefined ? null : away.goal,
 						},
 					],
 				};
@@ -426,7 +428,18 @@ export default class MatchController extends AppController {
 				await MatchEventModel.deleteMany({ _id: { $in: oldEventIdList } }).exec();
 
 				// insert all new events
-				const newEventList = await MatchEventModel.insertMany(events);
+				const sortedEvents = events.sort((a, b) => {
+					const left = a.ocurringMinute;
+					const right = b.ocurringMinute;
+					if (left < right) {
+						return -1;
+					}
+					if (left > right) {
+						return 1;
+					}
+					return 0;
+				});
+				const newEventList = await MatchEventModel.insertMany(sortedEvents);
 				const newEventIdList = newEventList.map((event) => event._id);
 
 				updateObj.events = newEventIdList;

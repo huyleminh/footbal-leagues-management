@@ -945,7 +945,11 @@ function ViewMatchDetail(props: IMatchDetailProps) {
 								<Divider></Divider>
 								<MatchEvent
 									matchEvent={matchEvent}
-									setMatchEvent={setMatchEvent}
+									// setMatchEvent={setMatchEvent}
+									setMatchEvent={(data: any) => {
+										setMatchEvent(data);
+										changeDetail.current = true;
+									}}
 									editMode={editMode}
 									openModal={handleOpenAddEvent}
 								/>

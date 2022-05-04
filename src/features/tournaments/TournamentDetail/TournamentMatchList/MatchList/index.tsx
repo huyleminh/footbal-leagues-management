@@ -131,15 +131,18 @@ function MatchList(props: IMatchListProps) {
 		try {
 			const res = await HttpService.post<IAPIResponse<string>>("/matches", payload);
 			if (res.code === 201) {
-				window.location.reload();
+				toast(<ToastMsg title="Tạo mới thành công" type="success" />, {
+					type: toast.TYPE.SUCCESS,
+				});
+				setTimeout(() => {
+					window.location.reload();
+				}, 1500);
 			} else if (res.code === 400) {
 				toast(<ToastMsg title={res.data as string} type="error" />, {
 					type: toast.TYPE.ERROR,
 				});
 			} else {
-				toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
-					type: toast.TYPE.ERROR,
-				});
+				throw new Error("unexpected_code");
 			}
 		} catch (err) {
 			console.log(err);
