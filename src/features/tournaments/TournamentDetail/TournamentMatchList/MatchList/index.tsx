@@ -56,7 +56,7 @@ function MatchList(props: IMatchListProps) {
 	const context = useContext(AuthContext);
 	const [openDetailModal, setOpenDetailModal] = useState(false);
 	const [openCreateModal, setOpenCreateModal] = useState(false);
-	const [targetMatchId, setTargetMatchId] = useState("");
+	const [targetMatch, setTargetMatch] = useState<MatchListItemType | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const match = useMatch("/tournaments/:id/matches");
 
@@ -117,8 +117,8 @@ function MatchList(props: IMatchListProps) {
 		fetch();
 	}, [match?.params.id, selectedRound]);
 
-	const handleItemClick = (id: string) => {
-		setTargetMatchId(id);
+	const handleItemClick = (item: MatchListItemType) => {
+		setTargetMatch(item);
 		setOpenDetailModal(true);
 	};
 
@@ -128,19 +128,21 @@ function MatchList(props: IMatchListProps) {
 			scheduledDate: data.scheduledDate?.toISOString(),
 			tournamentId: match?.params.id,
 		};
-		console.log(payload);
 		try {
 			const res = await HttpService.post<IAPIResponse<string>>("/matches", payload);
 			if (res.code === 201) {
-				window.location.reload();
+				toast(<ToastMsg title="Tạo mới thành công" type="success" />, {
+					type: toast.TYPE.SUCCESS,
+				});
+				setTimeout(() => {
+					window.location.reload();
+				}, 1500);
 			} else if (res.code === 400) {
 				toast(<ToastMsg title={res.data as string} type="error" />, {
 					type: toast.TYPE.ERROR,
 				});
 			} else {
-				toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
-					type: toast.TYPE.ERROR,
-				});
+				throw new Error("unexpected_code");
 			}
 		} catch (err) {
 			console.log(err);
@@ -161,6 +163,11 @@ function MatchList(props: IMatchListProps) {
 				.includes(removeVietnameseTones(teamKey.toLowerCase())),
 	);
 
+	const handleOpenDetailModal = (refresh: boolean) => {
+		if (refresh) window.location.reload();
+		setOpenDetailModal(false);
+	};
+
 	return (
 		<>
 			<CreateMatch
@@ -172,8 +179,8 @@ function MatchList(props: IMatchListProps) {
 			/>
 			<ViewMatchDetail
 				open={openDetailModal}
-				matchId={targetMatchId}
-				onClose={setOpenDetailModal}
+				match={targetMatch}
+				onClose={handleOpenDetailModal}
 			/>
 			<Stack sx={{ height: "100%" }}>
 				<Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>

@@ -59,4 +59,39 @@ export function validateGetParams(req: IAppRequest, res: IAppResponse, next: IAp
 	next();
 }
 
-export default { validateCreateMatchData, validateGetParams };
+export function validateEditData(req: IAppRequest, res: IAppResponse, next: IAppNextFuction) {
+	const { body } = req;
+	const apiRes = new AppResponse(res, 400);
+
+	let { scheduledDate, stadiumName, events, competitors } = body;
+	// Check info
+	if (!stadiumName || !stadiumName.toString().trim()) {
+		return apiRes.data("Thiếu thông tin sân thi đấu").send();
+	}
+
+	const scheduledDateConverted = moment(scheduledDate);
+	// if (!scheduledDateConverted.isValid() || scheduledDateConverted.isBefore(moment())) {
+	// 	return apiRes.data("Ngày thi đấu không hợp lệ").send();
+	// }
+	if (!scheduledDateConverted.isValid()) {
+		return apiRes.data("Ngày thi đấu không hợp lệ").send();
+	}
+	// Check event
+	if (events !== null && !Array.isArray(events)) {
+		return apiRes.data("Sự kiện trận đấu không hợp lệ").send();
+	}
+	// Check competitors
+	if (competitors !== null && !Array.isArray(competitors)) {
+		return apiRes.data("Kết quả trận đấu không hợp lệ").send();
+	}
+
+	res.locals.payload = {
+		stadiumName,
+		scheduledDate: scheduledDateConverted.toISOString(),
+		events,
+		competitors,
+	};
+	next();
+}
+
+export default { validateCreateMatchData, validateGetParams, validateEditData };

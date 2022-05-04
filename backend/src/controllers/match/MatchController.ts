@@ -1,11 +1,13 @@
-import { IAPIMetadata, IAppRequest, IAppResponse } from "../../@types/AppBase";
+import * as mongoose from "mongoose";
+import * as moment from "moment";
+import { IAppRequest, IAppResponse } from "../../@types/AppBase";
 import AuthMiddlewares from "../../middlewares/AuthMiddlewares";
 import MatchMiddlewares from "../../middlewares/MatchMiddlewares";
 import MatchModel, { MATCH_COMPETITOR_ENUM } from "../../models/MatchModel";
+import TournamentModel from "../../models/TournamentModel";
 import AppResponse from "../../shared/AppResponse";
 import AppController from "../AppController";
-import * as mongoose from "mongoose";
-import TournamentModel from "../../models/TournamentModel";
+import MatchEventModel from "../../models/MatchEventModel";
 
 export default class MatchController extends AppController {
 	constructor() {
@@ -13,17 +15,212 @@ export default class MatchController extends AppController {
 	}
 
 	binding(): void {
+		this.getMatchEventById = this.getMatchEventById.bind(this);
+		this.getMatchDetailById = this.getMatchDetailById.bind(this);
 		this.getMatchListAsync = this.getMatchListAsync.bind(this);
 		this.postCreateMatchAsync = this.postCreateMatchAsync.bind(this);
+		this.putEditMatchResult = this.putEditMatchResult.bind(this);
 	}
 
 	init(): void {
+		this._router.get("/matches/:id/events", [], this.getMatchEventById);
+		this._router.get("/matches/:id", [], this.getMatchDetailById);
 		this._router.get("/matches", [MatchMiddlewares.validateGetParams], this.getMatchListAsync);
+
 		this._router.post(
 			"/matches",
 			[AuthMiddlewares.verifyManagerRole, MatchMiddlewares.validateCreateMatchData],
 			this.postCreateMatchAsync,
 		);
+
+		this._router.put(
+			"/matches/:id",
+			[AuthMiddlewares.verifyManagerRole, MatchMiddlewares.validateEditData],
+			this.putEditMatchResult,
+		);
+	}
+
+	async getMatchEventById(req: IAppRequest, res: IAppResponse) {
+		const { id } = req.params;
+		const apiRes = new AppResponse(res);
+
+		try {
+			const match = await MatchModel.findById(id).exec();
+			if (match === null) throw new Error("match_notfound");
+
+			const { events } = match;
+			const eventList = await MatchEventModel.aggregate([
+				{
+					$lookup: {
+						from: "players",
+						localField: "goal.player",
+						foreignField: "_id",
+						as: "goal_players",
+					},
+				},
+				{
+					$lookup: {
+						from: "players",
+						localField: "goal.assist",
+						foreignField: "_id",
+						as: "goal_assist_players",
+					},
+				},
+				{
+					$lookup: {
+						from: "players",
+						localField: "card.player",
+						foreignField: "_id",
+						as: "card_players",
+					},
+				},
+				{
+					$lookup: {
+						from: "players",
+						localField: "substitution.inPlayer",
+						foreignField: "_id",
+						as: "sub_in_players",
+					},
+				},
+				{
+					$lookup: {
+						from: "players",
+						localField: "substitution.outPlayer",
+						foreignField: "_id",
+						as: "sub_out_players",
+					},
+				},
+				{ $match: { _id: { $in: events } } },
+			]).exec();
+
+			const mapped = eventList.map((event) => {
+				const { _id, ocurringMinute, isHome, goal, card, substitution } = event;
+				const result: Record<string, any> = {
+					_id,
+					ocurringMinute,
+					isHome,
+					goal,
+					card,
+					substitution,
+				};
+				// map card
+				if (event.card_players.length > 0) {
+					result.card.playerName = event.card_players[0].playerName;
+					result.card.playerStrip = event.card_players[0].stripNumber;
+				}
+				// map goal
+				if (event.goal_players.length > 0) {
+					result.goal.playerName = event.goal_players[0].playerName;
+					result.goal.playerStrip = event.goal_players[0].stripNumber;
+				}
+				// map assist
+				if (event.goal_assist_players.length > 0) {
+					result.goal.assistName = event.goal_assist_players[0].playerName;
+					result.goal.assistStrip = event.goal_assist_players[0].stripNumber;
+				}
+				// map subs
+				if (event.sub_in_players.length > 0) {
+					result.substitution.inName = event.sub_in_players[0].playerName;
+					result.substitution.inStrip = event.sub_in_players[0].stripNumber;
+				}
+				if (event.sub_out_players.length > 0) {
+					result.substitution.outName = event.sub_out_players[0].playerName;
+					result.substitution.outStrip = event.sub_out_players[0].stripNumber;
+				}
+				return result;
+			});
+			apiRes.data(mapped).send();
+		} catch (error) {
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể lấy chi tiết sự kiện trận đấu").send();
+		}
+	}
+
+	async getMatchDetailById(req: IAppRequest, res: IAppResponse) {
+		const { id } = req.params;
+		const apiRes = new AppResponse(res);
+
+		try {
+			const [match] = await MatchModel.aggregate([
+				{ $match: { _id: { $eq: new mongoose.Types.ObjectId(id) } } },
+				{
+					$lookup: {
+						from: "players",
+						localField: "competitors.lineup.playerId",
+						foreignField: "_id",
+						as: "lineup_players",
+					},
+				},
+				{
+					$project: {
+						_id: 1,
+						scheduledDate: 1,
+						stadiumName: 1,
+						round: 1,
+						competitors: 1,
+						kickedOffDate: 1,
+						lineup_players: 1,
+					},
+				},
+			]).exec();
+			if (match === undefined) throw new Error("match_detail_get_error");
+
+			const [home] = match.competitors.filter(
+				(team) => team.teamType === MATCH_COMPETITOR_ENUM.HOME,
+			);
+			if (home) {
+				// map lineup info
+				const lineup = home.lineup.map((player) => {
+					const playerMatchLineup = match.lineup_players.find((item) =>
+						item._id.equals(player.playerId),
+					);
+					return {
+						playerId: player.playerId,
+						playerType: player.playerType,
+						inMatchPosition: player.inMatchPosition,
+						stripNumber: playerMatchLineup ? playerMatchLineup.stripNumber : NaN,
+						playerName: playerMatchLineup
+							? playerMatchLineup.playerName
+							: "Không xác định",
+					};
+				});
+				home.lineup = lineup;
+				// remove _id
+				delete home._id;
+			}
+
+			const [away] = match.competitors.filter(
+				(team) => team.teamType === MATCH_COMPETITOR_ENUM.AWAY,
+			);
+			if (away) {
+				// map lineup info
+				const lineup = away.lineup.map((player) => {
+					const playerMatchLineup = match.lineup_players.find((item) =>
+						item._id.equals(player.playerId),
+					);
+					return {
+						playerId: player.playerId,
+						playerType: player.playerType,
+						inMatchPosition: player.inMatchPosition,
+						stripNumber: playerMatchLineup ? playerMatchLineup.stripNumber : NaN,
+						playerName: playerMatchLineup
+							? playerMatchLineup.playerName
+							: "Không xác định",
+					};
+				});
+				away.lineup = lineup;
+				// remove _id
+				delete away._id;
+			}
+
+			// remove redundant array
+			delete match.lineup_players;
+
+			apiRes.data(match).send();
+		} catch (error) {
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể lấy chi tiết trận đấu").send();
+		}
 	}
 
 	async getMatchListAsync(req: IAppRequest, res: IAppResponse) {
@@ -66,6 +263,14 @@ export default class MatchController extends AppController {
 			];
 			const matchList = await MatchModel.aggregate(pipeline).exec();
 			const mapped = matchList.map((match) => {
+				const home = match.competitors.find(
+					(item) => item.teamType === MATCH_COMPETITOR_ENUM.HOME,
+				);
+				const away = match.competitors.find(
+					(item) => item.teamType === MATCH_COMPETITOR_ENUM.AWAY,
+				);
+				const homeInfo = match.teamInfo.find((item) => item._id.equals(home.teamId));
+				const awayInfo = match.teamInfo.find((item) => item._id.equals(away.teamId));
 				return {
 					_id: match._id,
 					scheduledDate: match.scheduledDate,
@@ -73,18 +278,20 @@ export default class MatchController extends AppController {
 					round: match.round,
 					competitors: [
 						{
-							teamId: match.competitors[0].teamId,
-							teamType: match.competitors[0].teamType,
-							isWinner: match.competitors[0].isWinner,
-							name: match.teamInfo[0].name,
-							logo: match.teamInfo[0].logo,
+							teamId: home.teamId,
+							teamType: home.teamType,
+							isWinner: home.isWinner,
+							name: homeInfo.name,
+							logo: homeInfo.logo,
+							goal: home.goal === undefined ? null : home.goal,
 						},
 						{
-							teamId: match.competitors[1].teamId,
-							teamType: match.competitors[1].teamType,
-							isWinner: match.competitors[1].isWinner,
-							name: match.teamInfo[1].name,
-							logo: match.teamInfo[1].logo,
+							teamId: away.teamId,
+							teamType: away.teamType,
+							isWinner: away.isWinner,
+							name: awayInfo.name,
+							logo: awayInfo.logo,
+							goal: away.goal === undefined ? null : away.goal,
 						},
 					],
 				};
@@ -183,6 +390,74 @@ export default class MatchController extends AppController {
 		} catch (error) {
 			this._errorHandler.handle(error.message);
 			apiRes.code(400).data("Không thể tạo mới trận đấu").send();
+		}
+	}
+
+	async putEditMatchResult(req: IAppRequest, res: IAppResponse) {
+		const { id } = req.params;
+		const {
+			payload: { scheduledDate, stadiumName, events, competitors },
+		} = res.locals;
+		const apiRes = new AppResponse(res);
+
+		try {
+			const match = await MatchModel.findById(id).exec();
+			if (match === null) {
+				return apiRes.code(400).data("Trận đấu không tồn tại").send();
+			}
+
+			const { kickedOffDate } = match;
+
+			// Edit time expired
+			if (kickedOffDate && moment(kickedOffDate).diff(moment(), "seconds") < -3600) {
+				return apiRes.code(400).data("Thời gian cho phép sửa kết quả đã quá hạn").send();
+			}
+
+			let updateObj: Record<string, any> = {};
+			// Edit info
+			if (!kickedOffDate) {
+				updateObj = { stadiumName, scheduledDate };
+			}
+			// Edit event
+			if (events !== null) {
+				if (!kickedOffDate) {
+					updateObj.kickedOffDate = moment().toISOString();
+				}
+				// remove all old events
+				const oldEventIdList = match.events;
+				await MatchEventModel.deleteMany({ _id: { $in: oldEventIdList } }).exec();
+
+				// insert all new events
+				const sortedEvents = events.sort((a, b) => {
+					const left = a.ocurringMinute;
+					const right = b.ocurringMinute;
+					if (left < right) {
+						return -1;
+					}
+					if (left > right) {
+						return 1;
+					}
+					return 0;
+				});
+				const newEventList = await MatchEventModel.insertMany(sortedEvents);
+				const newEventIdList = newEventList.map((event) => event._id);
+
+				updateObj.events = newEventIdList;
+			}
+			// Edit competitors
+			if (competitors !== null) {
+				if (!kickedOffDate) {
+					updateObj.kickedOffDate = moment().toISOString();
+				}
+				updateObj.competitors = competitors;
+			}
+
+			await MatchModel.findByIdAndUpdate(id, updateObj).exec();
+
+			apiRes.code(204).send();
+		} catch (error) {
+			this._errorHandler.handle(error.message);
+			apiRes.code(400).data("Không thể cập nhật kết quả trận đấu").send();
 		}
 	}
 }

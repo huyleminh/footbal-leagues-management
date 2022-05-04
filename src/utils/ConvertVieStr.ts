@@ -24,7 +24,7 @@ export default function removeVietnameseTones(str: string) {
 	// Remove punctuations
 	// Bỏ dấu câu, kí tự đặc biệt
 	str = str.replace(
-		/!|@|%|\^|\*|\(|\)|\+|\=|\<|\>|\?|\/|,|\.|\:|\;|\'|\"|\&|\#|\[|\]|~|\$|_|`|-|{|}|\||\\/g,
+		/!|@|%|\^|\*|\(|\)|\+|=|<|>|\?|\/|,|\.|:|;|'|"|&|#|\[|\]|~|\$|_|`|-|{|}|\||\\/g,
 		" ",
 	);
 	return str;

@@ -20,13 +20,18 @@ import {
 	TableRow,
 	Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import { toast } from "material-react-toastify";
+import React, { useEffect, useState } from "react";
+import { useMatch } from "react-router-dom";
+import { IAPIResponse } from "../../../../../../../@types/AppInterfaces";
 import { IBaseComponentProps } from "../../../../../../../@types/ComponentInterfaces";
-import CustomPagination from "../../../../../../../components/pagination";
+import ToastMsg from "../../../../../../../components/toast/ToastMsg";
+import HttpService from "../../../../../../../services/HttpService";
 
 export interface IModalData {
 	matchId?: string;
 	isHome?: boolean;
+	teamId?: string;
 }
 
 export interface IChooseLineupProps extends IBaseComponentProps {
@@ -36,6 +41,7 @@ export interface IChooseLineupProps extends IBaseComponentProps {
 }
 
 export interface IPlayerDataDialog {
+	playerId: string;
 	name: string;
 	stripNumber: number;
 	nationality: string;
@@ -52,49 +58,118 @@ const InMatchPosition = ["Thủ môn", "Hậu vệ", "Tiền vệ", "Tiền đ�
 function ChooseLineupDialog(props: IChooseLineupProps) {
 	const { open, onClose, data } = props;
 	const [isLoading, setIsLoading] = useState(false);
-	const [totalPage, setTotalPage] = useState(1);
-	const [pagination, setPagination] = useState({
-		page: 1,
-		maxItem: 5,
-	});
 	const [maxPlayer, setMaxPlayer] = useState(4);
-	const [playerList, setPlayerList] = useState<Array<IPlayer>>([
-		{
-			player: {
-				name: "P. Foden",
-				stripNumber: 47,
-				nationality: "Anh",
-			},
-		},
-		{
-			player: {
-				name: "P. Foden",
-				stripNumber: 47,
-				nationality: "Anh",
-			},
-		},
-		{
-			player: {
-				name: "P. Foden",
-				stripNumber: 47,
-				nationality: "Anh",
-			},
-		},
-		{
-			player: {
-				name: "P. Foden",
-				stripNumber: 47,
-				nationality: "Anh",
-			},
-		},
-		{
-			player: {
-				name: "P. Foden",
-				stripNumber: 47,
-				nationality: "Anh",
-			},
-		},
-	]);
+	const [playerList, setPlayerList] = useState<Array<IPlayer>>([]);
+	const match = useMatch("/tournaments/:id/matches");
+
+	useEffect(() => {
+		const fetchPlayer = async () => {
+			setIsLoading(true);
+			try {
+				const [players, config] = await Promise.allSettled([
+					HttpService.get<
+						IAPIResponse<
+							| Array<{
+									_id: string;
+									teamId: string;
+									stripNumber: number;
+									position: string;
+									playerName: string;
+									idNumber: string;
+									country: string;
+							  }>
+							| string
+						>
+					>(`/teams/${data.teamId}/players`),
+					HttpService.get<
+						IAPIResponse<
+							| {
+									maxAbroadPlayer: number;
+									maxAdditionalPlayer: number;
+									maxPlayerAge: number;
+									maxPlayerPerMatch: number;
+									maxTeam: number;
+							  }
+							| string
+						>
+					>(`/tournaments/${match?.params.id}/config`),
+				]);
+				if (players.status === "fulfilled" && config.status === "fulfilled") {
+					// handle players
+					if (players.value.code === 200) {
+						setPlayerList(
+							(
+								players.value.data as Array<{
+									_id: string;
+									teamId: string;
+									stripNumber: number;
+									position: string;
+									playerName: string;
+									idNumber: string;
+									country: string;
+								}>
+							).map((player) => ({
+								player: {
+									playerId: player._id,
+									name: player.playerName,
+									stripNumber: player.stripNumber,
+									nationality: player.country,
+								},
+							})),
+						);
+					} else if (players.value.code === 400) {
+						toast(<ToastMsg title={players.value.data as string} type="error" />, {
+							type: toast.TYPE.ERROR,
+						});
+					} else {
+						toast(
+							<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />,
+							{
+								type: toast.TYPE.ERROR,
+							},
+						);
+					}
+
+					// handle config
+					if (config.value.code === 200) {
+						setMaxPlayer(
+							(
+								config.value.data as {
+									maxAbroadPlayer: number;
+									maxAdditionalPlayer: number;
+									maxPlayerAge: number;
+									maxPlayerPerMatch: number;
+									maxTeam: number;
+								}
+							).maxPlayerPerMatch,
+						);
+					} else if (config.value.code === 400) {
+						toast(<ToastMsg title={config.value.data as string} type="error" />, {
+							type: toast.TYPE.ERROR,
+						});
+					} else {
+						toast(
+							<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />,
+							{
+								type: toast.TYPE.ERROR,
+							},
+						);
+					}
+				} else {
+					toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
+						type: toast.TYPE.ERROR,
+					});
+				}
+			} catch (err) {
+				console.log(err);
+				toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
+					type: toast.TYPE.ERROR,
+				});
+			}
+			setIsLoading(false);
+		};
+		if (open) fetchPlayer();
+	}, [data, open, match?.params.id]);
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>, player: IPlayerDataDialog) => {
 		if (e.target.checked) {
@@ -107,25 +182,62 @@ function ChooseLineupDialog(props: IChooseLineupProps) {
 		} else {
 			setPlayerList(
 				playerList.map((item) =>
-					item.player === player ? { ...item, isSelected: false, position: undefined } : item,
+					item.player === player
+						? { ...item, isSelected: false, position: undefined }
+						: item,
 				),
 			);
 		}
 	};
 
 	const handleOnSelectPosition = (e: SelectChangeEvent, player: IPlayerDataDialog) => {
-		setPlayerList(
-			playerList.map((item) =>
-				item.player === player
-					? { ...item, position: InMatchPosition[parseInt(e.target.value)] }
-					: item,
-			),
-		);
+		if (
+			playerList.filter(
+				(item) =>
+					item.isSelected &&
+					item.position !== InMatchPosition[InMatchPosition.length - 1] &&
+					item.position,
+			).length >= 11 &&
+			parseInt(e.target.value) !== InMatchPosition.length - 1
+		) {
+			toast(
+				<ToastMsg
+					title="Đã đạt số lượng cầu thủ ra sân tối đa, chỉ được chọn dự bị."
+					type="warning"
+				/>,
+				{
+					type: toast.TYPE.WARNING,
+				},
+			);
+		} else {
+			setPlayerList(
+				playerList.map((item) =>
+					item.player === player
+						? { ...item, position: InMatchPosition[parseInt(e.target.value)] }
+						: item,
+				),
+			);
+		}
 	};
 
 	const handleSave = () => {
-		onClose(false);
-	}
+		const players = playerList.filter((player) => player.isSelected);
+		if (
+			players.filter(
+				(item) =>
+					item.position !== InMatchPosition[InMatchPosition.length - 1] && item.position,
+			).length < 11
+		) {
+			toast(<ToastMsg title="Phải chọn ít nhất là 11 cầu thủ ra sân." type="warning" />, {
+				type: toast.TYPE.WARNING,
+			});
+		} else {
+			onClose({
+				players: players,
+				isHome: data.isHome,
+			});
+		}
+	};
 
 	return (
 		<Dialog maxWidth={false} onClose={() => onClose(false)} open={open} scroll="paper">
@@ -167,8 +279,8 @@ function ChooseLineupDialog(props: IChooseLineupProps) {
 							<LinearProgress />
 						</Box>
 					) : null}
-					<TableContainer component={Card}>
-						<Table sx={{ minWidth: 650 }} aria-label="simple table">
+					<TableContainer sx={{ maxHeight: 440, overflow: "auto" }} component={Card}>
+						<Table sx={{ minWidth: 650 }} stickyHeader aria-label="sticky table">
 							<TableHead>
 								<TableRow>
 									<TableCell
@@ -271,35 +383,10 @@ function ChooseLineupDialog(props: IChooseLineupProps) {
 							)}
 						</Table>
 					</TableContainer>
-					<CustomPagination
-						page={pagination.page}
-						totalPage={totalPage}
-						onChange={(value) =>
-							setPagination({
-								...pagination,
-								page: value,
-							})
-						}
-						allowChangeMax
-						maxItem={pagination.maxItem}
-						maxItemList={[5, 10, 15, 20, 25]}
-						onChangeMaxItem={(value) =>
-							setPagination({
-								page: 1,
-								maxItem: value,
-							})
-						}
-						sx={{
-							mt: 3,
-							display: "inline-flex",
-							justifyContent: "flex-end",
-							width: "100%",
-						}}
-					/>
 				</Box>
 			</DialogContent>
 			<DialogActions>
-				<Button color="primary" variant="text" onClick={() => onClose(false)}>
+				<Button color="primary" variant="text" onClick={() => onClose(null)}>
 					Đóng
 				</Button>
 				<Button color="primary" variant="contained" onClick={() => handleSave()}>

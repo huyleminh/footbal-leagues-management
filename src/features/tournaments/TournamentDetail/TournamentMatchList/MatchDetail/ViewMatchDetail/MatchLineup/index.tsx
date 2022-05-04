@@ -1,7 +1,7 @@
 import { Box, Button, Stack, Divider, Typography } from "@mui/material";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import { IBaseComponentProps } from "../../../../../../../@types/ComponentInterfaces";
-import { IMatchDetailType } from "..";
+import { IMatchDetailType } from "../MatchDetailInterfaces";
 
 interface IMatchLineupProps extends IBaseComponentProps {
 	editMode: boolean;
@@ -97,7 +97,7 @@ function MatchLineup(props: IMatchLineupProps) {
 					</Typography>
 				</Box>
 				<Stack sx={{ width: "41%" }} spacing={2}>
-					{matchDetail.homeTeam.substitution.map((item, index) => {
+					{matchDetail.awayTeam.substitution.map((item, index) => {
 						return (
 							<Typography
 								key={index}

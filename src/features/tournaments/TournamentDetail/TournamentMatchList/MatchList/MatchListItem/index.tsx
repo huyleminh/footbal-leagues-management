@@ -27,7 +27,7 @@ function MatchListItem(props: MatchListItemProps) {
 	const { data, onClick } = props;
 
 	const handleOnClick = () => {
-		onClick(data.id);
+		onClick(data);
 	};
 
 	return (

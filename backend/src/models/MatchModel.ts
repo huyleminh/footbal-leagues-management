@@ -1,13 +1,30 @@
 import { model, Schema } from "mongoose";
-import { ICompetitor, IMatchModel } from "./interfaces/IMatchModel";
+import { ICompetitor, ICompetitorLineup, IMatchModel } from "./interfaces/IMatchModel";
 import LineupModel from "./LineupModel";
 import MatchEventModel from "./MatchEventModel";
+import PlayerModel from "./PlayerModel";
 import TeamModel from "./TeamModel";
 
 export enum MATCH_COMPETITOR_ENUM {
 	HOME,
 	AWAY,
 }
+
+export enum MATCH_COMPETITOR_PLAYER_TYPE_ENUM {
+	MAIN,
+	SUB,
+}
+
+const LineupSchema = new Schema<ICompetitorLineup>({
+	playerId: { type: Schema.Types.ObjectId, required: true, ref: PlayerModel },
+	playerType: {
+		type: Number,
+		default: MATCH_COMPETITOR_PLAYER_TYPE_ENUM.MAIN,
+		enum: [MATCH_COMPETITOR_PLAYER_TYPE_ENUM.MAIN, MATCH_COMPETITOR_PLAYER_TYPE_ENUM.SUB],
+		required: true,
+	},
+	inMatchPosition: { type: String, required: true },
+});
 
 const CompetitorModel = new Schema<ICompetitor>({
 	teamId: { type: Schema.Types.ObjectId, required: true, ref: TeamModel },
@@ -26,7 +43,7 @@ const CompetitorModel = new Schema<ICompetitor>({
 	offsides: { type: Number },
 	conners: { type: Number },
 	fouls: { type: Number },
-	lineupId: { type: Schema.Types.ObjectId, ref: LineupModel },
+	lineup: { type: [LineupSchema], default: [] },
 });
 
 const MatchSchema = new Schema<IMatchModel>({
@@ -35,7 +52,6 @@ const MatchSchema = new Schema<IMatchModel>({
 	kickedOffDate: { type: Date },
 	stadiumName: { type: String, required: true },
 	round: { type: Number, required: true },
-	// season: { type: Number, required: true },
 	events: { type: [{ type: Schema.Types.ObjectId, ref: MatchEventModel }], default: [] },
 	competitors: { type: [CompetitorModel], required: true },
 });

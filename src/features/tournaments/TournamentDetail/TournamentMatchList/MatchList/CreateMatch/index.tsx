@@ -12,14 +12,13 @@ import {
 	LinearProgress,
 	MenuItem,
 	Select,
-	SelectChangeEvent,
 	Stack,
 	TextField,
 	Typography,
 } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { toast } from "material-react-toastify";
-import React, { ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { IAPIResponse } from "../../../../../../@types/AppInterfaces";
 import { IBaseComponentProps } from "../../../../../../@types/ComponentInterfaces";
 import ToastMsg from "../../../../../../components/toast/ToastMsg";
@@ -129,7 +128,7 @@ function CreateMatch(props: ICreateMatchProps) {
 			setIsLoading(false);
 		};
 		if (open) fetchParticipants();
-	}, [open]);
+	}, [open, tournamentId]);
 
 	const clearForm = () => {
 		setValid(initValid);
