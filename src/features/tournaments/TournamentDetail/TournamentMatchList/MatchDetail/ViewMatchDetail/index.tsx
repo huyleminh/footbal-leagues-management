@@ -247,7 +247,7 @@ function ViewMatchDetail(props: IMatchDetailProps) {
 							(res.data as Array<IMatchEventResData>).map((item) => {
 								return {
 									eventType:
-										item.goal?.type || item.card?.type || item.substitution,
+										item.goal?.type || item.card?.type || null,
 									isHome: item.isHome,
 									minute: item.ocurringMinute,
 									mainPlayer: {
@@ -274,7 +274,7 @@ function ViewMatchDetail(props: IMatchDetailProps) {
 														item.substitution?.inPlayer,
 													name:
 														item.goal?.assistName ||
-														item.substitution?.outName,
+														item.substitution?.inName,
 													stripNumber: parseInt(
 														(item.goal?.assistStrip ||
 															item.substitution?.inStrip) ??
@@ -334,7 +334,7 @@ function ViewMatchDetail(props: IMatchDetailProps) {
 		else if (teamType === "away")
 			temp.awayTeam[fieldName as keyof ITeamMatchDetailType] = e.target.value.trim() as never;
 		else if (fieldName === "stadium")
-			temp[fieldName as keyof IMatchDetailType] = e.target.value as never;
+			temp["stadium"] = e.target.value;
 		else temp[fieldName as keyof IMatchDetailType] = e.target.value.trim() as never;
 		setMatchDetail(temp);
 	};

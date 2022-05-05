@@ -8,6 +8,7 @@ import TournamentModel from "../../models/TournamentModel";
 import AppResponse from "../../shared/AppResponse";
 import AppController from "../AppController";
 import MatchEventModel from "../../models/MatchEventModel";
+import TournamentParticipantModel from "../../models/TournamentParticipantModel";
 
 export default class MatchController extends AppController {
 	constructor() {
@@ -406,7 +407,7 @@ export default class MatchController extends AppController {
 				return apiRes.code(400).data("Trận đấu không tồn tại").send();
 			}
 
-			const { kickedOffDate } = match;
+			const { kickedOffDate, tournamentId } = match;
 
 			// Edit time expired
 			if (kickedOffDate && moment(kickedOffDate).diff(moment(), "seconds") < -3600) {
@@ -449,6 +450,75 @@ export default class MatchController extends AppController {
 				if (!kickedOffDate) {
 					updateObj.kickedOffDate = moment().toISOString();
 				}
+				const home = match.competitors.find(
+					(team) => team.teamType === MATCH_COMPETITOR_ENUM.HOME,
+				);
+				const away = match.competitors.find(
+					(team) => team.teamType === MATCH_COMPETITOR_ENUM.AWAY,
+				);
+
+				const tournamentParticipants = await TournamentParticipantModel.findOne({
+					tournamentId,
+				}).exec();
+
+				if (tournamentParticipants === null) {
+					throw new Error("tournament_participant_not_found");
+				}
+				let homeParticipant = tournamentParticipants.teams.find((team) =>
+					team.teamId.equals(home.teamId),
+				);
+				let awayParticipant = tournamentParticipants.teams.find((team) =>
+					team.teamId.equals(away.teamId),
+				);
+
+				if (home.goal && away.goal) {
+					if (home.goal === away.goal) {
+						homeParticipant.totalPoint--;
+						homeParticipant.totalTied--;
+						awayParticipant.totalTied--;
+						awayParticipant.totalPoint--;
+					}
+					if (home.goal > away.goal) {
+						homeParticipant.totalPoint -= 3;
+						homeParticipant.totalWon--;
+						awayParticipant.totalLost--;
+					}
+					if (home.goal < away.goal) {
+						homeParticipant.totalLost--;
+						awayParticipant.totalWon--;
+						awayParticipant.totalPoint -= 3;
+					}
+				}
+
+				let newHome = competitors.find(
+					(team) => team.teamType === MATCH_COMPETITOR_ENUM.HOME,
+				);
+				let newAway = competitors.find(
+					(team) => team.teamType === MATCH_COMPETITOR_ENUM.AWAY,
+				);
+
+				newHome.goal = parseInt(newHome.goal)
+				newAway.goal = parseInt(newAway.goal)
+
+				if (newHome.goal === newAway.goal) {
+					homeParticipant.totalPoint++;
+					homeParticipant.totalTied++;
+					awayParticipant.totalTied++;
+					awayParticipant.totalPoint++;
+				}
+				if (newHome.goal > newAway.goal) {
+					homeParticipant.totalPoint += 3;
+					homeParticipant.totalWon++;
+					awayParticipant.totalLost++;
+				}
+				if (newHome.goal < newAway.goal) {
+					homeParticipant.totalLost++;
+					awayParticipant.totalWon++;
+					awayParticipant.totalPoint += 3;
+				}
+
+				await TournamentParticipantModel.findByIdAndUpdate(tournamentParticipants._id, { teams: tournamentParticipants.teams }).exec()
+
 				updateObj.competitors = competitors;
 			}
 
