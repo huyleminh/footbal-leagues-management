@@ -108,7 +108,7 @@ function MatchEvent(props: IMatchEventProps) {
 													: element.eventType === "penalty"
 													? "Phạt đền: "
 													: ""
-										  }$${element.mainPlayer.name} (${
+										  }${element.mainPlayer.name} (${
 												element.mainPlayer.stripNumber
 										  }) - ${element.minute}'`}
 								</Typography>

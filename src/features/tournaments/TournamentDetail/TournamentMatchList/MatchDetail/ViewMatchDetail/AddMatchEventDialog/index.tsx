@@ -172,11 +172,13 @@ function AddMatchEventDialog(props: IAddMatchEventProps) {
 
 	const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const target = e.target;
-		if (target.name === "normalMinute") {
-			setMinuteNormal(target.value);
-		} else if (target.name === "mainMinute") {
-			setMinuteExtra({ ...minuteExtra, main: target.value });
-		} else setMinuteExtra({ ...minuteExtra, extra: target.value });
+		if ((parseInt(target.value) > 0 && parseInt(target.value) < 91) || target.value === "") {
+			if (target.name === "normalMinute") {
+				setMinuteNormal(target.value);
+			} else if (target.name === "mainMinute") {
+				setMinuteExtra({ ...minuteExtra, main: target.value });
+			} else setMinuteExtra({ ...minuteExtra, extra: target.value });
+		}
 	};
 
 	return (
@@ -309,7 +311,7 @@ function AddMatchEventDialog(props: IAddMatchEventProps) {
 								variant="outlined"
 								onChange={handleOnChange}
 								disabled={!timeType}
-								InputProps={{ inputProps: { min: 0, max: 120 } }}
+								InputProps={{ inputProps: { min: 0, max: 90 } }}
 								size="small"
 							/>
 						</Box>
@@ -324,7 +326,7 @@ function AddMatchEventDialog(props: IAddMatchEventProps) {
 								variant="outlined"
 								onChange={handleOnChange}
 								disabled={timeType}
-								InputProps={{ inputProps: { min: 0, max: 120 } }}
+								InputProps={{ inputProps: { min: 0, max: 90 } }}
 								size="small"
 							/>
 							<Typography
@@ -345,7 +347,7 @@ function AddMatchEventDialog(props: IAddMatchEventProps) {
 								variant="outlined"
 								onChange={handleOnChange}
 								disabled={timeType}
-								InputProps={{ inputProps: { min: 0, max: 120 } }}
+								InputProps={{ inputProps: { min: 0, max: 90 } }}
 								size="small"
 							/>
 						</Box>
