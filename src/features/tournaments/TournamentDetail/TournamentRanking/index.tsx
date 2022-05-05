@@ -84,7 +84,7 @@ function TournamentRanking(props: IBaseComponentProps) {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{data.map((item, index) => (
+						{data.sort((item1, item2) => (item2.totalPoint ?? 1) - (item1.totalPoint ?? 0)).map((item, index) => (
 							<TableRow
 								key={index}
 								sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
