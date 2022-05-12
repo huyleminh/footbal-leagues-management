@@ -16,7 +16,6 @@ import {
 	RadioGroup,
 	Stack,
 	TextField,
-	Tooltip,
 	Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -43,7 +42,6 @@ interface IManagerDetail {
 
 function ManagerDetail(props: IManagerDetailProps) {
 	const { open, onClose, managerId } = props;
-	// console.log(managerId)
 	const navigate = useNavigate();
 	const [data, setData] = useState<IManagerDetail>({});
 	const [isLoading, setIsLoading] = useState(false);
@@ -64,16 +62,24 @@ function ManagerDetail(props: IManagerDetailProps) {
 							.toString(),
 						address: res.data.user.address,
 					});
-				} else {
+				} else if (res.code === 400) {
 					Swal.fire({
 						title: "Có lỗi xảy ra",
 						text: "Có lỗi xảy ra trong quá trình tải dữ liệu, vui lòng thử lại sau!",
 						icon: "error",
 						confirmButtonText: "Đồng ý",
 					});
+				} else {
+					throw new Error(`Unexpected code ${res.code}`);
 				}
 			} catch (err) {
 				console.log(err);
+				Swal.fire({
+					title: "Có lỗi xảy ra",
+					text: "Có lỗi xảy ra trong quá trình tải dữ liệu, vui lòng thử lại sau!",
+					icon: "error",
+					confirmButtonText: "Đồng ý",
+				});
 			}
 			setIsLoading(false);
 		};
@@ -110,30 +116,35 @@ function ManagerDetail(props: IManagerDetailProps) {
 								label="Tên"
 								variant="outlined"
 								defaultValue={data.name}
+								size="small"
 								disabled
 							/>
 							<TextField
 								label="Tên tài khoản"
 								variant="outlined"
 								defaultValue={data.username}
+								size="small"
 								disabled
 							/>
 							<TextField
 								label="Email"
 								variant="outlined"
 								defaultValue={data.email}
+								size="small"
 								disabled
 							/>
 							<TextField
 								label="Ngày khóa gần nhất"
 								variant="outlined"
 								defaultValue={data.lastLockedDate}
+								size="small"
 								disabled
 							/>
 							<TextField
 								label="Địa chỉ"
 								variant="outlined"
 								defaultValue={data.address}
+								size="small"
 								disabled
 							/>
 							<FormControl>
@@ -163,16 +174,15 @@ function ManagerDetail(props: IManagerDetailProps) {
 								<Typography variant="subtitle1" color="black">
 									Danh sách giải đấu đang quản lý:{" "}
 								</Typography>
-								<Tooltip title="Đến trang danh sách" placement="top">
-									<Button
-										color="primary"
-										variant="contained"
-										size="small"
-										onClick={toTournamentList}
-									>
-										<OpenInNewRoundedIcon fontSize="small" />
-									</Button>
-								</Tooltip>
+								<Button
+									color="primary"
+									variant="contained"
+									size="small"
+									onClick={toTournamentList}
+									startIcon={<OpenInNewRoundedIcon fontSize="small" />}
+								>
+									Xem danh sách
+								</Button>
 							</Stack>
 						</Stack>
 					</Box>

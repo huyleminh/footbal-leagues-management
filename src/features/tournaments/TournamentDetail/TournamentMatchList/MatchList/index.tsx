@@ -13,7 +13,7 @@ import {
 	Typography,
 } from "@mui/material";
 import { useContext, useState, useEffect } from "react";
-import { useLocation, useMatch } from "react-router-dom";
+import { createSearchParams, useLocation, useMatch, useNavigate } from "react-router-dom";
 import { IBaseComponentProps } from "../../../../../@types/ComponentInterfaces";
 import { toast } from "material-react-toastify";
 import ToastMsg from "../../../../../components/toast/ToastMsg";
@@ -49,6 +49,7 @@ interface IMatchListResData {
 
 function MatchList(props: IMatchListProps) {
 	const location = useLocation();
+	const navigate = useNavigate();
 	const [totalRound, setTotalRound] = useState(1);
 	const queryString = new URLSearchParams(location.search);
 	const [teamKey, setTeamKey] = useState(queryString.get("teamKey") || "");
@@ -102,9 +103,7 @@ function MatchList(props: IMatchListProps) {
 						type: toast.TYPE.ERROR,
 					});
 				} else {
-					toast(<ToastMsg title="Có lỗi xảy ra, vui lòng thử lại sau!" type="error" />, {
-						type: toast.TYPE.ERROR,
-					});
+					throw new Error(`Unexpected code ${res.code}`);
 				}
 			} catch (err) {
 				console.log(err);
@@ -227,7 +226,16 @@ function MatchList(props: IMatchListProps) {
 						size="small"
 						name="teamKey"
 						value={teamKey}
-						onChange={(e) => setTeamKey(e.target.value)}
+						onChange={(e) => {
+							const target = e.target;
+							setTeamKey(target.value);
+							navigate({
+								pathname: location.pathname,
+								search: `?${createSearchParams({
+									teamKey: (target.value as string).trim(),
+								})}`,
+							});
+						}}
 						InputProps={{
 							endAdornment: <SearchRoundedIcon color="primary" />,
 						}}

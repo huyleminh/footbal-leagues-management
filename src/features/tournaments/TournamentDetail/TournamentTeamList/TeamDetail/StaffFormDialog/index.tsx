@@ -126,7 +126,7 @@ function StaffFormDialog(props: IStaffFormDialog) {
 
 			<DialogActions>
 				<Button
-					variant="outlined"
+					variant="text"
 					onClick={() => {
 						clearForm();
 						onCancel();

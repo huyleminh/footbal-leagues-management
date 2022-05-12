@@ -45,9 +45,7 @@ function TournamentRanking(props: IBaseComponentProps) {
 				if (res.code === 200) {
 					setData(res.data as Array<ITournamentRankingData>);
 				} else {
-					toast(<ToastMsg title={res?.data as string} type="error" />, {
-						type: toast.TYPE.ERROR,
-					});
+					throw new Error(`Unexpected code ${res.code}`);
 				}
 			} catch (e) {
 				console.log(e);

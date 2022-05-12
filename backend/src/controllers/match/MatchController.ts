@@ -471,7 +471,7 @@ export default class MatchController extends AppController {
 					team.teamId.equals(away.teamId),
 				);
 
-				if (home.goal && away.goal) {
+				if (home.goal !== undefined && away.goal !== undefined) {
 					if (home.goal === away.goal) {
 						homeParticipant.totalPoint--;
 						homeParticipant.totalTied--;

@@ -121,6 +121,9 @@ function TournamentList(props: ITournamentListProps) {
 							toast(<ToastMsg title="Xóa thành công" type="success" />, {
 								type: toast.TYPE.SUCCESS,
 							});
+							setTimeout(() => {
+								navigate(0);
+							}, 1500);
 						} else if (response.code === 400) {
 							toast(<ToastMsg title={response.data as string} type="error" />, {
 								type: toast.TYPE.ERROR,
@@ -138,12 +141,6 @@ function TournamentList(props: ITournamentListProps) {
 					});
 			},
 			allowOutsideClick: () => !Swal.isLoading(),
-		}).then((result) => {
-			if (result.isConfirmed) {
-				setTimeout(() => {
-					navigate(0);
-				}, 1500);
-			}
 		});
 	};
 
@@ -227,7 +224,10 @@ function TournamentList(props: ITournamentListProps) {
 			icon: <OpenInNewRoundedIcon fontSize="small" />,
 			action: (item: IActionMenuItem) => navigate(`./${item.id}`),
 		},
-		{
+	];
+
+	if (authContext.role === "manager") {
+		actionList.push({
 			title: "Chuyển trạng thái",
 			icon: <AutorenewRoundedIcon fontSize="small" />,
 			action: (item: IActionMenuItem) =>
@@ -238,14 +238,14 @@ function TournamentList(props: ITournamentListProps) {
 					previousStatus: item["status"],
 					id: item.id,
 				}),
-		},
-		{
+		});
+		actionList.push({
 			title: "Xóa",
 			icon: <DeleteRoundedIcon fontSize="small" />,
 			action: (item: IActionMenuItem) => handleDelete(item),
 			color: "#FF4842",
-		},
-	];
+		});
+	}
 
 	return (
 		<>
