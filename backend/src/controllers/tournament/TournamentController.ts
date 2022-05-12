@@ -270,6 +270,7 @@ export default class TournamentController extends AppController {
 	async patchChangeTournamentStatusAsync(req: IAppRequest, res: IAppResponse) {
 		const { id } = req.params;
 		const { body } = req;
+		const { tokenPayload } = res.locals;
 		let status = body.status;
 
 		if (!TOURNAMENT_STATUS_ENUM[status]) {
@@ -279,6 +280,9 @@ export default class TournamentController extends AppController {
 		try {
 			const tournament = await TournamentModel.findById(id).exec();
 			if (tournament === null) throw new Error("tournament_notfound");
+			if (!tournament.createdBy.equals(tokenPayload.userId)) {
+				return new AppResponse(res, 400, "Không có quyền thay đổi trạng thái").send();
+			}
 
 			const now = moment();
 			const update: Record<string, any> = { status };
@@ -302,10 +306,14 @@ export default class TournamentController extends AppController {
 
 	async deleteTournamentAsync(req: IAppRequest, res: IAppResponse) {
 		const { id } = req.params;
+		const { tokenPayload } = res.locals;
 		try {
 			const tournament = await TournamentModel.findById(id).exec();
 			if (tournament === null) throw new Error("tournament_notfound");
 			if (tournament.totalTeam > 0) throw new Error("tournament_delete_denied");
+			if (!tournament.createdBy.equals(tokenPayload.userId)) {
+				return new AppResponse(res, 400, "Không có quyền xóa giải đấu").send();
+			}
 
 			await TournamentModel.findByIdAndRemove(id).exec();
 			await TournamentParticipantModel.findOneAndRemove({ tournamentId: id }).exec();

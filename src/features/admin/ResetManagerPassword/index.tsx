@@ -1,14 +1,7 @@
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import { IBaseComponentProps } from "../../../@types/ComponentInterfaces";
-import {
-	Box,
-	Button,
-	DialogActions,
-	DialogContent,
-	Stack,
-	TextField,
-} from "@mui/material";
+import { Button, DialogActions, DialogContent, Stack, TextField } from "@mui/material";
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 import HttpService from "../../../services/HttpService";
@@ -60,8 +53,8 @@ function ResetManagerPassword(props: IResetManagerPasswordProps) {
 				icon: "warning",
 				confirmButtonText: "Đồng ý",
 				customClass: {
-					container: "swal2-elevated-container"
-				}
+					container: "swal2-elevated-container",
+				},
 			});
 			return;
 		}
@@ -73,16 +66,19 @@ function ResetManagerPassword(props: IResetManagerPasswordProps) {
 				icon: "warning",
 				confirmButtonText: "Đồng ý",
 				customClass: {
-					container: "swal2-elevated-container"
-				}
+					container: "swal2-elevated-container",
+				},
 			});
 			return;
 		}
 
 		try {
-			const res = await HttpService.patch<IAPIResponse<any>>(`/managers/${managerId}/password`, {
-				password: data.password
-			})
+			const res = await HttpService.patch<IAPIResponse<any>>(
+				`/managers/${managerId}/password`,
+				{
+					password: data.password,
+				},
+			);
 			if (res.code === 200) {
 				Swal.fire({
 					title: "Cấp lại mật khẩu thành công",
@@ -90,95 +86,82 @@ function ResetManagerPassword(props: IResetManagerPasswordProps) {
 					icon: "success",
 					confirmButtonText: "Đồng ý",
 					customClass: {
-						container: "swal2-elevated-container"
-					}
+						container: "swal2-elevated-container",
+					},
 				}).then((value) => {
 					if (value.isConfirmed || value.isDismissed) {
-						handleOnClose()
+						handleOnClose();
 					}
 				});
+			} else if (res.code === 400) {
+				Swal.fire({
+					title: "Không cấp lại mật khẩu được",
+					text: `${res.data}`,
+					icon: "warning",
+					confirmButtonText: "Đồng ý",
+					customClass: {
+						container: "swal2-elevated-container",
+					},
+				});
 			} else {
-				if (res.code === 400) {
-					Swal.fire({
-						title: "Không cấp lại mật khẩu được",
-						text: `${res.data}`,
-						icon: "warning",
-						confirmButtonText: "Đồng ý",
-						customClass: {
-							container: "swal2-elevated-container"
-						}
-					});
-				} else {
-					Swal.fire({
-						title: "Có lỗi xảy ra",
-						text: "Có lỗi xảy ra trong quá trình cấp lại mật khẩu, vui lòng thử lại sau!",
-						icon: "error",
-						confirmButtonText: "Đồng ý",
-						customClass: {
-							container: "swal2-elevated-container"
-						}
-					});
-				}
+				throw new Error(`Unexpected code ${res.code}`);
 			}
 		} catch (error) {
-			console.log(error)
+			console.log(error);
+			Swal.fire({
+				title: "Có lỗi xảy ra",
+				text: "Có lỗi xảy ra trong quá trình cấp lại mật khẩu, vui lòng thử lại sau!",
+				icon: "error",
+				confirmButtonText: "Đồng ý",
+				customClass: {
+					container: "swal2-elevated-container",
+				},
+			});
 		}
 	};
 
 	return (
-		<Dialog onClose={handleOnClose} open={open}>
+		<Dialog maxWidth="xs" fullWidth onClose={handleOnClose} open={open}>
 			<DialogTitle>{`Cấp lại mật khẩu${
 				managerName ? ` cho ${managerName}` : ""
 			}`}</DialogTitle>
-			<form onSubmit={handleSubmit}>
-				<DialogContent>
-					<Box
-						sx={{
-							paddingTop: "10px",
-							minWidth: "450px",
+			<DialogContent>
+				<Stack spacing={3}>
+					<TextField
+						error={invalidPassword}
+						label="Mật khẩu mới"
+						variant="outlined"
+						type="password"
+						name="password"
+						onChange={handleOnChange}
+						size="small"
+						inputProps={{
+							"data-rule": `^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$`,
 						}}
-					>
-						<Stack spacing={3}>
-							<TextField
-								error={invalidPassword}
-								label="Mật khẩu mới"
-								variant="outlined"
-								type="password"
-								name="password"
-								onChange={handleOnChange}
-								inputProps={{
-									"data-rule": `^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$`,
-								}}
-								helperText="Mật khẩu có ít nhất 8 ký tự, ít nhất 1 chữ cái và 1 chữ số"
-								required
-							/>
-							<TextField
-								error={matchedPasswordError}
-								label="Xác nhận mật khẩu mới"
-								variant="outlined"
-								type="password"
-								name="confirmedPassword"
-								helperText={matchedPasswordError ? "Mật khẩu không trùng khớp" : ""}
-								onChange={handleOnChange}
-								required
-							/>
-						</Stack>
-					</Box>
-				</DialogContent>
-				<DialogActions>
-					<Button color="primary" variant="outlined" onClick={handleOnClose}>
-						Đóng
-					</Button>
-					<Button
-						color="primary"
-						variant="contained"
-						onClick={handleSubmit}
-						type="submit"
-					>
-						Xác nhận
-					</Button>
-				</DialogActions>
-			</form>
+						helperText="Mật khẩu có ít nhất 8 ký tự, ít nhất 1 chữ cái và 1 chữ số"
+						required
+					/>
+					<TextField
+						error={matchedPasswordError}
+						label="Xác nhận mật khẩu mới"
+						variant="outlined"
+						type="password"
+						name="confirmedPassword"
+						helperText={matchedPasswordError ? "Mật khẩu không trùng khớp" : ""}
+						onChange={handleOnChange}
+						size="small"
+						required
+					/>
+				</Stack>
+			</DialogContent>
+			<DialogActions>
+				<Button color="primary" variant="text" onClick={handleOnClose}>
+					Đóng
+				</Button>
+				<Button color="primary" variant="contained" onClick={handleSubmit} type="submit">
+					Xác nhận
+				</Button>
+			</DialogActions>
 		</Dialog>
 	);
 }

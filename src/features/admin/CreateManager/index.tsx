@@ -2,7 +2,6 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import { IBaseComponentProps } from "../../../@types/ComponentInterfaces";
 import {
-	Box,
 	Button,
 	DialogActions,
 	DialogContent,
@@ -43,7 +42,7 @@ function CreateManager(props: CreateManagerProps) {
 		email: false,
 	});
 	const [data, setData] = useState<CreateNewManagerForm>({
-		status: "1"
+		status: "1",
 	});
 
 	const handleOnClose = (reload: boolean) => {
@@ -73,15 +72,22 @@ function CreateManager(props: CreateManagerProps) {
 
 	const handleSubmit = async (e: React.SyntheticEvent) => {
 		e.preventDefault();
-		if (!data.name || !data.username || !data.email || !data.password || !data.confirmedPassword || !data.status) {
+		if (
+			!data.name ||
+			!data.username ||
+			!data.email ||
+			!data.password ||
+			!data.confirmedPassword ||
+			!data.status
+		) {
 			Swal.fire({
 				title: "Thiếu thông tin",
 				text: "Vui lòng điền đầy đủ thông tin trước khi tạo!",
 				icon: "warning",
 				confirmButtonText: "Đồng ý",
 				customClass: {
-					container: "swal2-elevated-container"
-				}
+					container: "swal2-elevated-container",
+				},
 			});
 			return;
 		}
@@ -93,8 +99,8 @@ function CreateManager(props: CreateManagerProps) {
 				icon: "warning",
 				confirmButtonText: "Đồng ý",
 				customClass: {
-					container: "swal2-elevated-container"
-				}
+					container: "swal2-elevated-container",
+				},
 			});
 			return;
 		}
@@ -106,8 +112,8 @@ function CreateManager(props: CreateManagerProps) {
 				password: data.password,
 				email: data.email,
 				status: data.status,
-				address: data.address
-			})
+				address: data.address,
+			});
 			if (res.code === 201) {
 				Swal.fire({
 					title: "Tạo thành công",
@@ -115,153 +121,140 @@ function CreateManager(props: CreateManagerProps) {
 					icon: "success",
 					confirmButtonText: "Đồng ý",
 					customClass: {
-						container: "swal2-elevated-container"
-					}
+						container: "swal2-elevated-container",
+					},
 				}).then((value) => {
 					if (value.isConfirmed || value.isDismissed) {
-						handleOnClose(true)
+						handleOnClose(true);
 					}
 				});
+			} else if (res.code === 400) {
+				Swal.fire({
+					title: "Không tạo được",
+					text: `${res.data}`,
+					icon: "warning",
+					confirmButtonText: "Đồng ý",
+					customClass: {
+						container: "swal2-elevated-container",
+					},
+				});
 			} else {
-				if (res.code === 400) {
-					Swal.fire({
-						title: "Không tạo được",
-						text: `${res.data}`,
-						icon: "warning",
-						confirmButtonText: "Đồng ý",
-						customClass: {
-							container: "swal2-elevated-container"
-						}
-					});
-				} else {
-					Swal.fire({
-						title: "Có lỗi xảy ra",
-						text: "Có lỗi xảy ra trong quá trình tạo, vui lòng thử lại sau!",
-						icon: "error",
-						confirmButtonText: "Đồng ý",
-						customClass: {
-							container: "swal2-elevated-container"
-						}
-					});
-				}
+				throw new Error(`Unexpected code ${res.code}`);
 			}
 		} catch (error) {
-			console.log(error)
+			console.log(error);
+			Swal.fire({
+				title: "Có lỗi xảy ra",
+				text: "Có lỗi xảy ra trong quá trình tạo, vui lòng thử lại sau!",
+				icon: "error",
+				confirmButtonText: "Đồng ý",
+				customClass: {
+					container: "swal2-elevated-container",
+				},
+			});
 		}
 	};
 
 	return (
-		<Dialog onClose={() => handleOnClose(false)} open={open}>
+		<Dialog
+			maxWidth="sm"
+			fullWidth
+			scroll="paper"
+			onClose={() => handleOnClose(false)}
+			open={open}
+		>
 			<DialogTitle>Tạo quản lý mới</DialogTitle>
-			<form onSubmit={handleSubmit}>
-				<DialogContent>
-					<Box
-						sx={{
-							paddingTop: "10px",
-							minWidth: "450px",
+			<DialogContent>
+				<Stack spacing={3}>
+					<TextField
+						label="Tên"
+						variant="outlined"
+						name="name"
+						onChange={handleOnChange}
+						size="small"
+						required
+					/>
+					<TextField
+						error={invalid.username}
+						label="Tên tài khoản"
+						name="username"
+						variant="outlined"
+						onChange={handleOnChange}
+						size="small"
+						helperText={invalid.username ? "Tên tài khoản không được để trống" : ""}
+						inputProps={{
+							"data-rule": `^(?!\\s*$).+`,
 						}}
-					>
-						<Stack spacing={3}>
-							<TextField
-								label="Tên"
-								variant="outlined"
-								name="name"
-								onChange={handleOnChange}
-								required
-							/>
-							<TextField
-								error={invalid.username}
-								label="Tên tài khoản"
-								name="username"
-								variant="outlined"
-								onChange={handleOnChange}
-								helperText={
-									invalid.username ? "Tên tài khoản không được để trống" : ""
-								}
-								inputProps={{
-									"data-rule": `^(?!\\s*$).+`,
-								}}
-								required
-							/>
-							<TextField
-								error={invalid.email}
-								label="Email"
-								variant="outlined"
-								name="email"
-								onChange={handleOnChange}
-								inputProps={{
-									"data-rule": `^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$`,
-								}}
-								helperText={invalid.email ? "Địa chỉ email chưa đúng" : ""}
-								required
-							/>
-							<TextField
-								error={invalid.password}
-								label="Mật khẩu"
-								variant="outlined"
-								type="password"
-								name="password"
-								onChange={handleOnChange}
-								inputProps={{
-									"data-rule": `^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$`,
-								}}
-								helperText="Mật khẩu có ít nhất 8 ký tự, ít nhất 1 chữ cái và 1 chữ số"
-								required
-							/>
-							<TextField
-								error={matchedPasswordError}
-								label="Xác nhận mật khẩu"
-								variant="outlined"
-								type="password"
-								name="confirmedPassword"
-								helperText={matchedPasswordError ? "Mật khẩu không trùng khớp" : ""}
-								onChange={handleOnChange}
-								required
-							/>
-							<TextField
-								label="Địa chỉ (không bắt buộc)"
-								variant="outlined"
-								name="address"
-								onChange={handleOnChange}
-							/>
-							<FormControl>
-								<FormLabel id="status-radio-button">Trạng thái</FormLabel>
-								<RadioGroup
-									row
-									aria-labelledby="status-radio-button"
-									name="status"
-									onChange={handleOnChange}
-									defaultValue={1}
-								>
-									<FormControlLabel
-										value={1}
-										control={<Radio />}
-										label="Hoạt động"
-									/>
-									<FormControlLabel
-										value={0}
-										control={<Radio />}
-										label="Khóa"
-									/>
-								</RadioGroup>
-							</FormControl>
-						</Stack>
-					</Box>
-				</DialogContent>
-				<DialogActions>
-					<Button color="primary" variant="outlined" onClick={() => handleOnClose(false)}>
-						Đóng
-					</Button>
-					<Button
-						color="primary"
-						variant="contained"
-						onClick={handleSubmit}
-						type="submit"
-					>
-						Xác nhận
-					</Button>
-				</DialogActions>
-			</form>
+						required
+					/>
+					<TextField
+						error={invalid.email}
+						label="Email"
+						variant="outlined"
+						name="email"
+						onChange={handleOnChange}
+						size="small"
+						inputProps={{
+							"data-rule": `^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$`,
+						}}
+						helperText={invalid.email ? "Địa chỉ email chưa đúng" : ""}
+						required
+					/>
+					<TextField
+						error={invalid.password}
+						label="Mật khẩu"
+						variant="outlined"
+						type="password"
+						name="password"
+						onChange={handleOnChange}
+						size="small"
+						inputProps={{
+							"data-rule": `^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$`,
+						}}
+						helperText="Mật khẩu có ít nhất 8 ký tự, ít nhất 1 chữ cái và 1 chữ số"
+						required
+					/>
+					<TextField
+						error={matchedPasswordError}
+						label="Xác nhận mật khẩu"
+						variant="outlined"
+						type="password"
+						name="confirmedPassword"
+						helperText={matchedPasswordError ? "Mật khẩu không trùng khớp" : ""}
+						onChange={handleOnChange}
+						size="small"
+						required
+					/>
+					<TextField
+						label="Địa chỉ (không bắt buộc)"
+						variant="outlined"
+						name="address"
+						onChange={handleOnChange}
+						size="small"
+					/>
+					<FormControl>
+						<FormLabel id="status-radio-button">Trạng thái</FormLabel>
+						<RadioGroup
+							row
+							aria-labelledby="status-radio-button"
+							name="status"
+							onChange={handleOnChange}
+							defaultValue={1}
+						>
+							<FormControlLabel value={1} control={<Radio />} label="Hoạt động" />
+							<FormControlLabel value={0} control={<Radio />} label="Khóa" />
+						</RadioGroup>
+					</FormControl>
+				</Stack>
+			</DialogContent>
+			<DialogActions>
+				<Button color="primary" variant="text" onClick={() => handleOnClose(false)}>
+					Đóng
+				</Button>
+				<Button color="primary" variant="contained" onClick={handleSubmit} type="submit">
+					Xác nhận
+				</Button>
+			</DialogActions>
 		</Dialog>
 	);
 }

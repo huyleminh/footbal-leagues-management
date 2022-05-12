@@ -302,9 +302,7 @@ export default class TeamController extends AppController {
 				payload.role = TEAM_STAFF_ROLE_ENUM.COACH;
 			}
 			staff.fullname = payload.fullname;
-			staff.role = payload.role;
 			staff.country = payload.country;
-
 			let coachName = team.coachName;
 			if (
 				staff.role !== TEAM_STAFF_ROLE_ENUM.COACH &&
@@ -314,6 +312,7 @@ export default class TeamController extends AppController {
 				const coach = teamStaff.find((staff) => staff.role === TEAM_STAFF_ROLE_ENUM.COACH);
 				coach.role = TEAM_STAFF_ROLE_ENUM.STAFF;
 			}
+			staff.role = payload.role;
 
 			await TeamModel.findByIdAndUpdate(id, { coachName, teamStaff }).exec();
 			apiRes.code(204).send();

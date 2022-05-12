@@ -344,7 +344,7 @@ function PlayerFormDialog(props: IPlayerFormDialog) {
 
 			<DialogActions>
 				<Button
-					variant="outlined"
+					variant="text"
 					onClick={() => {
 						clearForm();
 						onCancel();

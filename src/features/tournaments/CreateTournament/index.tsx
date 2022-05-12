@@ -149,7 +149,7 @@ function CreateTournament(props: ICreateTournamentProps) {
 							spacing={2}
 						>
 							<Button
-								variant="outlined"
+								variant="text"
 								onClick={() => setActiveStep(activeStep - 1)}
 							>
 								Quay lại
