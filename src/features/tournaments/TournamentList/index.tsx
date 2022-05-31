@@ -388,7 +388,7 @@ function TournamentList(props: ITournamentListProps) {
 												<img
 													src={row.logoUrl}
 													alt="logoTournament"
-													style={{ width: "100%", height: "auto" }}
+													style={{ width: "100%", height: "100%", objectFit: "contain" }}
 												/>
 											</Box>
 										</TableCell>
