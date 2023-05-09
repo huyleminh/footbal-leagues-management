@@ -372,9 +372,7 @@ function TournamentList(props: ITournamentListProps) {
 											scope="row"
 											sx={{ width: "50px" }}
 										>
-											{index +
-												1 +
-												(pagination.page - 1) * pagination.pageSize}
+											{index + 1 + (pagination.page - 1) * filter.limit}
 										</TableCell>
 										<TableCell align="left" sx={{}}>
 											<Box
@@ -388,7 +386,11 @@ function TournamentList(props: ITournamentListProps) {
 												<img
 													src={row.logoUrl}
 													alt="logoTournament"
-													style={{ width: "100%", height: "100%", objectFit: "contain" }}
+													style={{
+														width: "100%",
+														height: "100%",
+														objectFit: "contain",
+													}}
 												/>
 											</Box>
 										</TableCell>
