@@ -2,6 +2,15 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Backend repository
+The following repository is separated from backend folder of this project and has been updated with api document (swagger).
+[https://github.com/huyleminh/football-league-service](https://github.com/huyleminh/football-league-service)
+
+## Available accounts
+* Manager:
+    * username: pjakabe
+    * password: demo123456
+
 ## Available Scripts
 
 In the project directory, you can run:
